@@ -1,21 +1,23 @@
-import requests
+from client.eds_client import EDSApiClient
 
-BASE_URL = "https://api.energidataservice.dk/dataset/CO2Emis"
+DATASET = "CO2Emis"
+
+client = EDSApiClient()
 
 
 def test_status_code_ok():
-    response = requests.get(BASE_URL)
+    response = client.get_dataset(DATASET)
     assert response.status_code == 200
 
 
 def test_response_is_json():
-    response = requests.get(BASE_URL)
+    response = client.get_dataset(DATASET)
     assert response.headers["Content-Type"].startswith("application/json")
     response.json()
 
 
 def test_response_structure():
-    response = requests.get(BASE_URL)
+    response = client.get_dataset(DATASET)
     body = response.json()
 
     assert "records" in body
@@ -25,7 +27,7 @@ def test_response_structure():
 
 def test_limit_parameter_returns_expected_number_of_records():
     limit = 5
-    response = requests.get(BASE_URL, params={"limit": limit})
+    response = client.get_dataset(DATASET, limit=limit)
     body = response.json()
 
     assert response.status_code == 200
@@ -34,10 +36,7 @@ def test_limit_parameter_returns_expected_number_of_records():
 
 def test_filter_parameter_returns_matching_records():
     price_area = "DK1"
-    response = requests.get(
-        BASE_URL,
-        params={"filter": f'{{"PriceArea":"{price_area}"}}', "limit": 5},
-    )
+    response = client.get_dataset(DATASET, limit=5, filter={"PriceArea": price_area})
     body = response.json()
 
     assert response.status_code == 200
