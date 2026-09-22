@@ -38,7 +38,9 @@ eds-api-automation/
 │   └── eds_client.py
 │
 ├── tests/
-│   └── test_co2_api.py
+│   ├── conftest.py
+│   ├── test_co2_api.py
+│   └── test_elspotprices_api.py
 │
 ├── requirements.txt
 ├── README.md
@@ -49,7 +51,7 @@ The project structure will be extended as the framework grows.
 
 ## 🧪 Current Test Coverage
 
-The initial test suite covers the `CO2Emis` dataset.
+The test suite covers the `CO2Emis` and `Elspotprices` datasets.
 
 Current tests include:
 
@@ -125,7 +127,7 @@ The framework will be gradually extended with:
 * [x] API client abstraction
 * [x] pytest fixtures
 * [x] Parameterized tests
-* [ ] Additional EDS datasets
+* [x] Additional EDS datasets
 * [ ] Pagination testing
 * [ ] Sorting validation
 * [ ] Negative test scenarios
