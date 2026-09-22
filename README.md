@@ -125,6 +125,7 @@ The framework will be gradually extended with:
 * [x] API client abstraction
 * [x] pytest fixtures
 * [x] Parameterized tests
+* [x] API client retry with exponential backoff
 * [ ] Additional EDS datasets
 * [ ] Pagination testing
 * [ ] Sorting validation
@@ -135,6 +136,7 @@ The framework will be gradually extended with:
 * [ ] Allure reporting
 * [ ] Docker support
 * [x] GitHub Actions CI pipeline
+* [ ] Configurable retry/backoff tuning (jitter, per-dataset limits)
 
 ## 👩‍💻 About the Project
 
