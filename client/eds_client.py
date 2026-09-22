@@ -1,13 +1,39 @@
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 BASE_URL = "https://api.energidataservice.dk"
+DEFAULT_MAX_RETRIES = 3
+DEFAULT_BACKOFF_FACTOR = 1.0
+RETRYABLE_STATUS_CODES = [429, 500, 502, 503, 504]
 
 
 class EDSApiClient:
-    """Thin wrapper around the Energi Data Service dataset API."""
+    """Thin wrapper around the Energi Data Service dataset API.
 
-    def __init__(self, base_url: str = BASE_URL):
+    Requests are retried with exponential backoff on rate limiting (429)
+    and transient server errors. Tune `max_retries`/`backoff_factor` per
+    instance, e.g. to back off harder against the API's rate limits.
+    """
+
+    def __init__(
+        self,
+        base_url: str = BASE_URL,
+        max_retries: int = DEFAULT_MAX_RETRIES,
+        backoff_factor: float = DEFAULT_BACKOFF_FACTOR,
+    ):
         self.base_url = base_url
+        self.session = requests.Session()
+
+        retry = Retry(
+            total=max_retries,
+            backoff_factor=backoff_factor,
+            status_forcelist=RETRYABLE_STATUS_CODES,
+            allowed_methods=["GET"],
+        )
+        adapter = HTTPAdapter(max_retries=retry)
+        self.session.mount("https://", adapter)
+        self.session.mount("http://", adapter)
 
     def get_dataset(self, dataset: str, limit: int = None, filter: dict = None) -> requests.Response:
         params = {}
@@ -16,7 +42,7 @@ class EDSApiClient:
         if filter is not None:
             params["filter"] = self._encode_filter(filter)
 
-        return requests.get(f"{self.base_url}/dataset/{dataset}", params=params)
+        return self.session.get(f"{self.base_url}/dataset/{dataset}", params=params)
 
     @staticmethod
     def _encode_filter(filter: dict) -> str:
