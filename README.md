@@ -34,6 +34,9 @@ The project also demonstrates practical QA engineering skills such as:
 ```text
 eds-api-automation/
 │
+├── client/
+│   └── eds_client.py
+│
 ├── tests/
 │   └── test_co2_api.py
 │
@@ -119,7 +122,7 @@ https://www.energidataservice.dk/guides/api-guides
 
 The framework will be gradually extended with:
 
-* [ ] API client abstraction
+* [x] API client abstraction
 * [ ] pytest fixtures
 * [ ] Parameterized tests
 * [ ] Additional EDS datasets
