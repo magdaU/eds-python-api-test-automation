@@ -1,5 +1,7 @@
 # EDS API Automation Framework
 
+![Tests](https://github.com/magdaU/eds-api-test-automation/actions/workflows/tests.yml/badge.svg)
+
 Python-based API test automation framework for testing the [Energi Data Service (EDS)](https://www.energidataservice.dk/) API.
 
 The project is created as a QA Automation portfolio project and focuses on automated REST API testing using Python and pytest.
@@ -25,7 +27,7 @@ The project also demonstrates practical QA engineering skills such as:
 * **pytest**
 * **Requests**
 * **Git**
-* **GitHub Actions** *(planned)*
+* **GitHub Actions**
 
 ## 📁 Project Structure
 
@@ -129,7 +131,7 @@ The framework will be gradually extended with:
 * [ ] Logging
 * [ ] Allure reporting
 * [ ] Docker support
-* [ ] GitHub Actions CI pipeline
+* [x] GitHub Actions CI pipeline
 
 ## 👩‍💻 About the Project
 
