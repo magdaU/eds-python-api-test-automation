@@ -1,3 +1,5 @@
+import pytest
+
 from client.eds_client import EDSApiClient
 
 DATASET = "CO2Emis"
@@ -25,8 +27,8 @@ def test_response_structure():
     assert isinstance(body["records"], list)
 
 
-def test_limit_parameter_returns_expected_number_of_records():
-    limit = 5
+@pytest.mark.parametrize("limit", [1, 3, 5, 10])
+def test_limit_parameter_returns_expected_number_of_records(limit):
     response = client.get_dataset(DATASET, limit=limit)
     body = response.json()
 
@@ -34,8 +36,8 @@ def test_limit_parameter_returns_expected_number_of_records():
     assert len(body["records"]) == limit
 
 
-def test_filter_parameter_returns_matching_records():
-    price_area = "DK1"
+@pytest.mark.parametrize("price_area", ["DK1", "DK2"])
+def test_filter_parameter_returns_matching_records(price_area):
     response = client.get_dataset(DATASET, limit=5, filter={"PriceArea": price_area})
     body = response.json()
 
