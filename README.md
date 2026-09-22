@@ -129,6 +129,7 @@ The framework will be gradually extended with:
 * [x] Parameterized tests
 * [x] Additional EDS datasets
 * [x] API client retry with exponential backoff
+* [x] GitHub Actions CI pipeline
 * [ ] Pagination testing
 * [ ] Sorting validation
 * [ ] Negative test scenarios
@@ -137,7 +138,6 @@ The framework will be gradually extended with:
 * [ ] Logging
 * [ ] Allure reporting
 * [ ] Docker support
-* [x] GitHub Actions CI pipeline
 * [ ] Configurable retry/backoff tuning (jitter, per-dataset limits)
 
 ## 👩‍💻 About the Project
