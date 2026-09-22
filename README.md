@@ -124,7 +124,7 @@ The framework will be gradually extended with:
 
 * [x] API client abstraction
 * [x] pytest fixtures
-* [ ] Parameterized tests
+* [x] Parameterized tests
 * [ ] Additional EDS datasets
 * [ ] Pagination testing
 * [ ] Sorting validation
