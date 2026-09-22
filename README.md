@@ -123,7 +123,7 @@ https://www.energidataservice.dk/guides/api-guides
 The framework will be gradually extended with:
 
 * [x] API client abstraction
-* [ ] pytest fixtures
+* [x] pytest fixtures
 * [x] Parameterized tests
 * [ ] Additional EDS datasets
 * [ ] Pagination testing
