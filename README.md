@@ -40,7 +40,8 @@ eds-api-automation/
 ├── tests/
 │   ├── conftest.py
 │   ├── test_co2_api.py
-│   └── test_elspotprices_api.py
+│   ├── test_elspotprices_api.py
+│   └── test_eds_client.py
 │
 ├── requirements.txt
 ├── README.md
