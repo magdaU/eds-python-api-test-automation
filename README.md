@@ -125,6 +125,7 @@ The framework will be gradually extended with:
 * [x] API client abstraction
 * [x] pytest fixtures
 * [x] Parameterized tests
+* [x] GitHub Actions CI pipeline
 * [ ] Additional EDS datasets
 * [ ] Pagination testing
 * [ ] Sorting validation
@@ -134,7 +135,6 @@ The framework will be gradually extended with:
 * [ ] Logging
 * [ ] Allure reporting
 * [ ] Docker support
-* [x] GitHub Actions CI pipeline
 
 ## 👩‍💻 About the Project
 
