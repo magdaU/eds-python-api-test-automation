@@ -57,7 +57,7 @@ pytest -v
 * [x] Sorting validation
 * [x] Negative test scenarios
 * [ ] Schema validation
-* [ ] Pydantic models
+* [x] Pydantic models
 * [ ] Logging
 * [ ] Allure reporting
 * [ ] Docker support
