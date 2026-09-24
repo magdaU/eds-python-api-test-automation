@@ -2,32 +2,11 @@
 
 ![Tests](https://github.com/magdaU/eds-api-test-automation/actions/workflows/tests.yml/badge.svg)
 
-Python-based API test automation framework for testing the [Energi Data Service (EDS)](https://www.energidataservice.dk/) API.
-
-The project is created as a QA Automation portfolio project and focuses on automated REST API testing using Python and pytest.
-
-## 🎯 Project Goal
-
-The goal of this project is to build a reusable and maintainable API test automation framework that can be used to validate different EDS API endpoints, parameters, response structures, and error scenarios.
-
-The project also demonstrates practical QA engineering skills such as:
-
-* API testing
-* Test automation
-* Positive and negative testing
-* Response validation
-* Parameterized testing
-* Test data management
-* Test reporting
-* CI/CD integration
+Python/pytest API test automation framework for the [Energi Data Service (EDS)](https://www.energidataservice.dk/) API. Built as a QA Automation portfolio project demonstrating REST API testing, parameterized/positive/negative testing, response validation, and CI/CD integration.
 
 ## 🛠️ Technologies
 
-* **Python**
-* **pytest**
-* **Requests**
-* **Git**
-* **GitHub Actions**
+Python · pytest · Requests · Git · GitHub Actions
 
 ## 📁 Project Structure
 
@@ -48,82 +27,25 @@ eds-api-automation/
 └── .gitignore
 ```
 
-The project structure will be extended as the framework grows.
-
 ## 🧪 Current Test Coverage
 
-The test suite covers the `CO2Emis` and `Elspotprices` datasets.
-
-Current tests include:
-
-* HTTP status code validation
-* JSON response validation
-* Response structure validation
-* `limit` parameter validation
-* `filter` parameter validation
+Covers the `CO2Emis` and `Elspotprices` datasets: HTTP status codes, JSON/response structure, `limit` param, `filter` param.
 
 ## 🚀 Getting Started
 
-### 1. Clone the repository
-
 ```bash
-git clone <repository-url>
-cd eds-api-automation
-```
-
-### 2. Create a virtual environment
-
-```bash
+git clone <repository-url> && cd eds-api-automation
 python -m venv .venv
-```
-
-Activate it:
-
-**Windows**
-
-```bash
-.venv\Scripts\activate
-```
-
-**macOS / Linux**
-
-```bash
-source .venv/bin/activate
-```
-
-### 3. Install dependencies
-
-```bash
+.venv\Scripts\activate      # Windows; use `source .venv/bin/activate` on macOS/Linux
 pip install -r requirements.txt
-```
-
-### 4. Run the tests
-
-```bash
-pytest
-```
-
-For more detailed output:
-
-```bash
 pytest -v
 ```
 
 ## 🔌 API Under Test
 
-The framework currently tests the public API provided by:
-
-**Energi Data Service**
-
-https://www.energidataservice.dk/
-
-API documentation:
-
-https://www.energidataservice.dk/guides/api-guides
+[Energi Data Service](https://www.energidataservice.dk/) — public API, see [API docs](https://www.energidataservice.dk/guides/api-guides).
 
 ## 📌 Planned Improvements
-
-The framework will be gradually extended with:
 
 * [x] API client abstraction
 * [x] pytest fixtures
@@ -141,10 +63,10 @@ The framework will be gradually extended with:
 * [ ] Docker support
 * [ ] Configurable retry/backoff tuning (jitter, per-dataset limits)
 
+See [ROADMAP.md](ROADMAP.md) for the step-by-step plan behind each unchecked item.
+
 ## 👩‍💻 About the Project
 
-This project is developed as a practical QA Automation project to improve and demonstrate skills in Python-based API testing, test automation, and software quality engineering.
-
-The framework is intentionally developed incrementally, with a focus on clean test design, maintainability, and realistic QA practices.
+A solo QA Automation portfolio project, built incrementally with a focus on clean test design and realistic QA practices.
 </content>
 </invoke>
