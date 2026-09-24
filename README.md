@@ -53,8 +53,8 @@ pytest -v
 * [x] Additional EDS datasets
 * [x] API client retry with exponential backoff
 * [x] GitHub Actions CI pipeline
-* [ ] Pagination testing
-* [ ] Sorting validation
+* [x] Pagination testing
+* [x] Sorting validation
 * [ ] Negative test scenarios
 * [ ] Schema validation
 * [ ] Pydantic models
