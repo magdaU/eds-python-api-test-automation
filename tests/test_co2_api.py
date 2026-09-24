@@ -49,3 +49,9 @@ def test_pagination_pages_do_not_overlap(eds_client):
     assert len(second_page["records"]) == 5
     # tolerancyjne na dryf pojedynczego rekordu w danych aktualizowanych na żywo
     assert first_timestamps != second_timestamps
+
+
+def test_invalid_dataset_returns_error_status(eds_client):
+    response = eds_client.get_dataset("NotARealDataset")
+
+    assert response.status_code != 200
