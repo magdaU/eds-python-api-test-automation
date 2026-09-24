@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "HourUTC": {"type": "string"},
+          "PriceArea": {"type": "string"},
+          "SpotPriceDKK": {"type": "number"}
+        },
+        "required": ["PriceArea", "SpotPriceDKK"]
+      }
+    },
+    "total": {"type": "integer"}
+  },
+  "required": ["records", "total"]
+}
