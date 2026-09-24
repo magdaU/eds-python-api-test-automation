@@ -1,0 +1,10 @@
+{
+    "records": [
+        {"HourUTC": "2024-01-01T00:00:00", "PriceArea": "DK1", "SpotPriceDKK": 100.0},
+        {"HourUTC": "2024-01-01T01:00:00", "PriceArea": "DK1", "SpotPriceDKK": 150.5},
+        {"HourUTC": "2024-01-01T02:00:00", "PriceArea": "DK1", "SpotPriceDKK": 200.25},
+        {"HourUTC": "2024-01-01T03:00:00", "PriceArea": "DK1", "SpotPriceDKK": 275.75},
+        {"HourUTC": "2024-01-01T04:00:00", "PriceArea": "DK1", "SpotPriceDKK": 300.0}
+    ],
+    "total": 5
+}

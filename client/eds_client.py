@@ -40,12 +40,14 @@ class EDSApiClient:
         pairs = ",".join(f'"{key}":"{value}"' for key, value in filter.items())
         return f"{{{pairs}}}"
 
-    def get_dataset(self, dataset: str, limit: int = None, filter: dict = None, offset: int = None) -> requests.Response:
+    def get_dataset(self, dataset: str, limit: int = None, filter: dict = None, offset: int = None, sort: str = None) -> requests.Response:
         params = {}
         if limit is not None:
             params["limit"] = limit
         if offset is not None:
             params["offset"] = offset
+        if sort is not None:
+            params["sort"] = sort
         if filter is not None:
             params["filter"] = self._encode_filter(filter)
 

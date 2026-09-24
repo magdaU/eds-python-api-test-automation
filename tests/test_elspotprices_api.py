@@ -36,3 +36,9 @@ def test_filter_parameter_returns_matching_records(eds_client, price_area):
 
     assert response.status_code == 200
     assert all(record["PriceArea"] == price_area for record in body["records"])
+
+def test_sort_descending_returns_ordered_records(eds_client):
+        response = eds_client.get_dataset(DATASET, limit=5, sort="SpotPriceDKK desc")
+        prices = [r["SpotPriceDKK"] for r in response.json()["records"]]
+
+        assert prices == sorted(prices, reverse=True)
