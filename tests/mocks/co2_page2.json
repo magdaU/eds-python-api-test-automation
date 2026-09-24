@@ -1,0 +1,10 @@
+{
+    "records": [
+        {"Minutes5UTC": "2024-01-01T00:25:00", "PriceArea": "DK1", "CO2Emission": 100.1},
+        {"Minutes5UTC": "2024-01-01T00:30:00", "PriceArea": "DK1", "CO2Emission": 101.2},
+        {"Minutes5UTC": "2024-01-01T00:35:00", "PriceArea": "DK1", "CO2Emission": 102.3},
+        {"Minutes5UTC": "2024-01-01T00:40:00", "PriceArea": "DK1", "CO2Emission": 103.4},
+        {"Minutes5UTC": "2024-01-01T00:45:00", "PriceArea": "DK1", "CO2Emission": 104.5}
+    ],
+    "total": 10
+}
