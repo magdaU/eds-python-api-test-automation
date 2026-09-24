@@ -55,7 +55,7 @@ pytest -v
 * [x] GitHub Actions CI pipeline
 * [x] Pagination testing
 * [x] Sorting validation
-* [ ] Negative test scenarios
+* [x] Negative test scenarios
 * [ ] Schema validation
 * [ ] Pydantic models
 * [ ] Logging
