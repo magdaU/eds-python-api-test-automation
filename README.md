@@ -56,7 +56,7 @@ pytest -v
 * [x] Pagination testing
 * [x] Sorting validation
 * [x] Negative test scenarios
-* [ ] Schema validation
+* [x] Schema validation
 * [x] Pydantic models
 * [ ] Logging
 * [ ] Allure reporting
