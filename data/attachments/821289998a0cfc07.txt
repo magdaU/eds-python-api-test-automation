@@ -1,0 +1,1 @@
+WARNING  client.eds_client:eds_client.py:87 Received retryable status 429 from https://api.energidataservice.dk/dataset/CO2Emis

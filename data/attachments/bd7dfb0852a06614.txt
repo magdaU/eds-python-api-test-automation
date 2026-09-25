@@ -1,0 +1,1 @@
+WARNING  client.eds_client:eds_client.py:51 max_retries=11 exceeds the recommended maximum of 10 -- this risks hammering the public EDS API during an outage or rate limit
