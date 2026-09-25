@@ -56,6 +56,24 @@ Categories populated across CI runs) is published on every push to `main`:
 An ad hoc local `allure serve` run only shows that single run — it won't have the
 trend/executor/categories data unless you copy it in yourself.
 
+<details>
+<summary>One-time GitHub Pages setup (only needed once, when forking/recreating this repo)</summary>
+
+The workflow publishes the generated report to the `gh-pages` branch via
+`peaceiris/actions-gh-pages`, but GitHub won't serve it until two manual,
+one-time steps are done — no workflow step can do these for you:
+
+1. The repository must be **public** (Pages hosting for a private repo needs a
+   paid GitHub plan, and would default to a private site anyway).
+2. Push to `main` at least once so the workflow creates the `gh-pages` branch,
+   **then** go to `Settings → Pages → Build and deployment → Source` and switch
+   it to **"Deploy from a branch"**, branch `gh-pages`, folder `/ (root)`. It
+   can't be set before the branch exists — the dropdown has nothing to point at.
+
+After that one-time setup, every push to `main` updates the live report
+automatically.
+</details>
+
 ## 🔌 API Under Test
 
 [Energi Data Service](https://www.energidataservice.dk/) — public API, see [API docs](https://www.energidataservice.dk/guides/api-guides).
