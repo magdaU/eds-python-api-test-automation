@@ -7,9 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 jobs:
   test:
@@ -18,6 +16,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Checkout previous report (for Trend history)
+        if: always() && github.ref == 'refs/heads/main'
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages-previous
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -48,14 +54,13 @@ jobs:
         if: always()
         run: cp allure/categories.json allure-results/categories.json
 
-      - name: Fetch previous report history (for Trend/Duration/Retries/Categories trend)
+      - name: Restore previous report history (for Trend/Duration/Retries/Categories trend)
         if: always()
         run: |
           mkdir -p allure-results/history
-          base_url="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/history"
-          for f in history.json history-trend.json duration-trend.json retry-trend.json categories-trend.json; do
-            curl -sf -o "allure-results/history/$f" "$base_url/$f" || echo "No $f yet -- skipping"
-          done
+          if [ -d gh-pages-previous/history ]; then
+            cp -r gh-pages-previous/history/. allure-results/history/
+          fi
 
       - name: Upload Allure results
         if: always()
@@ -70,24 +75,14 @@ jobs:
           npm install -g allure-commandline
           allure generate allure-results --clean -o allure-report
 
-      - name: Configure Pages
+      # Requires a one-time manual repo setting that no workflow step can set:
+      # Settings -> Pages -> Build and deployment -> Source -> "Deploy from a branch",
+      # branch "gh-pages" / (root) -- created automatically by this step on first run,
+      # so set it after the first successful push to main.
+      - name: Publish Allure report to GitHub Pages
         if: always() && github.ref == 'refs/heads/main'
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        if: always() && github.ref == 'refs/heads/main'
-        uses: actions/upload-pages-artifact@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: allure-report
-
-  deploy-report:
-    if: always() && github.ref == 'refs/heads/main'
-    needs: test
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-report
