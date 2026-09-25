@@ -1,7 +1,6 @@
 # EDS API Automation Framework
 
-![Tests](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/tests.yml/badge.svg)
-[![Allure Report](https://img.shields.io/badge/allure-report-orange)](https://magdau.github.io/eds-python-api-test-automation/)
+[![Allure Report](https://img.shields.io/badge/allure-report-brightgreen)](https://magdau.github.io/eds-python-api-test-automation/)
 
 Python/pytest API test automation framework for the [Energi Data Service (EDS)](https://www.energidataservice.dk/) API. Built as a QA Automation portfolio project demonstrating REST API testing, parameterized/positive/negative testing, response validation, and CI/CD integration.
 
