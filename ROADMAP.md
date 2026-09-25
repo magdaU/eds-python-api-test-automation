@@ -160,6 +160,23 @@ All plans favor mocked tests (`requests-mock`) for bulk/edge-case coverage, with
 
 **API-load note:** Retry/backoff/jitter behavior tested entirely via mocked repeated-failure sequences — real 429s are never deliberately triggered against the live API.
 
+## 10. Allure trend, executors and categories widgets
+
+**Goal:** Make the Allure report's Trend/Duration trend/Retries trend, Executors, and Categories widgets populated instead of empty, so the report shows history and CI context, not just a single run's pass/fail list.
+
+**Acceptance criteria:**
+- Trend graphs (history-based) show data from the 2nd CI run onward, without requiring any local-only steps.
+- The Executors widget shows GitHub Actions as the executor (build/run link) on CI-generated reports.
+- Categories widget has an explicit `categories.json` so any future failures get grouped meaningfully instead of falling into Allure's defaults.
+
+**Steps:**
+1. Add a step in `.github/workflows/tests.yml` (before running pytest) that writes `allure-results/executor.json` with `name`, `type: "github"`, `buildName`, `buildUrl` (from `github.run_id`/`github.repository` env vars) so the Executors widget populates on CI-generated reports.
+2. Add `categories.json` in the repo (e.g. `allure/categories.json`) defining at least "Product defects" vs "Test defects" matched on failure message patterns, and copy it into `allure-results` before generating the report (CI step + local doc note).
+3. For trend history: since CI currently only uploads `allure-results` as a per-run artifact (no persistent hosting, per the earlier decision against GitHub Pages), trend needs history carried between runs. Add a step that downloads the previous run's `allure-results` artifact (via `actions/download-artifact` from the last successful workflow run) and copies its `history/` folder into the new `allure-results/history/` before generating, so trend accumulates run over run without standing up external hosting.
+4. Document in the README that trend/executors/categories only populate on CI-generated reports (an ad hoc local `allure serve` run won't have executor/history data unless manually copied).
+
+**API-load note:** N/A — purely CI/reporting configuration, no HTTP calls involved.
+
 ---
 
 ## Open questions
