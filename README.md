@@ -1,6 +1,7 @@
 # EDS API Automation Framework
 
-![Tests](https://github.com/magdaU/eds-api-test-automation/actions/workflows/tests.yml/badge.svg)
+![Tests](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/tests.yml/badge.svg)
+[![Allure Report](https://img.shields.io/badge/allure-report-orange)](https://magdau.github.io/eds-python-api-test-automation/)
 
 Python/pytest API test automation framework for the [Energi Data Service (EDS)](https://www.energidataservice.dk/) API. Built as a QA Automation portfolio project demonstrating REST API testing, parameterized/positive/negative testing, response validation, and CI/CD integration.
 
@@ -48,10 +49,12 @@ pytest --alluredir=allure-results
 allure serve allure-results
 ```
 
-The Trend, Duration/Retries trend, Executors and Categories widgets only populate on
-CI-generated reports (they need run history, `executor.json` and `categories.json`,
-which the GitHub Actions workflow produces) — an ad hoc local `allure serve` run
-won't have that data unless you copy it in yourself.
+The live, always-up-to-date report (with Trend, Duration/Retries trend, Executors and
+Categories populated across CI runs) is published on every push to `main`:
+**https://magdau.github.io/eds-python-api-test-automation/**
+
+An ad hoc local `allure serve` run only shows that single run — it won't have the
+trend/executor/categories data unless you copy it in yourself.
 
 ## 🔌 API Under Test
 
