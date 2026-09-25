@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "properties": {
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Minutes5UTC": {"type": "string"},
+          "Minutes5DK": {"type": "string"},
+          "PriceArea": {"type": "string"},
+          "CO2Emission": {"type": "number"}
+        },
+        "required": ["Minutes5UTC", "PriceArea", "CO2Emission"]
+      }
+    },
+    "total": {"type": "integer"}
+  },
+  "required": ["records", "total"]
+}
