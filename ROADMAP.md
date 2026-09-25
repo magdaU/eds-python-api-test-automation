@@ -177,6 +177,22 @@ All plans favor mocked tests (`requests-mock`) for bulk/edge-case coverage, with
 
 **API-load note:** N/A — purely CI/reporting configuration, no HTTP calls involved.
 
+## 11. Allure Retries trend
+
+**Goal:** Populate the Retries trend widget, which is currently empty even with history data flowing correctly, because it tracks pytest-level test reruns (a test failed, got automatically retried, then passed) — a different mechanism from `EDSApiClient`'s own HTTP-level retry/backoff (already covered by items 6 and 9).
+
+**Acceptance criteria:**
+- At least one test can be automatically rerun by pytest on failure and have that rerun show up in Allure's Retries trend.
+- The chosen test is a real candidate for transient failure (not an artificially-flaky test added just to populate a graph).
+
+**Steps:**
+1. Add `pytest-rerunfailures` to `requirements.txt`.
+2. Mark one of the existing live-API smoke tests (a good candidate: a `test_co2_api.py`/`test_elspotprices_api.py` smoke test that already hits the real, occasionally-rate-limited EDS API) with `@pytest.mark.flaky(reruns=2, reruns_delay=5)`.
+3. Confirm locally that a forced failure gets rerun (e.g. temporarily point the client at a bad URL) and that Allure's results show the retry.
+4. No CI workflow changes needed — `pytest-rerunfailures` hooks into the existing `pytest -v --alluredir=allure-results` run.
+
+**API-load note:** Reruns only happen on an actual failure, and only for the one marked test with a small, bounded `reruns` cap (2) — no risk of runaway retries against the live API.
+
 ---
 
 ## Open questions

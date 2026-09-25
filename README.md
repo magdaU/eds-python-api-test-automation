@@ -6,35 +6,62 @@ Python/pytest API test automation framework for the [Energi Data Service (EDS)](
 
 ## 🛠️ Technologies
 
-Python · pytest · Requests · Git · GitHub Actions
+Python · pytest · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · Git · GitHub Actions · GitHub Pages
 
 ## 📁 Project Structure
 
 ```text
-eds-api-automation/
+eds-python-api-test-automation/
 │
 ├── client/
-│   └── eds_client.py
+│   ├── eds_client.py    # EDSApiClient: retry/backoff, per-dataset overrides, logging
+│   └── parsers.py       # raw JSON -> typed Pydantic models
+│
+├── models/               # Pydantic models (CO2EmisRecord, ElspotpricesRecord)
+├── schemas/               # JSON Schema per dataset, for response validation
+├── allure/
+│   └── categories.json   # Allure report failure categories
 │
 ├── tests/
 │   ├── conftest.py
-│   ├── test_co2_api.py
-│   ├── test_elspotprices_api.py
-│   └── test_eds_client.py
+│   ├── mocks/                        # requests-mock fixture data
+│   ├── test_co2_api.py               # CO2Emis: status/JSON/structure/limit/filter (mocked) + live smoke tests
+│   ├── test_elspotprices_api.py      # Elspotprices: same, + sorting smoke test
+│   ├── test_eds_client.py            # default/custom retry configuration
+│   ├── test_pagination.py            # limit/offset paging
+│   ├── test_sorting.py               # sort parameter
+│   ├── test_negative_scenarios.py    # invalid dataset, 404, connection timeout
+│   ├── test_schema_validation.py     # JSON Schema validation
+│   ├── test_models.py                # Pydantic parsing
+│   ├── test_logging.py               # retryable-status logging
+│   └── test_retry_config.py          # per-dataset retry/backoff/jitter tuning
 │
+├── .github/workflows/tests.yml   # CI: tests, Allure report, GitHub Pages publish
+├── Dockerfile
 ├── requirements.txt
+├── pytest.ini
 ├── README.md
+├── ROADMAP.md
 └── .gitignore
 ```
 
 ## 🧪 Current Test Coverage
 
-Covers the `CO2Emis` and `Elspotprices` datasets: HTTP status codes, JSON/response structure, `limit` param, `filter` param.
+48 tests across the `CO2Emis` and `Elspotprices` datasets, mostly mocked (`requests-mock`)
+with a handful of bounded live smoke tests against the real API:
+
+* HTTP status code, JSON content-type, response structure
+* `limit`, `filter`, `offset` (pagination), `sort` parameters
+* Negative scenarios: invalid dataset, unknown path, connection timeout
+* JSON Schema validation of API responses
+* Pydantic model parsing (valid + invalid data)
+* Client logging on retryable status codes
+* Retry/backoff configuration, including per-dataset overrides and jitter
 
 ## 🚀 Getting Started
 
 ```bash
-git clone <repository-url> && cd eds-api-automation
+git clone <repository-url> && cd eds-python-api-test-automation
 python -m venv .venv
 .venv\Scripts\activate      # Windows; use `source .venv/bin/activate` on macOS/Linux
 pip install -r requirements.txt
@@ -54,6 +81,13 @@ Categories populated across CI runs) is published on every push to `main`:
 
 An ad hoc local `allure serve` run only shows that single run — it won't have the
 trend/executor/categories data unless you copy it in yourself.
+
+### Run in Docker
+
+```bash
+docker build -t eds-api-tests .
+docker run --rm eds-api-tests
+```
 
 <details>
 <summary>One-time GitHub Pages setup (only needed once, when forking/recreating this repo)</summary>
@@ -95,6 +129,7 @@ automatically.
 * [x] Docker support
 * [x] Configurable retry/backoff tuning (jitter, per-dataset limits)
 * [x] Allure trend, executors and categories widgets
+* [ ] Allure Retries trend
 
 See [ROADMAP.md](ROADMAP.md) for the step-by-step plan behind each unchecked item.
 
