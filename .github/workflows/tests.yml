@@ -70,6 +70,10 @@ jobs:
           npm install -g allure-commandline
           allure generate allure-results --clean -o allure-report
 
+      - name: Configure Pages
+        if: always() && github.ref == 'refs/heads/main'
+        uses: actions/configure-pages@v5
+
       - name: Upload Pages artifact
         if: always() && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v3
