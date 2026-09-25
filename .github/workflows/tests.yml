@@ -80,6 +80,9 @@ jobs:
         with:
           path: allure-report
 
+  # Requires a one-time manual repo setting that no workflow step can set:
+  # Settings -> Pages -> Build and deployment -> Source -> "GitHub Actions"
+  # (also requires the repo to be public, or a paid plan for a private one).
   deploy-report:
     if: always() && github.ref == 'refs/heads/main'
     needs: test
