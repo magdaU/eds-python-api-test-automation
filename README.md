@@ -48,6 +48,11 @@ pytest --alluredir=allure-results
 allure serve allure-results
 ```
 
+The Trend, Duration/Retries trend, Executors and Categories widgets only populate on
+CI-generated reports (they need run history, `executor.json` and `categories.json`,
+which the GitHub Actions workflow produces) — an ad hoc local `allure serve` run
+won't have that data unless you copy it in yourself.
+
 ## 🔌 API Under Test
 
 [Energi Data Service](https://www.energidataservice.dk/) — public API, see [API docs](https://www.energidataservice.dk/guides/api-guides).
@@ -69,7 +74,7 @@ allure serve allure-results
 * [x] Allure reporting
 * [x] Docker support
 * [x] Configurable retry/backoff tuning (jitter, per-dataset limits)
-* [ ] Allure trend, executors and categories widgets
+* [x] Allure trend, executors and categories widgets
 
 See [ROADMAP.md](ROADMAP.md) for the step-by-step plan behind each unchecked item.
 
