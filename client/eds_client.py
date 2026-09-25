@@ -1,4 +1,6 @@
+import logging
 import requests
+
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -6,6 +8,7 @@ BASE_URL = "https://api.energidataservice.dk"
 DEFAULT_MAX_RETRIES = 3
 DEFAULT_BACKOFF_FACTOR = 1.0
 RETRYABLE_STATUS_CODES = [429, 500, 502, 503, 504]
+logger = logging.getLogger(__name__)
 
 
 class EDSApiClient:
@@ -50,5 +53,12 @@ class EDSApiClient:
             params["sort"] = sort
         if filter is not None:
             params["filter"] = self._encode_filter(filter)
+        url = f"{self.base_url}/dataset/{dataset}"
+        logger.debug("GET %s params=%s", url, params)
 
-        return self.session.get(f"{self.base_url}/dataset/{dataset}", params=params)
+        response = self.session.get(url, params=params)
+
+        if response.status_code in RETRYABLE_STATUS_CODES:
+            logger.warning("Received retryable status %s from %s", response.status_code, url)
+
+        return response
