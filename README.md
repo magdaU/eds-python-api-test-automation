@@ -57,6 +57,8 @@ with a handful of bounded live smoke tests against the real API:
 * Pydantic model parsing (valid + invalid data)
 * Client logging on retryable status codes
 * Retry/backoff configuration, including per-dataset overrides and jitter
+* Automatic pytest-level rerun (`pytest-rerunfailures`) on the live sort smoke
+  test, feeding Allure's Retries trend
 
 ## 🚀 Getting Started
 
@@ -129,7 +131,7 @@ automatically.
 * [x] Docker support
 * [x] Configurable retry/backoff tuning (jitter, per-dataset limits)
 * [x] Allure trend, executors and categories widgets
-* [ ] Allure Retries trend
+* [x] Allure Retries trend
 
 See [ROADMAP.md](ROADMAP.md) for the step-by-step plan behind each unchecked item.
 
