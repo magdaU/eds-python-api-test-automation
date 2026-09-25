@@ -41,6 +41,13 @@ pip install -r requirements.txt
 pytest -v
 ```
 
+For an Allure HTML report:
+
+```bash
+pytest --alluredir=allure-results
+allure serve allure-results
+```
+
 ## 🔌 API Under Test
 
 [Energi Data Service](https://www.energidataservice.dk/) — public API, see [API docs](https://www.energidataservice.dk/guides/api-guides).
@@ -59,7 +66,7 @@ pytest -v
 * [x] Schema validation
 * [x] Pydantic models
 * [x] Logging
-* [ ] Allure reporting
+* [x] Allure reporting
 * [ ] Docker support
 * [ ] Configurable retry/backoff tuning (jitter, per-dataset limits)
 

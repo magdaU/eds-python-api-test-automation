@@ -1,0 +1,15 @@
+{
+  "records": [
+    {"Minutes5UTC": "2024-01-01T00:00:00", "Minutes5DK": "2024-01-01T01:00:00", "PriceArea": "DK1", "CO2Emission": 100.1},
+    {"Minutes5UTC": "2024-01-01T00:05:00", "Minutes5DK": "2024-01-01T01:05:00", "PriceArea": "DK1", "CO2Emission": 101.2},
+    {"Minutes5UTC": "2024-01-01T00:10:00", "Minutes5DK": "2024-01-01T01:10:00", "PriceArea": "DK1", "CO2Emission": 102.3},
+    {"Minutes5UTC": "2024-01-01T00:15:00", "Minutes5DK": "2024-01-01T01:15:00", "PriceArea": "DK1", "CO2Emission": 103.4},
+    {"Minutes5UTC": "2024-01-01T00:20:00", "Minutes5DK": "2024-01-01T01:20:00", "PriceArea": "DK1", "CO2Emission": 104.5},
+    {"Minutes5UTC": "2024-01-01T00:25:00", "Minutes5DK": "2024-01-01T01:25:00", "PriceArea": "DK1", "CO2Emission": 105.6},
+    {"Minutes5UTC": "2024-01-01T00:00:00", "Minutes5DK": "2024-01-01T01:00:00", "PriceArea": "DK2", "CO2Emission": 200.1},
+    {"Minutes5UTC": "2024-01-01T00:05:00", "Minutes5DK": "2024-01-01T01:05:00", "PriceArea": "DK2", "CO2Emission": 201.2},
+    {"Minutes5UTC": "2024-01-01T00:10:00", "Minutes5DK": "2024-01-01T01:10:00", "PriceArea": "DK2", "CO2Emission": 202.3},
+    {"Minutes5UTC": "2024-01-01T00:15:00", "Minutes5DK": "2024-01-01T01:15:00", "PriceArea": "DK2", "CO2Emission": 203.4}
+  ],
+  "total": 10
+}
