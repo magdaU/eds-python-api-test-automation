@@ -41,6 +41,13 @@ pip install -r requirements.txt
 pytest -v
 ```
 
+### Run in Docker
+
+```bash
+docker build -t eds-api-tests .
+docker run --rm eds-api-tests
+```
+
 ## 🔌 API Under Test
 
 [Energi Data Service](https://www.energidataservice.dk/) — public API, see [API docs](https://www.energidataservice.dk/guides/api-guides).
@@ -60,7 +67,7 @@ pytest -v
 * [x] Pydantic models
 * [x] Logging
 * [ ] Allure reporting
-* [ ] Docker support
+* [x] Docker support
 * [ ] Configurable retry/backoff tuning (jitter, per-dataset limits)
 
 See [ROADMAP.md](ROADMAP.md) for the step-by-step plan behind each unchecked item.
