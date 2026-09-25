@@ -68,7 +68,7 @@ allure serve allure-results
 * [x] Logging
 * [x] Allure reporting
 * [x] Docker support
-* [ ] Configurable retry/backoff tuning (jitter, per-dataset limits)
+* [x] Configurable retry/backoff tuning (jitter, per-dataset limits)
 * [ ] Allure trend, executors and categories widgets
 
 See [ROADMAP.md](ROADMAP.md) for the step-by-step plan behind each unchecked item.
