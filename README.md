@@ -67,7 +67,7 @@ allure serve allure-results
 * [x] Pydantic models
 * [x] Logging
 * [x] Allure reporting
-* [ ] Docker support
+* [x] Docker support
 * [ ] Configurable retry/backoff tuning (jitter, per-dataset limits)
 
 See [ROADMAP.md](ROADMAP.md) for the step-by-step plan behind each unchecked item.
