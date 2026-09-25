@@ -7,8 +7,9 @@ on:
     branches: [main]
 
 permissions:
-  actions: read
   contents: read
+  pages: write
+  id-token: write
 
 jobs:
   test:
@@ -26,45 +27,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Find last successful run
-        id: last_run
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const runs = await github.rest.actions.listWorkflowRuns({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: "tests.yml",
-              branch: "main",
-              status: "success",
-              per_page: 1,
-            });
-            core.setOutput("run_id", runs.data.workflow_runs[0]?.id ?? "");
-
-      - name: Download previous Allure results
-        if: steps.last_run.outputs.run_id != ''
-        continue-on-error: true
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-results
-          path: previous-allure-results
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: ${{ steps.last_run.outputs.run_id }}
-
-      - name: Prepare Allure history and categories
-        run: |
-          mkdir -p allure-results/history
-          if [ -d previous-allure-results/history ]; then
-            cp -r previous-allure-results/history/. allure-results/history/
-          fi
-          cp allure/categories.json allure-results/categories.json
-
       - name: Run tests
         run: pytest -v --alluredir=allure-results
 
       - name: Write Allure executor info
         if: always()
         run: |
+          mkdir -p allure-results
           cat > allure-results/executor.json <<EOF
           {
             "name": "GitHub Actions",
@@ -75,9 +44,46 @@ jobs:
           }
           EOF
 
+      - name: Add Allure categories
+        if: always()
+        run: cp allure/categories.json allure-results/categories.json
+
+      - name: Fetch previous report history (for Trend/Duration/Retries/Categories trend)
+        if: always()
+        run: |
+          mkdir -p allure-results/history
+          base_url="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/history"
+          for f in history.json history-trend.json duration-trend.json retry-trend.json categories-trend.json; do
+            curl -sf -o "allure-results/history/$f" "$base_url/$f" || echo "No $f yet -- skipping"
+          done
+
       - name: Upload Allure results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-results
           path: allure-results
+
+      - name: Generate Allure report
+        if: always()
+        run: |
+          npm install -g allure-commandline
+          allure generate allure-results --clean -o allure-report
+
+      - name: Upload Pages artifact
+        if: always() && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: allure-report
+
+  deploy-report:
+    if: always() && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
