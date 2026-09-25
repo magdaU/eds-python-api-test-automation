@@ -58,7 +58,7 @@ pytest -v
 * [x] Negative test scenarios
 * [x] Schema validation
 * [x] Pydantic models
-* [ ] Logging
+* [x] Logging
 * [ ] Allure reporting
 * [ ] Docker support
 * [ ] Configurable retry/backoff tuning (jitter, per-dataset limits)
