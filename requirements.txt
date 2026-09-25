@@ -5,3 +5,4 @@ requests-mock==1.12.1
 jsonschema==4.23.0
 pydantic==2.12.5
 allure-pytest==2.16.0
+pytest-rerunfailures==16.7

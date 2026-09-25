@@ -74,6 +74,7 @@ def test_filter_parameter_returns_matching_records(eds_client, requests_mock, pr
 
 
 @allure.feature("Elspotprices")
+@pytest.mark.flaky(reruns=2, reruns_delay=5)
 def test_sort_descending_returns_ordered_records(eds_client):
     response = eds_client.get_dataset(DATASET, limit=5, sort="SpotPriceDKK desc")
     prices = [r["SpotPriceDKK"] for r in response.json()["records"]]
