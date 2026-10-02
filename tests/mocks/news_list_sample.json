@@ -1,0 +1,5 @@
+[
+  {"newsId": 201, "category": "HIGH", "header": "Planned maintenance of the data platform", "story": "The platform will be unavailable on Saturday night during planned maintenance.", "validFrom": "2026-03-30T00:00:00", "lastUpdated": "2026-03-31T08:15:00"},
+  {"newsId": 202, "category": "INFO", "header": "New dataset published", "story": "A new dataset with hourly values is now available in the catalogue.", "validFrom": "2026-02-11T00:00:00", "lastUpdated": "2026-02-12T10:30:45"},
+  {"newsId": 203, "category": "INFO", "header": "Documentation updated", "story": "The API documentation now describes the pagination parameters in more detail.", "validFrom": "2026-01-15T00:00:00", "lastUpdated": "2026-01-16T14:05:20"}
+]

@@ -18,7 +18,7 @@ eds-python-api-test-automation/
 │   └── parsers.py       # raw JSON -> typed Pydantic models
 │
 ├── models/               # Pydantic models (CO2EmisRecord, ElspotpricesRecord)
-├── schemas/               # JSON Schema per dataset, for response validation
+├── schemas/               # JSON Schema per dataset / News item, for response validation
 ├── allure/
 │   └── categories.json   # Allure report failure categories
 │
@@ -27,6 +27,7 @@ eds-python-api-test-automation/
 │   ├── mocks/                        # requests-mock fixture data
 │   ├── test_co2_api.py               # CO2Emis: status/JSON/structure/limit/filter (mocked) + live smoke tests
 │   ├── test_elspotprices_api.py      # Elspotprices: same, + sorting smoke test
+│   ├── test_news_api.py              # News API: /News, /actual, /calendar, /archived (mocked) + live smoke tests
 │   ├── test_eds_client.py            # default/custom retry configuration
 │   ├── test_pagination.py            # limit/offset paging
 │   ├── test_sorting.py               # sort parameter
@@ -47,12 +48,15 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-48 tests across the `CO2Emis` and `Elspotprices` datasets, mostly mocked (`requests-mock`)
+69 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
 * `limit`, `filter`, `offset` (pagination), `sort` parameters
 * Negative scenarios: invalid dataset, unknown path, connection timeout
+* News API (`/News`, `/News/actual`, `/News/calendar`, `/News/archived`): status/JSON/structure,
+  field mapping, required/invalid parameters (400), empty results (204, empty archive), and
+  calendar vs. archive consistency against the live API
 * JSON Schema validation of API responses
 * Pydantic model parsing (valid + invalid data)
 * Client logging on retryable status codes
