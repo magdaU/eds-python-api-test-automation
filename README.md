@@ -136,6 +136,7 @@ automatically.
 * [x] Configurable retry/backoff tuning (jitter, per-dataset limits)
 * [x] Allure trend, executors and categories widgets
 * [x] Allure Retries trend
+* [x] News API endpoint tests (`/News`, `/actual`, `/calendar`, `/archived`)
 
 See [ROADMAP.md](ROADMAP.md) for the step-by-step plan behind each unchecked item.
 
