@@ -1,71 +1,93 @@
 import logging
 
-from client.eds_client import EDSApiClient, BASE_URL, SANE_MAX_RETRIES
+from client.eds_client import EDSApiClient, SANE_MAX_RETRIES
 
 
-def test_default_retry_applies_to_any_dataset():
+def _retry_of(client, dataset):
+    return client.session.get_adapter(client.dataset_url(dataset)).max_retries
+
+
+def test_givenDefaultRetrySettings_whenResolvingAnyDataset_thenDefaultsApply():
+    # arrange
     client = EDSApiClient(max_retries=3, backoff_factor=1.0, backoff_jitter=0.0)
 
-    adapter = client.session.get_adapter(f"{BASE_URL}/dataset/CO2Emis")
+    # act
+    retry = _retry_of(client, "CO2Emis")
 
-    assert adapter.max_retries.total == 3
-    assert adapter.max_retries.backoff_factor == 1.0
-    assert adapter.max_retries.backoff_jitter == 0.0
+    # assert
+    assert retry.total == 3
+    assert retry.backoff_factor == 1.0
+    assert retry.backoff_jitter == 0.0
 
 
-def test_dataset_override_applies_only_to_that_dataset():
+def test_givenDatasetOverride_whenResolvingDatasets_thenOverrideAppliesOnlyToThatDataset():
+    # arrange
     client = EDSApiClient(
         max_retries=3,
         backoff_factor=1.0,
         dataset_overrides={"Elspotprices": {"max_retries": 5, "backoff_factor": 2.0}},
     )
 
-    overridden_adapter = client.session.get_adapter(f"{BASE_URL}/dataset/Elspotprices")
-    default_adapter = client.session.get_adapter(f"{BASE_URL}/dataset/CO2Emis")
+    # act
+    overridden = _retry_of(client, "Elspotprices")
+    default = _retry_of(client, "CO2Emis")
 
-    assert overridden_adapter.max_retries.total == 5
-    assert overridden_adapter.max_retries.backoff_factor == 2.0
-    assert default_adapter.max_retries.total == 3
-    assert default_adapter.max_retries.backoff_factor == 1.0
+    # assert
+    assert overridden.total == 5
+    assert overridden.backoff_factor == 2.0
+    assert default.total == 3
+    assert default.backoff_factor == 1.0
 
 
-def test_backoff_jitter_is_configured_on_the_retry_object():
+def test_givenBackoffJitter_whenCreatingClient_thenItIsConfiguredOnTheRetryObject():
+    # arrange
     client = EDSApiClient(backoff_jitter=0.5)
 
-    adapter = client.session.get_adapter(f"{BASE_URL}/dataset/CO2Emis")
+    # act
+    retry = _retry_of(client, "CO2Emis")
 
-    assert adapter.max_retries.backoff_jitter == 0.5
+    # assert
+    assert retry.backoff_jitter == 0.5
 
 
-def test_dataset_override_can_set_its_own_jitter():
+def test_givenDatasetOverrideWithJitter_whenResolvingDatasets_thenOnlyThatDatasetHasJitter():
+    # arrange
     client = EDSApiClient(
         backoff_jitter=0.0,
         dataset_overrides={"Elspotprices": {"backoff_jitter": 0.5}},
     )
 
-    overridden_adapter = client.session.get_adapter(f"{BASE_URL}/dataset/Elspotprices")
-    default_adapter = client.session.get_adapter(f"{BASE_URL}/dataset/CO2Emis")
+    # act
+    overridden = _retry_of(client, "Elspotprices")
+    default = _retry_of(client, "CO2Emis")
 
-    assert overridden_adapter.max_retries.backoff_jitter == 0.5
-    assert default_adapter.max_retries.backoff_jitter == 0.0
+    # assert
+    assert overridden.backoff_jitter == 0.5
+    assert default.backoff_jitter == 0.0
 
 
-def test_excessive_max_retries_logs_warning(caplog):
+def test_givenExcessiveMaxRetries_whenCreatingClient_thenWarningIsLogged(caplog):
+    # act
     with caplog.at_level(logging.WARNING):
         EDSApiClient(max_retries=SANE_MAX_RETRIES + 1)
 
+    # assert
     assert any(record.levelname == "WARNING" for record in caplog.records)
 
 
-def test_dataset_override_with_excessive_max_retries_logs_warning(caplog):
+def test_givenDatasetOverrideWithExcessiveMaxRetries_whenCreatingClient_thenWarningIsLogged(caplog):
+    # act
     with caplog.at_level(logging.WARNING):
         EDSApiClient(dataset_overrides={"Elspotprices": {"max_retries": SANE_MAX_RETRIES + 1}})
 
+    # assert
     assert any(record.levelname == "WARNING" for record in caplog.records)
 
 
-def test_sane_max_retries_does_not_log_warning(caplog):
+def test_givenSaneMaxRetries_whenCreatingClient_thenNoWarningIsLogged(caplog):
+    # act
     with caplog.at_level(logging.WARNING):
         EDSApiClient(max_retries=SANE_MAX_RETRIES)
 
+    # assert
     assert caplog.records == []

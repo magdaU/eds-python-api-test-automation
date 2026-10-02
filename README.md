@@ -20,7 +20,9 @@ Python · pytest · Requests · Pydantic · jsonschema · requests-mock · Docke
 eds-python-api-test-automation/
 │
 ├── client/
-│   ├── eds_client.py    # EDSApiClient: retry/backoff, per-dataset overrides, logging
+│   ├── eds_client.py    # EDSApiClient: transport, retry/backoff, per-dataset overrides, logging
+│   ├── dataset_api.py   # DatasetApi: API object for one dataset (URL + get)
+│   ├── news_api.py      # NewsApi: API object for /News endpoints
 │   └── parsers.py       # raw JSON -> typed Pydantic models
 │
 ├── models/               # Pydantic models (CO2EmisRecord, ElspotpricesRecord)
@@ -29,11 +31,12 @@ eds-python-api-test-automation/
 │   └── categories.json   # Allure report failure categories
 │
 ├── tests/
-│   ├── conftest.py
+│   ├── conftest.py                   # fixtures: client, API objects, parametrized dataset
+│   ├── support/                      # shared test helpers: mock loading, schema asserts, dataset configs
 │   ├── mocks/                        # requests-mock fixture data
-│   ├── test_co2_api.py               # CO2Emis: status/JSON/structure/limit/filter (mocked) + live smoke tests
-│   ├── test_elspotprices_api.py      # Elspotprices: same, + sorting smoke test
-│   ├── test_news_api.py              # News API: /News, /actual, /calendar, /archived (mocked) + live smoke tests
+│   ├── test_dataset_contract.py      # CO2Emis + Elspotprices: status/JSON/structure/limit/filter (one parametrized suite)
+│   ├── test_news_api.py              # News API: /News, /actual, /calendar, /archived (mocked)
+│   ├── test_live_smoke.py            # bounded live smoke tests against the real API
 │   ├── test_eds_client.py            # default/custom retry configuration
 │   ├── test_pagination.py            # limit/offset paging
 │   ├── test_sorting.py               # sort parameter

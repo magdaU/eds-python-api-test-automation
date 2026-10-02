@@ -1,44 +1,52 @@
-import json
-
 import jsonschema
 import pytest
 
-
-def _assert_matches_schema(json_body, schema_filename):
-    with open(f"schemas/{schema_filename}") as f:
-        schema = json.load(f)
-
-    jsonschema.validate(instance=json_body, schema=schema)
+from tests.support.datasets import CO2EMIS_DATASET, ELSPOTPRICES_DATASET
+from tests.support.schema import assert_matches_schema
 
 
-def test_co2_response_matches_schema(co2_response):
-    _assert_matches_schema(co2_response.json(), "co2emis_schema.json")
+def test_whenGettingCo2Emis_thenResponseMatchesSchema(co2_response):
+    # act
+    body = co2_response.json()
+
+    # assert
+    assert_matches_schema(body, CO2EMIS_DATASET.schema_file)
 
 
-def test_elspotprices_response_matches_schema(elspotprices_response):
-    _assert_matches_schema(elspotprices_response.json(), "elspotprices_schema.json")
+def test_whenGettingElspotprices_thenResponseMatchesSchema(elspotprices_response):
+    # act
+    body = elspotprices_response.json()
+
+    # assert
+    assert_matches_schema(body, ELSPOTPRICES_DATASET.schema_file)
 
 
-def test_empty_records_list_is_valid():
+def test_givenEmptyRecordsList_whenValidating_thenSchemaIsSatisfied():
+    # arrange
     body = {"records": [], "total": 0}
 
-    _assert_matches_schema(body, "co2emis_schema.json")
+    # act / assert
+    assert_matches_schema(body, CO2EMIS_DATASET.schema_file)
 
 
-def test_record_missing_optional_field_is_valid():
+def test_givenRecordWithoutOptionalField_whenValidating_thenSchemaIsSatisfied():
+    # arrange
     body = {
         "records": [{"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK1", "CO2Emission": 100.0}],
         "total": 1,
     }
 
-    _assert_matches_schema(body, "co2emis_schema.json")
+    # act / assert
+    assert_matches_schema(body, CO2EMIS_DATASET.schema_file)
 
 
-def test_record_missing_required_field_is_invalid():
+def test_givenRecordWithoutRequiredField_whenValidating_thenValidationFails():
+    # arrange
     body = {
         "records": [{"PriceArea": "DK1", "CO2Emission": 100.0}],
         "total": 1,
     }
 
+    # act / assert
     with pytest.raises(jsonschema.exceptions.ValidationError):
-        _assert_matches_schema(body, "co2emis_schema.json")
+        assert_matches_schema(body, CO2EMIS_DATASET.schema_file)
