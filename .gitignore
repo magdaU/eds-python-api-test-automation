@@ -7,3 +7,4 @@ __pycache__/
 *.egg-info/
 allure-results/
 allure-report/
+CODE_REVIEW_NOTES.md

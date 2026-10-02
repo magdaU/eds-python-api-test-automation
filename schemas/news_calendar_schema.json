@@ -1,0 +1,8 @@
+{
+  "type": "object",
+  "properties": {
+    "dateString": {"type": "string", "pattern": "^\\d{4}$"},
+    "numberOfNewsStories": {"type": "integer", "minimum": 0}
+  },
+  "required": ["dateString", "numberOfNewsStories"]
+}

@@ -193,6 +193,33 @@ All plans favor mocked tests (`requests-mock`) for bulk/edge-case coverage, with
 
 **API-load note:** Reruns only happen on an actual failure, and only for the one marked test with a small, bounded `reruns` cap (2) — no risk of runaway retries against the live API.
 
+## 12. News API endpoint tests
+
+**Goal:** Cover the `/News`, `/News/actual`, `/News/calendar` and `/News/archived` endpoints, a functional area separate from the `CO2Emis`/`Elspotprices` dataset endpoints, against the contract observed on the live API (no Swagger spec is published).
+
+**Contract (observed 2026-10-02):**
+- `/News` returns a list of news items and ignores `limit`/`sort`.
+- `/News/actual` requires `category` (400 without it) and returns a single object, or `204` with no body when the category has no news.
+- `/News/calendar` returns `{dateString: "<year>", numberOfNewsStories}` entries.
+- `/News/archived` takes `date` (400 on an invalid value); a date selects its whole year, and without `date` the result is an empty list.
+- A news item has `newsId`, `category` (`HIGH`/`INFO`), `header`, `story`, `validFrom`, `lastUpdated`.
+
+**Acceptance criteria:**
+- Each endpoint has status, JSON content-type and structure (list vs. object) assertions.
+- News item fields are validated by JSON Schema and checked individually against a mock whose attributes all have distinct values.
+- Required/invalid parameters (400) and empty results (204, empty archive) are covered.
+- `limit`/`sort` on `/News` are documented as having no effect, without presenting that as a contract guarantee.
+- At most 2 bounded live calls beyond schema validation.
+
+**Steps:**
+1. Add `EDSApiClient.get_news(path="", params=None)`; extract the shared GET/logging/retryable-status handling from `get_dataset` into a private `_get`.
+2. Add `tests/mocks/news_list_sample.json`, `news_actual_sample.json`, `news_calendar_sample.json`.
+3. Add `schemas/news_schema.json` (one item) and `schemas/news_calendar_schema.json`; validate each element, so one schema serves `/News`, `/actual` and `/archived`.
+4. Add `tests/test_news_api.py` with mocked tests for every case above.
+5. Add 2 live smoke tests: news items match the schema, and `/calendar`'s count for the latest year equals the size of `/archived?date=<year>`.
+
+**API-load note:** All edge cases and error paths are mocked; only 2 live smoke tests, 4 small GET requests in total.
+
 ---
 
 ## Open questions
