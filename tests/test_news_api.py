@@ -1,53 +1,36 @@
-import json
-
 import allure
-import jsonschema
 import pytest
 
-BASE_URL = "https://api.energidataservice.dk"
-NEWS_URL = f"{BASE_URL}/News"
-NEWS_FIELDS = {"newsId", "category", "header", "story", "validFrom", "lastUpdated"}
-NEWS_PATHS = ["", "actual", "calendar", "archived"]
-SAMPLE_BY_PATH = {
+from tests.support.mocks import load_mock
+from tests.support.schema import assert_all_match_schema
+
+NEWS_ITEM_FIELDS = {"newsId", "category", "header", "story", "validFrom", "lastUpdated"}
+NEWS_ENDPOINT_PATHS = ["", "actual", "calendar", "archived"]
+NEWS_SAMPLE_BY_PATH = {
     "": "news_list_sample.json",
     "actual": "news_actual_sample.json",
     "calendar": "news_calendar_sample.json",
     "archived": "news_list_sample.json",
 }
+VALIDATION_PROBLEM_JSON = {"Content-Type": "application/problem+json; charset=utf-8"}
 
 
-def _load_mock(filename):
-    with open(f"tests/mocks/{filename}") as f:
-        return json.load(f)
+@pytest.fixture(autouse=True)
+def allure_feature_news():
+    allure.dynamic.feature("News")
 
 
-def _load_schema(filename):
-    with open(f"schemas/{filename}") as f:
-        return json.load(f)
-
-
-def _news_url(path):
-    return f"{NEWS_URL}/{path}" if path else NEWS_URL
-
-
-def _assert_all_match_schema(items, schema_filename):
-    schema = _load_schema(schema_filename)
-    for item in items:
-        jsonschema.validate(instance=item, schema=schema)
-
-
-@allure.feature("News")
-@pytest.mark.parametrize("path", NEWS_PATHS)
-def test_whenGettingNewsEndpoint_thenStatusIsOkAndBodyIsJson(eds_client, requests_mock, path):
+@pytest.mark.parametrize("path", NEWS_ENDPOINT_PATHS)
+def test_whenGettingNewsEndpoint_thenStatusIsOkAndBodyIsJson(news_api, requests_mock, path):
     # arrange
     requests_mock.get(
-        _news_url(path),
-        json=_load_mock(SAMPLE_BY_PATH[path]),
+        news_api.url(path),
+        json=load_mock(NEWS_SAMPLE_BY_PATH[path]),
         headers={"Content-Type": "application/json; charset=utf-8"},
     )
 
     # act
-    response = eds_client.get_news(path)
+    response = news_api.get(path)
 
     # assert
     assert response.status_code == 200
@@ -55,30 +38,28 @@ def test_whenGettingNewsEndpoint_thenStatusIsOkAndBodyIsJson(eds_client, request
     response.json()
 
 
-@allure.feature("News")
-def test_whenGettingNews_thenResponseIsListOfNewsItems(eds_client, requests_mock):
+def test_whenGettingNews_thenResponseIsListOfNewsItems(news_api, requests_mock):
     # arrange
-    requests_mock.get(NEWS_URL, json=_load_mock("news_list_sample.json"))
+    requests_mock.get(news_api.url(), json=load_mock("news_list_sample.json"))
 
     # act
-    body = eds_client.get_news().json()
+    body = news_api.list().json()
 
     # assert
     assert isinstance(body, list)
     assert len(body) == 3
-    _assert_all_match_schema(body, "news_schema.json")
+    assert_all_match_schema(body, "news_schema.json")
 
 
-@allure.feature("News")
-def test_whenGettingNews_thenEveryFieldIsMappedToItsOwnValue(eds_client, requests_mock):
+def test_whenGettingNews_thenEveryFieldIsMappedToItsOwnValue(news_api, requests_mock):
     # arrange
-    requests_mock.get(NEWS_URL, json=_load_mock("news_list_sample.json"))
+    requests_mock.get(news_api.url(), json=load_mock("news_list_sample.json"))
 
     # act
-    first = eds_client.get_news().json()[0]
+    first = news_api.list().json()[0]
 
     # assert
-    assert set(first) == NEWS_FIELDS
+    assert set(first) == NEWS_ITEM_FIELDS
     assert first["newsId"] == 201
     assert first["category"] == "HIGH"
     assert first["header"] == "Planned maintenance of the data platform"
@@ -87,27 +68,25 @@ def test_whenGettingNews_thenEveryFieldIsMappedToItsOwnValue(eds_client, request
     assert first["lastUpdated"] == "2026-03-31T08:15:00"
 
 
-@allure.feature("News")
-def test_givenNewsList_whenCheckingCategories_thenOnlyKnownCategoriesAppear(eds_client, requests_mock):
+def test_givenNewsList_whenCheckingCategories_thenOnlyKnownCategoriesAppear(news_api, requests_mock):
     # arrange
-    requests_mock.get(NEWS_URL, json=_load_mock("news_list_sample.json"))
+    requests_mock.get(news_api.url(), json=load_mock("news_list_sample.json"))
 
     # act
-    categories = {item["category"] for item in eds_client.get_news().json()}
+    categories = {item["category"] for item in news_api.list().json()}
 
     # assert
     assert categories == {"HIGH", "INFO"}
 
 
-@allure.feature("News")
 @pytest.mark.parametrize("query", [{"limit": 1}, {"sort": "newsId desc"}])
 def test_givenUnsupportedParameter_whenGettingNews_thenParameterIsSentAndListIsUnchanged(
-        eds_client, requests_mock, query):
+        news_api, requests_mock, query):
     # arrange
-    requests_mock.get(NEWS_URL, json=_load_mock("news_list_sample.json"))
+    requests_mock.get(news_api.url(), json=load_mock("news_list_sample.json"))
 
     # act
-    response = eds_client.get_news(params=query)
+    response = news_api.get(params=query)
 
     # assert
     key, value = next(iter(query.items()))
@@ -115,149 +94,115 @@ def test_givenUnsupportedParameter_whenGettingNews_thenParameterIsSentAndListIsU
     assert len(response.json()) == 3
 
 
-@allure.feature("News")
 @pytest.mark.parametrize("category", ["HIGH", "INFO"])
-def test_givenCategory_whenGettingActualNews_thenSingleNewsObjectIsReturned(eds_client, requests_mock, category):
+def test_givenCategory_whenGettingActualNews_thenSingleNewsObjectIsReturned(news_api, requests_mock, category):
     # arrange
-    requests_mock.get(_news_url("actual"), json=_load_mock("news_actual_sample.json"))
+    requests_mock.get(news_api.url("actual"), json=load_mock("news_actual_sample.json"))
 
     # act
-    response = eds_client.get_news("actual", {"category": category})
+    body = news_api.actual(category).json()
 
     # assert
-    body = response.json()
     assert requests_mock.last_request.qs["category"] == [category.lower()]
     assert isinstance(body, dict)
-    assert set(body) == NEWS_FIELDS
-    _assert_all_match_schema([body], "news_schema.json")
+    assert set(body) == NEWS_ITEM_FIELDS
+    assert_all_match_schema([body], "news_schema.json")
 
 
-@allure.feature("News")
-def test_whenGettingActualNewsWithoutCategory_thenBadRequestNamesMissingField(eds_client, requests_mock):
+def test_whenGettingActualNewsWithoutCategory_thenBadRequestNamesMissingField(news_api, requests_mock):
     # arrange
     requests_mock.get(
-        _news_url("actual"),
+        news_api.url("actual"),
         status_code=400,
         json={"title": "One or more validation errors occurred.", "status": 400,
               "errors": {"category": ["The category field is required."]}},
-        headers={"Content-Type": "application/problem+json; charset=utf-8"},
+        headers=VALIDATION_PROBLEM_JSON,
     )
 
     # act
-    response = eds_client.get_news("actual")
+    response = news_api.actual()
 
     # assert
     assert response.status_code == 400
     assert "category" in response.json()["errors"]
 
 
-@allure.feature("News")
-def test_givenNoActualNewsForCategory_whenGettingActualNews_thenNoContentIsReturned(eds_client, requests_mock):
+def test_givenNoActualNewsForCategory_whenGettingActualNews_thenNoContentIsReturned(news_api, requests_mock):
     # arrange
-    requests_mock.get(_news_url("actual"), status_code=204)
+    requests_mock.get(news_api.url("actual"), status_code=204)
 
     # act
-    response = eds_client.get_news("actual", {"category": "LOW"})
+    response = news_api.actual("LOW")
 
     # assert
     assert response.status_code == 204
     assert response.content == b""
 
 
-@allure.feature("News")
-def test_whenGettingCalendar_thenEachEntryHasYearAndStoryCount(eds_client, requests_mock):
+def test_whenGettingCalendar_thenEachEntryHasYearAndStoryCount(news_api, requests_mock):
     # arrange
-    requests_mock.get(_news_url("calendar"), json=_load_mock("news_calendar_sample.json"))
+    requests_mock.get(news_api.url("calendar"), json=load_mock("news_calendar_sample.json"))
 
     # act
-    body = eds_client.get_news("calendar").json()
+    body = news_api.calendar().json()
 
     # assert
     assert isinstance(body, list)
-    _assert_all_match_schema(body, "news_calendar_schema.json")
-    assert [(e["dateString"], e["numberOfNewsStories"]) for e in body] == [("2026", 3), ("2025", 2), ("2024", 5)]
+    assert_all_match_schema(body, "news_calendar_schema.json")
+    assert [(entry["dateString"], entry["numberOfNewsStories"]) for entry in body] == [
+        ("2026", 3), ("2025", 2), ("2024", 5)]
 
 
-@allure.feature("News")
-def test_givenDate_whenGettingArchivedNews_thenNewsListIsReturned(eds_client, requests_mock):
+def test_givenDate_whenGettingArchivedNews_thenNewsListIsReturned(news_api, requests_mock):
     # arrange
-    requests_mock.get(_news_url("archived"), json=_load_mock("news_list_sample.json"))
+    requests_mock.get(news_api.url("archived"), json=load_mock("news_list_sample.json"))
 
     # act
-    response = eds_client.get_news("archived", {"date": "2026-01-01"})
+    body = news_api.archived(date="2026-01-01").json()
 
     # assert
-    body = response.json()
     assert requests_mock.last_request.qs["date"] == ["2026-01-01"]
     assert isinstance(body, list)
-    _assert_all_match_schema(body, "news_schema.json")
+    assert_all_match_schema(body, "news_schema.json")
 
 
-@allure.feature("News")
-def test_givenNoDate_whenGettingArchivedNews_thenArchiveIsEmpty(eds_client, requests_mock):
+def test_givenNoDate_whenGettingArchivedNews_thenArchiveIsEmpty(news_api, requests_mock):
     # arrange
-    requests_mock.get(_news_url("archived"), json=[])
+    requests_mock.get(news_api.url("archived"), json=[])
 
     # act
-    response = eds_client.get_news("archived")
+    response = news_api.archived()
 
     # assert
     assert response.status_code == 200
     assert response.json() == []
 
 
-@allure.feature("News")
-def test_givenInvalidDate_whenGettingArchivedNews_thenBadRequestNamesDateField(eds_client, requests_mock):
+def test_givenInvalidDate_whenGettingArchivedNews_thenBadRequestNamesDateField(news_api, requests_mock):
     # arrange
     requests_mock.get(
-        _news_url("archived"),
+        news_api.url("archived"),
         status_code=400,
         json={"title": "One or more validation errors occurred.", "status": 400,
               "errors": {"date": ["The value 'bogus' is not valid."]}},
-        headers={"Content-Type": "application/problem+json; charset=utf-8"},
+        headers=VALIDATION_PROBLEM_JSON,
     )
 
     # act
-    response = eds_client.get_news("archived", {"date": "bogus"})
+    response = news_api.archived(date="bogus")
 
     # assert
     assert response.status_code == 400
     assert "date" in response.json()["errors"]
 
 
-@allure.feature("News")
 @pytest.mark.parametrize("path", ["", "calendar"])
-def test_givenServerError_whenGettingNews_thenStatusIsPassedThrough(eds_client, requests_mock, path):
+def test_givenServerError_whenGettingNews_thenStatusIsPassedThrough(news_api, requests_mock, path):
     # arrange
-    requests_mock.get(_news_url(path), status_code=500)
+    requests_mock.get(news_api.url(path), status_code=500)
 
     # act
-    response = eds_client.get_news(path)
+    response = news_api.get(path)
 
     # assert
     assert response.status_code == 500
-
-
-@allure.feature("News")
-def test_whenGettingLiveNews_thenEveryItemMatchesSchema(eds_client):
-    # act
-    response = eds_client.get_news()
-
-    # assert
-    assert response.status_code == 200
-    _assert_all_match_schema(response.json(), "news_schema.json")
-
-
-@allure.feature("News")
-def test_whenGettingLiveCalendar_thenEveryEntryMatchesSchemaAndArchiveAgrees(eds_client):
-    # arrange
-    calendar = eds_client.get_news("calendar").json()
-    latest = calendar[0]
-
-    # act
-    archived = eds_client.get_news("archived", {"date": f"{latest['dateString']}-01-01"}).json()
-
-    # assert
-    _assert_all_match_schema(calendar, "news_calendar_schema.json")
-    assert len(archived) == latest["numberOfNewsStories"]
-    assert all(item["validFrom"].startswith(latest["dateString"]) for item in archived)

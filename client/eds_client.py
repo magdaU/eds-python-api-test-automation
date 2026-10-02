@@ -78,12 +78,17 @@ class EDSApiClient:
             params["sort"] = sort
         if filter is not None:
             params["filter"] = self._encode_filter(filter)
-        return self._get(f"{self.base_url}/dataset/{dataset}", params)
+        return self._get(self.dataset_url(dataset), params)
 
     def get_news(self, path: str = "", params: dict = None) -> requests.Response:
         """GET /News, or a sub-resource: "actual", "calendar" or "archived"."""
-        url = "/".join(part for part in (f"{self.base_url}/News", path.strip("/")) if part)
-        return self._get(url, params or {})
+        return self._get(self.news_url(path), params or {})
+
+    def dataset_url(self, dataset: str) -> str:
+        return f"{self.base_url}/dataset/{dataset}"
+
+    def news_url(self, path: str = "") -> str:
+        return "/".join(part for part in (f"{self.base_url}/News", path.strip("/")) if part)
 
     def _get(self, url: str, params: dict) -> requests.Response:
         logger.debug("GET %s params=%s", url, params)

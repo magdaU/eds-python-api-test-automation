@@ -1,38 +1,37 @@
-import json
-
-DATASET = "Elspotprices"
-BASE_URL = "https://api.energidataservice.dk"
+from tests.support.mocks import load_mock, records_response
 
 
-def _load_mock(filename):
-    with open(f"tests/mocks/{filename}") as f:
-        return json.load(f)
+def test_givenAscendingSort_whenGettingDataset_thenPricesAreAscending(elspotprices_api, requests_mock):
+    # arrange
+    requests_mock.get(elspotprices_api.url, json=load_mock("elspotprices_sorted.json"))
 
+    # act
+    response = elspotprices_api.get(sort="SpotPriceDKK")
 
-def test_sort_ascending_returns_ordered_records(eds_client, requests_mock):
-    mock_data = _load_mock("elspotprices_sorted.json")
-    requests_mock.get(f"{BASE_URL}/dataset/{DATASET}", json=mock_data)
-
-    response = eds_client.get_dataset(DATASET, sort="SpotPriceDKK")
-    prices = [r["SpotPriceDKK"] for r in response.json()["records"]]
-
+    # assert
+    prices = [record["SpotPriceDKK"] for record in response.json()["records"]]
     assert prices == sorted(prices)
 
 
-def test_sort_descending_returns_ordered_records(eds_client, requests_mock):
-    mock_data = _load_mock("elspotprices_sorted.json")
-    descending_records = list(reversed(mock_data["records"]))
-    requests_mock.get(f"{BASE_URL}/dataset/{DATASET}", json={"records": descending_records, "total": len(descending_records)})
+def test_givenDescendingSort_whenGettingDataset_thenPricesAreDescending(elspotprices_api, requests_mock):
+    # arrange
+    ascending_records = load_mock("elspotprices_sorted.json")["records"]
+    requests_mock.get(elspotprices_api.url, json=records_response(list(reversed(ascending_records))))
 
-    response = eds_client.get_dataset(DATASET, sort="SpotPriceDKK desc")
-    prices = [r["SpotPriceDKK"] for r in response.json()["records"]]
+    # act
+    response = elspotprices_api.get(sort="SpotPriceDKK desc")
 
+    # assert
+    prices = [record["SpotPriceDKK"] for record in response.json()["records"]]
     assert prices == sorted(prices, reverse=True)
 
 
-def test_sort_parameter_is_sent(eds_client, requests_mock):
-    requests_mock.get(f"{BASE_URL}/dataset/{DATASET}", json={"records": [], "total": 0})
+def test_givenSort_whenGettingDataset_thenSortParameterIsSent(elspotprices_api, requests_mock):
+    # arrange
+    requests_mock.get(elspotprices_api.url, json=records_response([]))
 
-    eds_client.get_dataset(DATASET, sort="SpotPriceDKK desc")
+    # act
+    elspotprices_api.get(sort="SpotPriceDKK desc")
 
+    # assert
     assert requests_mock.last_request.qs["sort"] == ["spotpricedkk desc"]
