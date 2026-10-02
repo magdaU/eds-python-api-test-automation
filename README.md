@@ -4,6 +4,12 @@
 
 Python/pytest API test automation framework for the [Energi Data Service (EDS)](https://www.energidataservice.dk/) API. Built as a QA Automation portfolio project demonstrating REST API testing, parameterized/positive/negative testing, response validation, and CI/CD integration.
 
+<p align="center">
+  <a href="https://magdau.github.io/eds-python-api-test-automation/">
+    <img src="docs/allure-report.png" alt="Allure report overview" width="500">
+  </a>
+</p>
+
 ## 🛠️ Technologies
 
 Python · pytest · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · Git · GitHub Actions · GitHub Pages
