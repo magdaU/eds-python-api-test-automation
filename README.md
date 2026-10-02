@@ -123,6 +123,12 @@ automatically.
 
 [Energi Data Service](https://www.energidataservice.dk/) — public API, see [API docs](https://www.energidataservice.dk/guides/api-guides).
 
+<p align="center">
+  <a href="https://www.energidataservice.dk/guides/api-guides">
+    <img src="docs/eds-api-guide.png" alt="Energi Data Service API guide" width="500">
+  </a>
+</p>
+
 ## 📌 Planned Improvements
 
 * [x] API client abstraction
