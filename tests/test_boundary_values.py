@@ -1,6 +1,9 @@
 import pytest
 
+from tests.support.allure_labels import labels
 from tests.support.mocks import load_mock, records_response, sent_query
+
+pytestmark = labels("Dataset API", "Boundary values")
 
 
 @pytest.mark.parametrize("limit", [0, 1, 2, 100000])

@@ -1,6 +1,9 @@
 import pytest
 
+from tests.support.allure_labels import labels
 from tests.support.mocks import records_response, sent_query
+
+pytestmark = labels("Dataset API", "Parameter combinations")
 
 # Decision table over the four optional parameters: each row is one rule,
 # the expected value says which query parameters must reach the API.

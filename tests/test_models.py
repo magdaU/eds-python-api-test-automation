@@ -4,6 +4,9 @@ from pydantic import ValidationError
 from client.parsers import parse_records
 from models.co2emis import CO2EmisRecord
 from models.elspotprices import ElspotpricesRecord
+from tests.support.allure_labels import labels
+
+pytestmark = labels("Dataset API", "Pydantic models")
 
 
 def test_givenValidJson_whenParsingRecords_thenTypedModelsAreReturned():

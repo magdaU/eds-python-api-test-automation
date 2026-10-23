@@ -1,5 +1,9 @@
 import logging
 
+from tests.support.allure_labels import labels
+
+pytestmark = labels("Client library", "Logging")
+
 
 def test_givenRetryableStatus_whenGettingDataset_thenWarningIsLogged(co2_api, requests_mock, caplog):
     # arrange

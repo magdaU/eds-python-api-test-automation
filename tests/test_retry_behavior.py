@@ -7,6 +7,9 @@ import requests
 
 from client.dataset_api import DatasetApi
 from client.eds_client import EDSApiClient
+from tests.support.allure_labels import labels
+
+pytestmark = labels("Client library", "Retry behavior")
 
 # Unlike requests_mock, a real local HTTP server sends the requests through the
 # client's own HTTPAdapter/Retry, so the retry behavior itself is exercised.

@@ -1,4 +1,7 @@
+from tests.support.allure_labels import labels
 from tests.support.mocks import load_mock, records_response
+
+pytestmark = labels("Dataset API", "Sorting")
 
 
 def test_givenAscendingSort_whenGettingDataset_thenPricesAreAscending(elspotprices_api, requests_mock):

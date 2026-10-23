@@ -2,7 +2,10 @@ import json
 
 import pytest
 
+from tests.support.allure_labels import labels
 from tests.support.mocks import records_response, sent_query
+
+pytestmark = labels("Dataset API", "Filtering")
 
 
 def sent_filter(requests_mock):
