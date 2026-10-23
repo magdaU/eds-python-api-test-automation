@@ -173,7 +173,7 @@ automatically.
 * [x] Allure trend, executors and categories widgets
 * [x] Allure Retries trend
 * [x] News API endpoint tests (`/News`, `/actual`, `/calendar`, `/archived`)
-* [ ] JMeter performance tests
+* [x] JMeter performance tests
 
 See [ROADMAP.md](ROADMAP.md) for the step-by-step plan behind each unchecked item.
 
