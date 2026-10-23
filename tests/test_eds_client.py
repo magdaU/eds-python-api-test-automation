@@ -1,4 +1,7 @@
-from client.eds_client import EDSApiClient, RETRYABLE_STATUS_CODES
+import json
+from urllib.parse import parse_qs, urlparse
+
+from client.eds_client import DEFAULT_TIMEOUT, EDSApiClient, RETRYABLE_STATUS_CODES
 
 
 def test_whenCreatingClientWithDefaults_thenDefaultRetryConfigurationIsApplied():
@@ -24,3 +27,54 @@ def test_givenCustomRetrySettings_whenCreatingClient_thenTheyAreApplied():
     # assert
     assert adapter.max_retries.total == 5
     assert adapter.max_retries.backoff_factor == 2.0
+
+
+def test_whenCreatingClientWithDefaults_thenDefaultTimeoutIsUsedPerRequest(requests_mock):
+    # arrange
+    client = EDSApiClient()
+    requests_mock.get(client.dataset_url("CO2Emis"), json={"records": []})
+
+    # act
+    client.get_dataset("CO2Emis")
+
+    # assert
+    assert requests_mock.last_request.timeout == DEFAULT_TIMEOUT
+
+
+def test_givenCustomTimeout_whenGettingDataset_thenItIsPassedToTheRequest(requests_mock):
+    # arrange
+    client = EDSApiClient(timeout=3)
+    requests_mock.get(client.dataset_url("CO2Emis"), json={"records": []})
+
+    # act
+    client.get_dataset("CO2Emis")
+
+    # assert
+    assert requests_mock.last_request.timeout == 3
+
+
+def test_givenFilters_whenGettingDataset_thenFilterParameterIsCompactJson(requests_mock):
+    # arrange
+    client = EDSApiClient()
+    requests_mock.get(client.dataset_url("Elspotprices"), json={"records": []})
+
+    # act
+    client.get_dataset("Elspotprices", filters={"PriceArea": "DK1"})
+
+    # assert
+    sent = parse_qs(urlparse(requests_mock.last_request.url).query)
+    assert sent["filter"] == ['{"PriceArea":"DK1"}']
+
+
+def test_givenFilterValueWithQuoteAndBackslash_whenGettingDataset_thenFilterIsValidJson(requests_mock):
+    # arrange
+    client = EDSApiClient()
+    requests_mock.get(client.dataset_url("Elspotprices"), json={"records": []})
+    filters = {"PriceArea": 'DK"1\\x'}
+
+    # act
+    client.get_dataset("Elspotprices", filters=filters)
+
+    # assert
+    sent = parse_qs(urlparse(requests_mock.last_request.url).query)
+    assert json.loads(sent["filter"][0]) == filters

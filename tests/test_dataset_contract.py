@@ -72,7 +72,7 @@ def test_givenPriceArea_whenFilteringDataset_thenOnlyMatchingRecordsAreReturned(
     requests_mock.get(dataset_api.url, json=records_response(matching))
 
     # act
-    response = dataset_api.get(limit=5, filter={"PriceArea": price_area})
+    response = dataset_api.get(limit=5, filters={"PriceArea": price_area})
 
     # assert
     assert response.status_code == 200
