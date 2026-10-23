@@ -62,7 +62,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-137 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
+142 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -79,6 +79,7 @@ with a handful of bounded live smoke tests against the real API:
   no retry on 4xx), plus a request timeout on every call
 * Low-load live edge cases (one `limit=1` request each): negative offset, unknown sort/filter column,
   filter or offset matching nothing, unknown News category/path
+* Property-based tests (`hypothesis`): filter JSON round-trip, parameters surviving the URL, negative `limit`, URL building, record parsing
 * Client logging on retryable status codes
 * Retry/backoff configuration, including per-dataset overrides and jitter
 * Automatic pytest-level rerun (`pytest-rerunfailures`) on the live sort smoke
@@ -101,6 +102,7 @@ pytest -v -m "not live"
 ```
 
 On GitHub, pull requests run only the offline tests; the full suite (including live) runs on `main`.
+A nightly workflow (`live-nightly.yml`, also runnable manually) runs only the live tests to catch API drift.
 
 Code quality (same checks as the `Quality` workflow; install dev tools with `pip install -r requirements-dev.txt`):
 
