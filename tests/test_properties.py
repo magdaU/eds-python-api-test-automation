@@ -9,6 +9,9 @@ from hypothesis import strategies as st
 from client.eds_client import EDSApiClient
 from client.parsers import parse_records
 from models.co2emis import CO2EmisRecord
+from tests.support.allure_labels import labels
+
+pytestmark = labels("Client library", "Property-based")
 
 BASE = "http://localhost:9999"
 

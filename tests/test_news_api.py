@@ -1,8 +1,10 @@
 import pytest
 
-import allure
+from tests.support.allure_labels import labels
 from tests.support.mocks import load_mock
 from tests.support.schema import assert_all_match_schema
+
+pytestmark = labels("News API", "News")
 
 NEWS_ITEM_FIELDS = {"newsId", "category", "header", "story", "validFrom", "lastUpdated"}
 NEWS_ENDPOINT_PATHS = ["", "actual", "calendar", "archived"]
@@ -13,11 +15,6 @@ NEWS_SAMPLE_BY_PATH = {
     "archived": "news_list_sample.json",
 }
 VALIDATION_PROBLEM_JSON = {"Content-Type": "application/problem+json; charset=utf-8"}
-
-
-@pytest.fixture(autouse=True)
-def allure_feature_news():
-    allure.dynamic.feature("News")
 
 
 @pytest.mark.parametrize("path", NEWS_ENDPOINT_PATHS)

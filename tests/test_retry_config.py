@@ -1,6 +1,9 @@
 import logging
 
 from client.eds_client import SANE_MAX_RETRIES, EDSApiClient
+from tests.support.allure_labels import labels
+
+pytestmark = labels("Client library", "Retry configuration")
 
 
 def _retry_of(client, dataset):

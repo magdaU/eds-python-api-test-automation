@@ -5,11 +5,20 @@
     "messageRegex": ".*(429|Retry-After|ConnectTimeout|ConnectionError).*"
   },
   {
+    "name": "Contract drift (schema or model mismatch)",
+    "matchedStatuses": ["broken", "failed"],
+    "messageRegex": ".*(ValidationError|jsonschema|KeyError).*"
+  },
+  {
     "name": "Product defects",
     "matchedStatuses": ["failed"]
   },
   {
     "name": "Test defects",
     "matchedStatuses": ["broken"]
+  },
+  {
+    "name": "Skipped tests",
+    "matchedStatuses": ["skipped"]
   }
 ]

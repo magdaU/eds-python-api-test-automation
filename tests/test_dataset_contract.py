@@ -1,7 +1,10 @@
 import pytest
 
 import allure
+from tests.support.allure_labels import labels
 from tests.support.mocks import load_mock, records_response
+
+pytestmark = labels("Dataset API", "Response contract")
 
 
 @pytest.fixture(autouse=True)

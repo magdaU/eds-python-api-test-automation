@@ -1,7 +1,10 @@
 import json
 
 from client.eds_client import DEFAULT_TIMEOUT, RETRYABLE_STATUS_CODES, EDSApiClient
+from tests.support.allure_labels import labels
 from tests.support.mocks import sent_query
+
+pytestmark = labels("Client library", "Client configuration")
 
 
 def test_whenCreatingClientWithDefaults_thenDefaultRetryConfigurationIsApplied():

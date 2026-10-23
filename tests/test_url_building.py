@@ -1,6 +1,9 @@
 import pytest
 
 from client.eds_client import EDSApiClient
+from tests.support.allure_labels import labels
+
+pytestmark = labels("Client library", "URL building")
 
 BASE = "http://localhost:9999"
 

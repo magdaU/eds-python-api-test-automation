@@ -13,6 +13,7 @@ from tests.support.live import TRANSIENT_NETWORK_ERRORS
 
 pytestmark = [
     pytest.mark.live,
+    allure.epic("Live API"),
     pytest.mark.flaky(reruns=1, reruns_delay=5, only_rerun=TRANSIENT_NETWORK_ERRORS),
 ]
 

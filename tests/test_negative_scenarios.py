@@ -2,6 +2,9 @@ import pytest
 import requests
 
 from client.dataset_api import DatasetApi
+from tests.support.allure_labels import labels
+
+pytestmark = labels("Client library", "Negative scenarios")
 
 # requests_mock replaces how the session dispatches requests entirely, so the
 # custom HTTPAdapter/Retry mounted on EDSApiClient's session never runs against

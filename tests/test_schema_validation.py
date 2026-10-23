@@ -1,9 +1,12 @@
 import jsonschema
 import pytest
 
+from tests.support.allure_labels import labels
 from tests.support.datasets import CO2EMIS_DATASET, ELSPOTPRICES_DATASET
 from tests.support.mocks import load_mock
 from tests.support.schema import assert_matches_schema
+
+pytestmark = labels("Dataset API", "Schema validation")
 
 
 @pytest.mark.live

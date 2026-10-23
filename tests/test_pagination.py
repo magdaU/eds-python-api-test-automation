@@ -1,4 +1,7 @@
+from tests.support.allure_labels import labels
 from tests.support.mocks import load_mock, records_response
+
+pytestmark = labels("Dataset API", "Pagination")
 
 
 def test_givenConsecutiveOffsets_whenGettingPages_thenPagesDoNotOverlap(co2_api, requests_mock):
