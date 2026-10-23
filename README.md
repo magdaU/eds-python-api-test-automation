@@ -94,6 +94,14 @@ pip install -r requirements.txt
 pytest -v
 ```
 
+Tests that hit the real EDS API carry the `live` marker. Skip them for a fast, offline run:
+
+```bash
+pytest -v -m "not live"
+```
+
+On GitHub, pull requests run only the offline tests; the full suite (including live) runs on `main`.
+
 For an Allure HTML report:
 
 ```bash

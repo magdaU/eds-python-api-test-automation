@@ -5,6 +5,8 @@ import pytest
 from tests.support.live import TRANSIENT_NETWORK_ERRORS
 from tests.support.schema import assert_all_match_schema
 
+pytestmark = pytest.mark.live
+
 
 @allure.feature("CO2Emis")
 def test_whenGettingConsecutivePages_thenPagesAreDifferent(co2_api):

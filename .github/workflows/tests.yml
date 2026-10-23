@@ -33,8 +33,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # Pull requests run offline tests only; live tests hit the public EDS API, so they run on main.
       - name: Run tests
-        run: pytest -v --alluredir=allure-results
+        run: pytest -v --alluredir=allure-results ${{ github.event_name == 'pull_request' && '-m "not live"' || '' }}
 
       - name: Write Allure executor info
         if: always()

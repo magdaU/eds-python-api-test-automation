@@ -38,9 +38,9 @@ def dataset_api(eds_client, dataset):
 
 @pytest.fixture
 def co2_response(co2_api):
-    return co2_api.get()
+    return co2_api.get(limit=1)
 
 
 @pytest.fixture
 def elspotprices_response(elspotprices_api):
-    return elspotprices_api.get()
+    return elspotprices_api.get(limit=1)
