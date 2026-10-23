@@ -38,17 +38,29 @@ jobs:
 
       - name: Install JMeter
         run: |
-          curl -fsSL "https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz" | tar -xz -C "$HOME"
+          base="https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz"
+          curl -fsSLO "$base"
+          curl -fsSLO "$base.sha512"
+          sha512sum -c "apache-jmeter-${JMETER_VERSION}.tgz.sha512"
+          tar -xz -C "$HOME" -f "apache-jmeter-${JMETER_VERSION}.tgz"
           echo "$HOME/apache-jmeter-${JMETER_VERSION}/bin" >> "$GITHUB_PATH"
 
+      # Inputs go through env, never straight into the script, so they can't inject shell commands.
       - name: Run JMeter test plan
         working-directory: performance
+        env:
+          THREADS: ${{ inputs.threads || '2' }}
+          DURATION: ${{ inputs.duration || '30' }}
+          MAX_RESPONSE_MS: ${{ inputs.max_response_ms || '2000' }}
         run: |
+          for value in "$THREADS" "$DURATION" "$MAX_RESPONSE_MS"; do
+            [[ "$value" =~ ^[0-9]+$ ]] || { echo "Inputs must be whole numbers, got: $value"; exit 1; }
+          done
           jmeter -n -t eds_api_load_test.jmx \
             -l results.jtl -e -o report \
-            -Jthreads=${{ inputs.threads || '2' }} \
-            -Jduration=${{ inputs.duration || '30' }} \
-            -Jmax_response_ms=${{ inputs.max_response_ms || '2000' }}
+            -Jthreads="$THREADS" \
+            -Jduration="$DURATION" \
+            -Jmax_response_ms="$MAX_RESPONSE_MS"
 
       - name: Fail on assertion errors
         working-directory: performance
