@@ -62,7 +62,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-142 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
+145 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -122,6 +122,9 @@ allure serve allure-results
 The live, always-up-to-date report (with Trend, Duration/Retries trend, Executors and
 Categories populated across CI runs) is published on every push to `main`:
 **https://magdau.github.io/eds-python-api-test-automation/**
+
+The Environment widget (base URL, Python/OS, library versions, CI branch/commit/run) is written automatically
+by a pytest hook whenever `--alluredir` is used, locally and in CI.
 
 An ad hoc local `allure serve` run only shows that single run — it won't have the
 trend/executor/categories data unless you copy it in yourself.

@@ -3,7 +3,12 @@ import pytest
 from client.dataset_api import DatasetApi
 from client.eds_client import EDSApiClient
 from client.news_api import NewsApi
+from tests.support.allure_environment import environment_from_session
 from tests.support.datasets import ALL_DATASETS, CO2EMIS_DATASET, ELSPOTPRICES_DATASET
+
+
+def pytest_sessionfinish(session):
+    environment_from_session(session.config)
 
 
 @pytest.fixture(scope="session")
