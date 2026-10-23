@@ -1,6 +1,6 @@
-import allure
 import pytest
 
+import allure
 from tests.support.mocks import load_mock, records_response
 
 

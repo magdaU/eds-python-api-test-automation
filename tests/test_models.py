@@ -3,6 +3,7 @@ from pydantic import ValidationError
 
 from client.parsers import parse_records
 from models.co2emis import CO2EmisRecord
+from models.elspotprices import ElspotpricesRecord
 
 
 def test_givenValidJson_whenParsingRecords_thenTypedModelsAreReturned():
@@ -86,3 +87,31 @@ def test_givenResponseWithoutRecordsKey_whenParsingRecords_thenKeyErrorIsRaised(
     # act / assert
     with pytest.raises(KeyError):
         parse_records(response_json, CO2EmisRecord)
+
+
+def test_givenValidElspotpricesJson_whenParsingRecords_thenEveryFieldIsMapped():
+    # arrange
+    response_json = {
+        "records": [{"HourUTC": "2024-02-03T04:00:00", "PriceArea": "DK2", "SpotPriceDKK": 567.8}],
+        "total": 1,
+    }
+
+    # act
+    records = parse_records(response_json, ElspotpricesRecord)
+
+    # assert
+    assert len(records) == 1
+    assert records[0].HourUTC == "2024-02-03T04:00:00"
+    assert records[0].PriceArea == "DK2"
+    assert records[0].SpotPriceDKK == 567.8
+
+
+def test_givenElspotpricesWithoutHour_whenParsingRecords_thenHourIsNone():
+    # arrange
+    response_json = {"records": [{"PriceArea": "DK1", "SpotPriceDKK": 12.3}], "total": 1}
+
+    # act
+    records = parse_records(response_json, ElspotpricesRecord)
+
+    # assert
+    assert records[0].HourUTC is None

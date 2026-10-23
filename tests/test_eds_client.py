@@ -1,6 +1,6 @@
 import json
 
-from client.eds_client import DEFAULT_TIMEOUT, EDSApiClient, RETRYABLE_STATUS_CODES
+from client.eds_client import DEFAULT_TIMEOUT, RETRYABLE_STATUS_CODES, EDSApiClient
 from tests.support.mocks import sent_query
 
 

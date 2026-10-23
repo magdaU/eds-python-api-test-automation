@@ -1,6 +1,6 @@
 import logging
 
-from client.eds_client import EDSApiClient, SANE_MAX_RETRIES
+from client.eds_client import SANE_MAX_RETRIES, EDSApiClient
 
 
 def _retry_of(client, dataset):
