@@ -6,6 +6,7 @@ from tests.support.mocks import load_mock
 from tests.support.schema import assert_matches_schema
 
 
+@pytest.mark.live
 def test_whenGettingCo2Emis_thenResponseMatchesSchema(co2_response):
     # act
     body = co2_response.json()
@@ -14,6 +15,7 @@ def test_whenGettingCo2Emis_thenResponseMatchesSchema(co2_response):
     assert_matches_schema(body, CO2EMIS_DATASET.schema_file)
 
 
+@pytest.mark.live
 def test_whenGettingElspotprices_thenResponseMatchesSchema(elspotprices_response):
     # act
     body = elspotprices_response.json()

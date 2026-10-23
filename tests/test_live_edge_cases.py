@@ -11,7 +11,10 @@ import pytest
 
 from tests.support.live import TRANSIENT_NETWORK_ERRORS
 
-pytestmark = pytest.mark.flaky(reruns=1, reruns_delay=5, only_rerun=TRANSIENT_NETWORK_ERRORS)
+pytestmark = [
+    pytest.mark.live,
+    pytest.mark.flaky(reruns=1, reruns_delay=5, only_rerun=TRANSIENT_NETWORK_ERRORS),
+]
 
 
 @pytest.fixture(autouse=True)
