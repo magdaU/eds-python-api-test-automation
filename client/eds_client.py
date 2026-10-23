@@ -35,7 +35,7 @@ class EDSApiClient:
             dataset_overrides: dict | None = None,
             timeout: float = DEFAULT_TIMEOUT,
     ):
-        self.base_url = base_url
+        self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self.session = requests.Session()
 
