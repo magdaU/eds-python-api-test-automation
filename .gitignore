@@ -8,3 +8,8 @@ __pycache__/
 allure-results/
 allure-report/
 CODE_REVIEW_NOTES.md
+
+# JMeter
+performance/results.jtl
+performance/report/
+jmeter.log

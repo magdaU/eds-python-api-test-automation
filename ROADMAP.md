@@ -220,6 +220,24 @@ All plans favor mocked tests (`requests-mock`) for bulk/edge-case coverage, with
 
 **API-load note:** All edge cases and error paths are mocked; only 2 live smoke tests, 4 small GET requests in total.
 
+## 13. JMeter performance tests
+
+**Goal:** Measure baseline latency and behavior under light concurrent load for the main EDS endpoints, separately from the functional pytest suite.
+
+**Acceptance criteria:**
+- A JMeter plan in `performance/` covers `CO2Emis` (paging), `Elspotprices` (sorted) and `News`, with endpoints kept in a CSV so adding one needs no plan change.
+- Every request asserts status 200 and a configurable max response time.
+- Threads, duration, think time and the response-time limit are overridable with `-J` properties.
+- A separate GitHub Actions workflow runs it manually or weekly (never on push) and uploads the HTML report as an artifact.
+
+**Steps:**
+1. Add `performance/eds_api_load_test.jmx` and `performance/endpoints.csv`.
+2. Add `.github/workflows/performance.yml` (JMeter CLI, fail on any failed sample, upload `report/` and `results.jtl`).
+3. Run locally, read p95 per endpoint from the report and tune the default response-time limit.
+4. Add a report screenshot to the README.
+
+**API-load note:** This hits the public API, so defaults stay low (2 users, 30 s, 1 s think time). Heavier runs should target a local mock instead.
+
 ---
 
 ## Open questions
