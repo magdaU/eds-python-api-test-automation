@@ -62,7 +62,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-127 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
+134 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -77,6 +77,8 @@ with a handful of bounded live smoke tests against the real API:
   filter encoding (non-ASCII, quotes, lists) and URL building
 * Real retry behavior against a local scripted HTTP server (503/429 then 200, retry exhaustion,
   no retry on 4xx), plus a request timeout on every call
+* Low-load live edge cases (one `limit=1` request each): negative offset, unknown sort/filter column,
+  filter or offset matching nothing, unknown News category/path
 * Client logging on retryable status codes
 * Retry/backoff configuration, including per-dataset overrides and jitter
 * Automatic pytest-level rerun (`pytest-rerunfailures`) on the live sort smoke
