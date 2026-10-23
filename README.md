@@ -12,7 +12,7 @@ Python/pytest API test automation framework for the [Energi Data Service (EDS)](
 
 ## 🛠️ Technologies
 
-Python · pytest · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · Git · GitHub Actions · GitHub Pages
+Python · pytest · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · JMeter · Git · GitHub Actions · GitHub Pages
 
 ## 📁 Project Structure
 
@@ -47,6 +47,11 @@ eds-python-api-test-automation/
 │   └── test_retry_config.py          # per-dataset retry/backoff/jitter tuning
 │
 ├── .github/workflows/tests.yml   # CI: tests, Allure report, GitHub Pages publish
+├── .github/workflows/performance.yml   # CI: JMeter run (manual / weekly)
+├── performance/
+│   ├── eds_api_load_test.jmx   # JMeter plan (low-load baseline)
+│   └── endpoints.csv           # endpoints the plan iterates over
+│
 ├── Dockerfile
 ├── requirements.txt
 ├── pytest.ini
@@ -96,6 +101,18 @@ Categories populated across CI runs) is published on every push to `main`:
 
 An ad hoc local `allure serve` run only shows that single run — it won't have the
 trend/executor/categories data unless you copy it in yourself.
+
+### Performance tests (JMeter)
+
+A low-load JMeter plan lives in `performance/` (requires JMeter 5.6+). Run it from that directory:
+
+```bash
+jmeter -n -t eds_api_load_test.jmx -l results.jtl -e -o report
+```
+
+Override defaults with `-Jthreads=2 -Jduration=30 -Jthinktime=1000 -Jmax_response_ms=1000`.
+It hits the public EDS API, so keep the load low. In CI it runs only manually or weekly
+(`performance.yml`) and uploads the HTML report as an artifact.
 
 ### Run in Docker
 
@@ -152,6 +169,7 @@ automatically.
 * [x] Allure trend, executors and categories widgets
 * [x] Allure Retries trend
 * [x] News API endpoint tests (`/News`, `/actual`, `/calendar`, `/archived`)
+* [ ] JMeter performance tests
 
 See [ROADMAP.md](ROADMAP.md) for the step-by-step plan behind each unchecked item.
 

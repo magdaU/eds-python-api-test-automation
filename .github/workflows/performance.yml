@@ -1,0 +1,68 @@
+name: Performance
+
+# Manual / nightly only: this hits the public EDS API, so keep the load low.
+on:
+  workflow_dispatch:
+    inputs:
+      threads:
+        description: Concurrent users
+        default: "2"
+      duration:
+        description: Test duration in seconds
+        default: "30"
+      max_response_ms:
+        description: Max allowed response time per request (ms)
+        default: "1000"
+  schedule:
+    - cron: "0 3 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  JMETER_VERSION: "5.6.3"
+
+jobs:
+  jmeter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install JMeter
+        run: |
+          curl -fsSL "https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz" | tar -xz -C "$HOME"
+          echo "$HOME/apache-jmeter-${JMETER_VERSION}/bin" >> "$GITHUB_PATH"
+
+      - name: Run JMeter test plan
+        working-directory: performance
+        run: |
+          jmeter -n -t eds_api_load_test.jmx \
+            -l results.jtl -e -o report \
+            -Jthreads=${{ inputs.threads || '2' }} \
+            -Jduration=${{ inputs.duration || '30' }} \
+            -Jmax_response_ms=${{ inputs.max_response_ms || '1000' }}
+
+      - name: Fail on assertion errors
+        working-directory: performance
+        run: |
+          # results.jtl columns: 8th is "success"; header line is skipped
+          failures=$(tail -n +2 results.jtl | awk -F, '$8 == "false"' | wc -l)
+          echo "Failed samples: $failures"
+          [ "$failures" -eq 0 ]
+
+      - name: Upload JMeter report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jmeter-report
+          path: |
+            performance/report
+            performance/results.jtl
