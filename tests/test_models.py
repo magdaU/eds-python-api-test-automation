@@ -37,3 +37,52 @@ def test_givenRecordWithoutRequiredField_whenParsingRecords_thenValidationErrorI
     # act / assert
     with pytest.raises(ValidationError):
         parse_records(response_json, CO2EmisRecord)
+
+
+@pytest.mark.parametrize("record", [
+    {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK1", "CO2Emission": "not-a-number"},
+    {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": None, "CO2Emission": 123.4},
+    {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK1", "CO2Emission": None},
+], ids=["wrong-type", "null-string", "null-number"])
+def test_givenInvalidFieldValue_whenParsingRecords_thenValidationErrorIsRaised(record):
+    # arrange
+    response_json = {"records": [record], "total": 1}
+
+    # act / assert
+    with pytest.raises(ValidationError):
+        parse_records(response_json, CO2EmisRecord)
+
+
+def test_givenEmptyRecords_whenParsingRecords_thenEmptyListIsReturned():
+    # arrange
+    response_json = {"records": [], "total": 0}
+
+    # act
+    records = parse_records(response_json, CO2EmisRecord)
+
+    # assert
+    assert records == []
+
+
+def test_givenUnknownExtraField_whenParsingRecords_thenItIsIgnored():
+    # arrange
+    response_json = {
+        "records": [{"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK1", "CO2Emission": 123.4, "NewField": "x"}],
+        "total": 1,
+    }
+
+    # act
+    records = parse_records(response_json, CO2EmisRecord)
+
+    # assert
+    assert records[0].CO2Emission == 123.4
+    assert not hasattr(records[0], "NewField")
+
+
+def test_givenResponseWithoutRecordsKey_whenParsingRecords_thenKeyErrorIsRaised():
+    # arrange
+    response_json = {"total": 0}
+
+    # act / assert
+    with pytest.raises(KeyError):
+        parse_records(response_json, CO2EmisRecord)

@@ -2,9 +2,8 @@
 import allure
 import pytest
 
+from tests.support.live import TRANSIENT_NETWORK_ERRORS
 from tests.support.schema import assert_all_match_schema
-
-TRANSIENT_NETWORK_ERRORS = ["ConnectionError", "Timeout", "RetryError"]
 
 
 @allure.feature("CO2Emis")

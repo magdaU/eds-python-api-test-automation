@@ -1,7 +1,7 @@
 import json
-from urllib.parse import parse_qs, urlparse
 
 from client.eds_client import DEFAULT_TIMEOUT, EDSApiClient, RETRYABLE_STATUS_CODES
+from tests.support.mocks import sent_query
 
 
 def test_whenCreatingClientWithDefaults_thenDefaultRetryConfigurationIsApplied():
@@ -62,7 +62,7 @@ def test_givenFilters_whenGettingDataset_thenFilterParameterIsCompactJson(reques
     client.get_dataset("Elspotprices", filters={"PriceArea": "DK1"})
 
     # assert
-    sent = parse_qs(urlparse(requests_mock.last_request.url).query)
+    sent = sent_query(requests_mock)
     assert sent["filter"] == ['{"PriceArea":"DK1"}']
 
 
@@ -76,5 +76,5 @@ def test_givenFilterValueWithQuoteAndBackslash_whenGettingDataset_thenFilterIsVa
     client.get_dataset("Elspotprices", filters=filters)
 
     # assert
-    sent = parse_qs(urlparse(requests_mock.last_request.url).query)
+    sent = sent_query(requests_mock)
     assert json.loads(sent["filter"][0]) == filters
