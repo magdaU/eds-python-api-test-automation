@@ -1,3 +1,4 @@
+import json
 import logging
 import requests
 
@@ -8,6 +9,7 @@ BASE_URL = "https://api.energidataservice.dk"
 DEFAULT_MAX_RETRIES = 3
 DEFAULT_BACKOFF_FACTOR = 1.0
 DEFAULT_BACKOFF_JITTER = 0.0
+DEFAULT_TIMEOUT = 10
 RETRYABLE_STATUS_CODES = [429, 500, 502, 503, 504]
 SANE_MAX_RETRIES = 10
 logger = logging.getLogger(__name__)
@@ -20,6 +22,8 @@ class EDSApiClient:
     and transient server errors. Tune `max_retries`/`backoff_factor`/
     `backoff_jitter` per instance, or per dataset via `dataset_overrides`,
     e.g. to back off harder against a dataset that hits rate limits more.
+    `timeout` (seconds) applies to each connect/read of a single attempt, not
+    to the whole retry cycle, so a server-ordered `Retry-After` wait is not cut short.
     """
 
     def __init__(
@@ -29,8 +33,10 @@ class EDSApiClient:
             backoff_factor: float = DEFAULT_BACKOFF_FACTOR,
             backoff_jitter: float = DEFAULT_BACKOFF_JITTER,
             dataset_overrides: dict | None = None,
+            timeout: float = DEFAULT_TIMEOUT,
     ):
         self.base_url = base_url
+        self.timeout = timeout
         self.session = requests.Session()
 
         default_adapter = self._build_adapter(max_retries, backoff_factor, backoff_jitter)
@@ -64,11 +70,10 @@ class EDSApiClient:
         return HTTPAdapter(max_retries=retry)
 
     @staticmethod
-    def _encode_filter(filter: dict) -> str:
-        pairs = ",".join(f'"{key}":"{value}"' for key, value in filter.items())
-        return f"{{{pairs}}}"
+    def _encode_filters(filters: dict) -> str:
+        return json.dumps(filters, separators=(",", ":"))
 
-    def get_dataset(self, dataset: str, limit: int = None, filter: dict = None, offset: int = None, sort: str = None) -> requests.Response:
+    def get_dataset(self, dataset: str, limit: int = None, filters: dict = None, offset: int = None, sort: str = None) -> requests.Response:
         params = {}
         if limit is not None:
             params["limit"] = limit
@@ -76,8 +81,8 @@ class EDSApiClient:
             params["offset"] = offset
         if sort is not None:
             params["sort"] = sort
-        if filter is not None:
-            params["filter"] = self._encode_filter(filter)
+        if filters is not None:
+            params["filter"] = self._encode_filters(filters)
         return self._get(self.dataset_url(dataset), params)
 
     def get_news(self, path: str = "", params: dict = None) -> requests.Response:
@@ -93,7 +98,7 @@ class EDSApiClient:
     def _get(self, url: str, params: dict) -> requests.Response:
         logger.debug("GET %s params=%s", url, params)
 
-        response = self.session.get(url, params=params)
+        response = self.session.get(url, params=params, timeout=self.timeout)
 
         if response.status_code in RETRYABLE_STATUS_CODES:
             logger.warning("Received retryable status %s from %s", response.status_code, url)

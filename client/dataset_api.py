@@ -12,5 +12,5 @@ class DatasetApi:
     def url(self) -> str:
         return self.client.dataset_url(self.dataset)
 
-    def get(self, limit: int = None, offset: int = None, sort: str = None, filter: dict = None):
-        return self.client.get_dataset(self.dataset, limit=limit, offset=offset, sort=sort, filter=filter)
+    def get(self, limit: int = None, offset: int = None, sort: str = None, filters: dict = None):
+        return self.client.get_dataset(self.dataset, limit=limit, offset=offset, sort=sort, filters=filters)
