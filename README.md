@@ -114,6 +114,10 @@ Override defaults with `-Jthreads=2 -Jduration=30 -Jthinktime=1000 -Jmax_respons
 It hits the public EDS API, so keep the load low. In CI it runs only manually or weekly
 (`performance.yml`) and uploads the HTML report as an artifact.
 
+<p align="center">
+  <img src="docs/jmeter-report.png" alt="JMeter dashboard report" width="500">
+</p>
+
 ### Run in Docker
 
 ```bash
