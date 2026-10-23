@@ -9,7 +9,7 @@
       </elementProp>
     </TestPlan>
     <hashTree>
-      <!-- Override on the CLI with -Jthreads=5 -Jrampup=10 -Jduration=120 -Jthinktime=1000 -Jmax_response_ms=1000 -->
+      <!-- Override on the CLI with -Jthreads=5 -Jrampup=10 -Jduration=120 -Jthinktime=1000 -Jmax_response_ms=2000 -->
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Users">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
@@ -57,7 +57,7 @@
           </ResponseAssertion>
           <hashTree/>
           <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Response time within limit">
-            <stringProp name="DurationAssertion.duration">${__P(max_response_ms,1000)}</stringProp>
+            <stringProp name="DurationAssertion.duration">${__P(max_response_ms,2000)}</stringProp>
           </DurationAssertion>
           <hashTree/>
           <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think time">

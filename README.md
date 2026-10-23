@@ -110,7 +110,7 @@ A low-load JMeter plan lives in `performance/` (requires JMeter 5.6+). Run it fr
 jmeter -n -t eds_api_load_test.jmx -l results.jtl -e -o report
 ```
 
-Override defaults with `-Jthreads=2 -Jduration=30 -Jthinktime=1000 -Jmax_response_ms=1000`.
+Override defaults with `-Jthreads=2 -Jduration=30 -Jthinktime=1000 -Jmax_response_ms=2000`.
 It hits the public EDS API, so keep the load low. In CI it runs only manually or weekly
 (`performance.yml`) and uploads the HTML report as an artifact.
 

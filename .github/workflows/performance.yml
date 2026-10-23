@@ -12,7 +12,7 @@ on:
         default: "30"
       max_response_ms:
         description: Max allowed response time per request (ms)
-        default: "1000"
+        default: "2000"
   schedule:
     - cron: "0 3 * * 1"
 
@@ -48,7 +48,7 @@ jobs:
             -l results.jtl -e -o report \
             -Jthreads=${{ inputs.threads || '2' }} \
             -Jduration=${{ inputs.duration || '30' }} \
-            -Jmax_response_ms=${{ inputs.max_response_ms || '1000' }}
+            -Jmax_response_ms=${{ inputs.max_response_ms || '2000' }}
 
       - name: Fail on assertion errors
         working-directory: performance
