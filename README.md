@@ -12,7 +12,7 @@ Python/pytest API test automation framework for the [Energi Data Service (EDS)](
 
 ## 🛠️ Technologies
 
-Python · pytest · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · JMeter · Git · GitHub Actions · GitHub Pages
+Python · pytest · ruff · mypy · pytest-cov · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · JMeter · Git · GitHub Actions · GitHub Pages
 
 ## 📁 Project Structure
 
@@ -62,7 +62,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-134 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
+137 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -101,6 +101,14 @@ pytest -v -m "not live"
 ```
 
 On GitHub, pull requests run only the offline tests; the full suite (including live) runs on `main`.
+
+Code quality (same checks as the `Quality` workflow; install dev tools with `pip install -r requirements-dev.txt`):
+
+```bash
+ruff check .                         # lint + import order
+mypy                                 # type check (client, models)
+pytest -m "not live" --cov           # offline tests; fails under 90% coverage
+```
 
 For an Allure HTML report:
 

@@ -1,6 +1,6 @@
-import allure
 import pytest
 
+import allure
 from tests.support.mocks import load_mock
 from tests.support.schema import assert_all_match_schema
 

@@ -1,0 +1,20 @@
+[tool.ruff]
+line-length = 130
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "RUF013"]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["client", "models"]
+strict_optional = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+
+[tool.coverage.run]
+source = ["client", "models"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true

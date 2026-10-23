@@ -1,3 +1,5 @@
+import requests
+
 from client.eds_client import EDSApiClient
 
 
@@ -12,5 +14,11 @@ class DatasetApi:
     def url(self) -> str:
         return self.client.dataset_url(self.dataset)
 
-    def get(self, limit: int = None, offset: int = None, sort: str = None, filters: dict = None):
+    def get(
+            self,
+            limit: int | None = None,
+            offset: int | None = None,
+            sort: str | None = None,
+            filters: dict | None = None,
+    ) -> requests.Response:
         return self.client.get_dataset(self.dataset, limit=limit, offset=offset, sort=sort, filters=filters)

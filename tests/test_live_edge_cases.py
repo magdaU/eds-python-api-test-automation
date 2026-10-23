@@ -6,9 +6,9 @@ whole dataset (millions of records).
 """
 import time
 
-import allure
 import pytest
 
+import allure
 from tests.support.live import TRANSIENT_NETWORK_ERRORS
 
 pytestmark = [

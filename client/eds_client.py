@@ -1,7 +1,7 @@
 import json
 import logging
-import requests
 
+import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -73,8 +73,19 @@ class EDSApiClient:
     def _encode_filters(filters: dict) -> str:
         return json.dumps(filters, separators=(",", ":"))
 
-    def get_dataset(self, dataset: str, limit: int = None, filters: dict = None, offset: int = None, sort: str = None) -> requests.Response:
-        params = {}
+    def get_dataset(
+            self,
+            dataset: str,
+            limit: int | None = None,
+            filters: dict | None = None,
+            offset: int | None = None,
+            sort: str | None = None,
+    ) -> requests.Response:
+        """`limit=0` returns every record; a negative `limit` is rejected because the API
+        treats it the same way (it returned a 2-million-record dataset in one response)."""
+        if limit is not None and limit < 0:
+            raise ValueError(f"limit must not be negative, got {limit}")
+        params: dict[str, int | str] = {}
         if limit is not None:
             params["limit"] = limit
         if offset is not None:
@@ -85,7 +96,7 @@ class EDSApiClient:
             params["filter"] = self._encode_filters(filters)
         return self._get(self.dataset_url(dataset), params)
 
-    def get_news(self, path: str = "", params: dict = None) -> requests.Response:
+    def get_news(self, path: str = "", params: dict | None = None) -> requests.Response:
         """GET /News, or a sub-resource: "actual", "calendar" or "archived"."""
         return self._get(self.news_url(path), params or {})
 
@@ -95,7 +106,7 @@ class EDSApiClient:
     def news_url(self, path: str = "") -> str:
         return "/".join(part for part in (f"{self.base_url}/News", path.strip("/")) if part)
 
-    def _get(self, url: str, params: dict) -> requests.Response:
+    def _get(self, url: str, params: dict[str, int | str]) -> requests.Response:
         logger.debug("GET %s params=%s", url, params)
 
         response = self.session.get(url, params=params, timeout=self.timeout)

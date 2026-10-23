@@ -13,3 +13,9 @@ CODE_REVIEW_NOTES.md
 performance/results.jtl
 performance/report/
 jmeter.log
+
+# Coverage
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/

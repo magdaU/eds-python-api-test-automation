@@ -1,7 +1,7 @@
 """Bounded smoke tests against the real EDS API; everything else is mocked."""
-import allure
 import pytest
 
+import allure
 from tests.support.live import TRANSIENT_NETWORK_ERRORS
 from tests.support.schema import assert_all_match_schema
 
