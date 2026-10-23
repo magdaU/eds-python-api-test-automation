@@ -3,7 +3,7 @@ urllib3>=1.26.9
 pytest==8.3.3
 requests-mock==1.12.1
 jsonschema==4.23.0
-pydantic==2.12.5
+pydantic==2.14.1
 allure-pytest==2.16.0
 pytest-rerunfailures==16.7
 hypothesis==6.170.8
