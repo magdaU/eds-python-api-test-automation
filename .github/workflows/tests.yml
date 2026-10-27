@@ -7,11 +7,12 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -29,6 +30,8 @@ jobs:
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
 
       - name: Install dependencies
         run: pip install -r requirements.txt
@@ -76,12 +79,37 @@ jobs:
           npm install -g allure-commandline@2.46.1
           allure generate allure-results --clean -o allure-report
 
+      - name: Upload Allure report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: allure-report
+          path: allure-report
+
+  # Separate job so only the publish step gets write access, and never on pull requests.
+  publish:
+    needs: test
+    if: always() && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Download Allure report
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: allure-report
+          path: allure-report
+
       # Requires a one-time manual repo setting that no workflow step can set:
       # Settings -> Pages -> Build and deployment -> Source -> "Deploy from a branch",
       # branch "gh-pages" / (root) -- created automatically by this step on first run,
       # so set it after the first successful push to main.
       - name: Publish Allure report to GitHub Pages
-        if: always() && github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
