@@ -42,6 +42,21 @@ def test_givenDatasetOverride_whenResolvingDatasets_thenOverrideAppliesOnlyToTha
     assert default.backoff_factor == 1.0
 
 
+def test_givenBaseUrlWithTrailingSlash_whenResolvingOverriddenDataset_thenOverrideStillApplies():
+    # arrange
+    client = EDSApiClient(
+        base_url="https://api.energidataservice.dk/",
+        max_retries=3,
+        dataset_overrides={"Elspotprices": {"max_retries": 5}},
+    )
+
+    # act
+    overridden = _retry_of(client, "Elspotprices")
+
+    # assert
+    assert overridden.total == 5
+
+
 def test_givenBackoffJitter_whenCreatingClient_thenItIsConfiguredOnTheRetryObject():
     # arrange
     client = EDSApiClient(backoff_jitter=0.5)

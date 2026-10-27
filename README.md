@@ -49,6 +49,14 @@ eds-python-api-test-automation/
 │   ├── test_live_smoke.py            # bounded live smoke tests against the real API
 │   ├── test_eds_client.py            # default/custom retry configuration
 │   ├── test_pagination.py            # limit/offset paging
+│   ├── test_boundary_values.py       # limit/offset boundary values
+│   ├── test_parameter_combinations.py # decision table of parameter combinations
+│   ├── test_filter_encoding.py       # filter encoding (non-ASCII, quotes, lists)
+│   ├── test_url_building.py          # URL building and slash normalization
+│   ├── test_properties.py            # property-based tests (hypothesis)
+│   ├── test_retry_behavior.py        # real retry behavior against a local scripted server
+│   ├── test_live_edge_cases.py       # low-load live edge cases
+│   ├── test_allure_environment.py    # Allure environment.properties
 │   ├── test_sorting.py               # sort parameter
 │   ├── test_negative_scenarios.py    # invalid dataset, 404, connection timeout
 │   ├── test_schema_validation.py     # JSON Schema validation
@@ -67,9 +75,12 @@ eds-python-api-test-automation/
 │
 ├── Dockerfile
 ├── requirements.txt
+├── requirements-dev.txt   # ruff, mypy, pytest-cov, type stubs
+├── pyproject.toml         # ruff, mypy and coverage configuration
 ├── pytest.ini
 ├── README.md
 ├── ROADMAP.md
+├── LICENSE
 └── .gitignore
 ```
 

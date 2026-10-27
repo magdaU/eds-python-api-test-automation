@@ -2,6 +2,10 @@
 
 Step-by-step plan for each item in the README's [Completed Improvements](README.md#-completed-improvements).
 
+> **Historical plan:** these steps record how each item was planned, not how it was built. The code has since
+> moved on — e.g. `get_dataset` takes `filters` (not `filter`), and the per-dataset tests became
+> `tests/test_dataset_contract.py` and `tests/test_live_smoke.py`, so file names below may no longer exist.
+
 All plans favor mocked tests (`requests-mock`) for bulk/edge-case coverage, with only a small, bounded number of live smoke calls against the real EDS API — so the suite stays fast and never risks hammering or getting rate-limited by the public API.
 
 ---

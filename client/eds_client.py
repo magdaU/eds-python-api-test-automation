@@ -49,7 +49,7 @@ class EDSApiClient:
                 overrides.get("backoff_factor", backoff_factor),
                 overrides.get("backoff_jitter", backoff_jitter),
             )
-            self.session.mount(f"{base_url}/dataset/{dataset}", override_adapter)
+            self.session.mount(self.dataset_url(dataset), override_adapter)
 
     @staticmethod
     def _build_adapter(max_retries: int, backoff_factor: float, backoff_jitter: float) -> HTTPAdapter:
