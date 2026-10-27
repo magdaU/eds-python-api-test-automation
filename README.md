@@ -46,8 +46,11 @@ eds-python-api-test-automation/
 │   ├── test_logging.py               # retryable-status logging
 │   └── test_retry_config.py          # per-dataset retry/backoff/jitter tuning
 │
-├── .github/workflows/tests.yml   # CI: tests, Allure report, GitHub Pages publish
-├── .github/workflows/performance.yml   # CI: JMeter run (manual / weekly)
+├── .github/workflows/
+│   ├── tests.yml         # CI: tests, Allure report, GitHub Pages publish
+│   ├── quality.yml       # CI: ruff, mypy, offline tests with coverage gate
+│   ├── live-nightly.yml  # CI: nightly live tests to catch API drift (also manual)
+│   └── performance.yml   # CI: JMeter run (manual / weekly)
 ├── performance/
 │   ├── eds_api_load_test.jmx   # JMeter plan (low-load baseline)
 │   └── endpoints.csv           # endpoints the plan iterates over
@@ -88,7 +91,7 @@ with a handful of bounded live smoke tests against the real API:
 ## 🚀 Getting Started
 
 ```bash
-git clone <repository-url> && cd eds-python-api-test-automation
+git clone https://github.com/magdaU/eds-python-api-test-automation.git && cd eds-python-api-test-automation
 python -m venv .venv
 .venv\Scripts\activate      # Windows; use `source .venv/bin/activate` on macOS/Linux
 pip install -r requirements.txt
@@ -180,7 +183,7 @@ automatically.
   </a>
 </p>
 
-## 📌 Planned Improvements
+## ✅ Completed Improvements
 
 * [x] API client abstraction
 * [x] pytest fixtures
@@ -202,7 +205,7 @@ automatically.
 * [x] News API endpoint tests (`/News`, `/actual`, `/calendar`, `/archived`)
 * [x] JMeter performance tests
 
-See [ROADMAP.md](ROADMAP.md) for the step-by-step plan behind each unchecked item.
+All planned items are done. See [ROADMAP.md](ROADMAP.md) for the step-by-step plan behind each one.
 
 ## 👩‍💻 About the Project
 

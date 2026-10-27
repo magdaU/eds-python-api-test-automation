@@ -1,6 +1,6 @@
 # Roadmap
 
-Step-by-step plan for each unchecked item in the README's [Planned Improvements](README.md#-planned-improvements).
+Step-by-step plan for each item in the README's [Completed Improvements](README.md#-completed-improvements).
 
 All plans favor mocked tests (`requests-mock`) for bulk/edge-case coverage, with only a small, bounded number of live smoke calls against the real EDS API — so the suite stays fast and never risks hammering or getting rate-limited by the public API.
 
