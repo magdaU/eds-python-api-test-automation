@@ -67,8 +67,7 @@ def test_givenLimit_whenGettingDataset_thenReturnsThatManyRecords(dataset, datas
 
 
 @pytest.mark.parametrize("price_area", ["DK1", "DK2"])
-def test_givenPriceArea_whenFilteringDataset_thenOnlyMatchingRecordsAreReturned(
-        dataset, dataset_api, requests_mock, price_area):
+def test_givenPriceArea_whenFilteringDataset_thenOnlyMatchingRecordsAreReturned(dataset, dataset_api, requests_mock, price_area):
     # arrange
     all_records = load_mock(dataset.sample_response_file)["records"]
     matching = [record for record in all_records if record["PriceArea"] == price_area]

@@ -6,10 +6,13 @@ pytestmark = labels("Dataset API", "Pagination")
 
 def test_givenConsecutiveOffsets_whenGettingPages_thenPagesDoNotOverlap(co2_api, requests_mock):
     # arrange
-    requests_mock.get(co2_api.url, [
-        {"json": load_mock("co2_page1.json")},
-        {"json": load_mock("co2_page2.json")},
-    ])
+    requests_mock.get(
+        co2_api.url,
+        [
+            {"json": load_mock("co2_page1.json")},
+            {"json": load_mock("co2_page2.json")},
+        ],
+    )
 
     # act
     first_page = co2_api.get(limit=5, offset=0).json()

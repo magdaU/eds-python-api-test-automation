@@ -20,12 +20,15 @@ def test_givenBaseUrlWithOrWithoutTrailingSlash_whenBuildingDatasetUrl_thenNoDou
     assert url == f"{BASE}/dataset/CO2Emis"
 
 
-@pytest.mark.parametrize("path, expected_suffix", [
-    ("", "/News"),
-    ("actual", "/News/actual"),
-    ("/actual", "/News/actual"),
-    ("calendar/", "/News/calendar"),
-])
+@pytest.mark.parametrize(
+    "path, expected_suffix",
+    [
+        ("", "/News"),
+        ("actual", "/News/actual"),
+        ("/actual", "/News/actual"),
+        ("calendar/", "/News/calendar"),
+    ],
+)
 def test_givenNewsPath_whenBuildingNewsUrl_thenSlashesAreNormalized(path, expected_suffix):
     # arrange
     client = EDSApiClient(base_url=BASE)

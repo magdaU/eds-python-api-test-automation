@@ -58,13 +58,17 @@ def test_givenRecordWithoutRequiredField_whenValidating_thenValidationFails():
         assert_matches_schema(body, CO2EMIS_DATASET.schema_file)
 
 
-@pytest.mark.parametrize("break_body", [
-    lambda body: body.pop("total"),
-    lambda body: body.pop("records"),
-    lambda body: body.update(records={"not": "a list"}),
-    lambda body: body.update(total="three"),
-    lambda body: body["records"].__setitem__(0, "not an object"),
-], ids=["missing-total", "missing-records", "records-not-array", "total-not-integer", "record-not-object"])
+@pytest.mark.parametrize(
+    "break_body",
+    [
+        lambda body: body.pop("total"),
+        lambda body: body.pop("records"),
+        lambda body: body.update(records={"not": "a list"}),
+        lambda body: body.update(total="three"),
+        lambda body: body["records"].__setitem__(0, "not an object"),
+    ],
+    ids=["missing-total", "missing-records", "records-not-array", "total-not-integer", "record-not-object"],
+)
 def test_givenMalformedBody_whenValidating_thenValidationFails(dataset, break_body):
     # arrange
     body = load_mock(dataset.sample_response_file)

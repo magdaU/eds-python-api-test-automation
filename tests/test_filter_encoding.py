@@ -12,12 +12,16 @@ def sent_filter(requests_mock):
     return json.loads(sent_query(requests_mock)["filter"][0])
 
 
-@pytest.mark.parametrize("filters", [
-    {"PriceArea": "DK1", "SpotPriceDKK": "12.5"},
-    {"PriceArea": "Ærø Ø å"},
-    {"PriceArea": "DK1,DK2"},
-    {"PriceArea": ["DK1", "DK2"]},
-], ids=["two-keys", "non-ascii", "comma-in-value", "list-of-values"])
+@pytest.mark.parametrize(
+    "filters",
+    [
+        {"PriceArea": "DK1", "SpotPriceDKK": "12.5"},
+        {"PriceArea": "Ærø Ø å"},
+        {"PriceArea": "DK1,DK2"},
+        {"PriceArea": ["DK1", "DK2"]},
+    ],
+    ids=["two-keys", "non-ascii", "comma-in-value", "list-of-values"],
+)
 def test_givenFilters_whenGettingDataset_thenFilterRoundTripsThroughJson(elspotprices_api, requests_mock, filters):
     # arrange
     requests_mock.get(elspotprices_api.url, json=records_response([]))

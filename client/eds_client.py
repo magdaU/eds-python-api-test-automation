@@ -27,13 +27,13 @@ class EDSApiClient:
     """
 
     def __init__(
-            self,
-            base_url: str = BASE_URL,
-            max_retries: int = DEFAULT_MAX_RETRIES,
-            backoff_factor: float = DEFAULT_BACKOFF_FACTOR,
-            backoff_jitter: float = DEFAULT_BACKOFF_JITTER,
-            dataset_overrides: dict | None = None,
-            timeout: float = DEFAULT_TIMEOUT,
+        self,
+        base_url: str = BASE_URL,
+        max_retries: int = DEFAULT_MAX_RETRIES,
+        backoff_factor: float = DEFAULT_BACKOFF_FACTOR,
+        backoff_jitter: float = DEFAULT_BACKOFF_JITTER,
+        dataset_overrides: dict | None = None,
+        timeout: float = DEFAULT_TIMEOUT,
     ):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
@@ -57,7 +57,8 @@ class EDSApiClient:
             logger.warning(
                 "max_retries=%s exceeds the recommended maximum of %s -- this risks "
                 "hammering the public EDS API during an outage or rate limit",
-                max_retries, SANE_MAX_RETRIES,
+                max_retries,
+                SANE_MAX_RETRIES,
             )
 
         retry = Retry(
@@ -74,12 +75,12 @@ class EDSApiClient:
         return json.dumps(filters, separators=(",", ":"))
 
     def get_dataset(
-            self,
-            dataset: str,
-            limit: int | None = None,
-            filters: dict | None = None,
-            offset: int | None = None,
-            sort: str | None = None,
+        self,
+        dataset: str,
+        limit: int | None = None,
+        filters: dict | None = None,
+        offset: int | None = None,
+        sort: str | None = None,
     ) -> requests.Response:
         """`limit=0` returns every record; a negative `limit` is rejected because the API
         treats it the same way (it returned a 2-million-record dataset in one response)."""

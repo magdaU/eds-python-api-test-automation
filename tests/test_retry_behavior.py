@@ -66,8 +66,7 @@ def api_for(server, max_retries=2):
 
 
 @pytest.mark.parametrize("failing_statuses", [(503, 503), (429,)])
-def test_givenTransientFailuresWithinRetryBudget_whenGettingDataset_thenFinalSuccessIsReturned(
-        scripted_server, failing_statuses):
+def test_givenTransientFailuresWithinRetryBudget_whenGettingDataset_thenFinalSuccessIsReturned(scripted_server, failing_statuses):
     # arrange
     server = scripted_server(*failing_statuses, 200)
 
