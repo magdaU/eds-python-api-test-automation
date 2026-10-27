@@ -1,1 +1,0 @@
-WARNING  client.eds_client:eds_client.py:115 Received retryable status 500 from https://api.energidataservice.dk/News
