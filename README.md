@@ -1,6 +1,7 @@
 # EDS API Automation Framework
 
 [![Allure Report](https://img.shields.io/badge/allure-report-brightgreen)](https://magdau.github.io/eds-python-api-test-automation/)
+[![Tests](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/tests.yml/badge.svg)](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/tests.yml)
 
 Python/pytest API test automation framework for the [Energi Data Service (EDS)](https://www.energidataservice.dk/) API. Built as a QA Automation portfolio project demonstrating REST API testing, parameterized/positive/negative testing, response validation, and CI/CD integration.
 
@@ -9,6 +10,15 @@ Python/pytest API test automation framework for the [Energi Data Service (EDS)](
     <img src="docs/allure-report.png" alt="Allure report overview" width="500">
   </a>
 </p>
+
+## 📊 Test Results
+
+| What | Where |
+| --- | --- |
+| Allure report (latest `main` run, with Trend, Retries, Executors, Categories) | **https://magdau.github.io/eds-python-api-test-automation/** |
+| Test runs on GitHub Actions (build numbers in Allure, e.g. `#95`, are these runs) | [Tests workflow](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/tests.yml) |
+| Nightly live API check (catches API drift) | [Live nightly workflow](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/live-nightly.yml) |
+| Code quality (ruff, mypy, coverage) | [Quality workflow](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/quality.yml) |
 
 ## 🛠️ Technologies
 
@@ -122,13 +132,7 @@ pytest --alluredir=allure-results
 allure serve allure-results
 ```
 
-The live, always-up-to-date report (with Trend, Duration/Retries trend, Executors and
-Categories populated across CI runs) is published on every push to `main`:
-**https://magdau.github.io/eds-python-api-test-automation/**
-
-Each build number in the report's Trend and Executors widgets (e.g. `#95`) is a run of the
-[Tests workflow](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/tests.yml) —
-browse all of them there.
+The live report is published on every push to `main` (see [Test Results](#-test-results)).
 
 The Environment widget (base URL, Python/OS, library versions, CI branch/commit/run) is written automatically
 by a pytest hook whenever `--alluredir` is used, locally and in CI.
