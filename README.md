@@ -218,6 +218,3 @@ All planned items are done. See [ROADMAP.md](ROADMAP.md) for the step-by-step pl
 ## 👩‍💻 About the Project
 
 A solo QA Automation portfolio project, built incrementally with a focus on clean test design and realistic QA practices.
-▎ Python-based API test automation framework for the Energi Data Service (EDS) API: pytest, Pydantic, Allure, GitHub Actions, JMeter 
-</content>
-</invoke>
