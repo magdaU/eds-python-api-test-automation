@@ -43,11 +43,15 @@ def test_givenRecordWithoutRequiredField_whenParsingRecords_thenValidationErrorI
         parse_records(response_json, CO2EmisRecord)
 
 
-@pytest.mark.parametrize("record", [
-    {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK1", "CO2Emission": "not-a-number"},
-    {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": None, "CO2Emission": 123.4},
-    {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK1", "CO2Emission": None},
-], ids=["wrong-type", "null-string", "null-number"])
+@pytest.mark.parametrize(
+    "record",
+    [
+        {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK1", "CO2Emission": "not-a-number"},
+        {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": None, "CO2Emission": 123.4},
+        {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK1", "CO2Emission": None},
+    ],
+    ids=["wrong-type", "null-string", "null-number"],
+)
 def test_givenInvalidFieldValue_whenParsingRecords_thenValidationErrorIsRaised(record):
     # arrange
     response_json = {"records": [record], "total": 1}

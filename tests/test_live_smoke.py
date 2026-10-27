@@ -1,4 +1,5 @@
 """Bounded smoke tests against the real EDS API; everything else is mocked."""
+
 import pytest
 
 import allure

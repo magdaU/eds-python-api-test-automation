@@ -21,7 +21,8 @@ COMBINATIONS = [
 
 @pytest.mark.parametrize("arguments, expected_query", COMBINATIONS)
 def test_givenParameterCombination_whenGettingDataset_thenExactlyThoseParametersAreSent(
-        co2_api, requests_mock, arguments, expected_query):
+    co2_api, requests_mock, arguments, expected_query
+):
     # arrange
     requests_mock.get(co2_api.url, json=records_response([]))
 
@@ -32,12 +33,15 @@ def test_givenParameterCombination_whenGettingDataset_thenExactlyThoseParameters
     assert sent_query(requests_mock) == expected_query
 
 
-@pytest.mark.parametrize("sort", [
-    "SpotPriceDKK",
-    "SpotPriceDKK asc",
-    "SpotPriceDKK desc",
-    "PriceArea asc, SpotPriceDKK desc",
-])
+@pytest.mark.parametrize(
+    "sort",
+    [
+        "SpotPriceDKK",
+        "SpotPriceDKK asc",
+        "SpotPriceDKK desc",
+        "PriceArea asc, SpotPriceDKK desc",
+    ],
+)
 def test_givenSortExpression_whenGettingDataset_thenItIsSentVerbatim(elspotprices_api, requests_mock, sort):
     # arrange
     requests_mock.get(elspotprices_api.url, json=records_response([]))

@@ -1,4 +1,5 @@
 """Property-based tests (hypothesis): invariants that must hold for any input, not just chosen examples."""
+
 import json
 from urllib.parse import parse_qs, urlparse
 
@@ -68,8 +69,9 @@ def test_givenAnyNegativeLimit_whenGettingDataset_thenValueErrorIsRaisedBeforeSe
         assert mocker.call_count == 0
 
 
-@given(path=st.text(alphabet=st.characters(whitelist_categories=("Ll", "Lu", "Nd")), max_size=20),
-       padding=st.sampled_from(["", "/"]))
+@given(
+    path=st.text(alphabet=st.characters(whitelist_categories=("Ll", "Lu", "Nd")), max_size=20), padding=st.sampled_from(["", "/"])
+)
 def test_givenAnyPathWithOptionalSlashes_whenBuildingNewsUrl_thenThereIsNoDoubleSlash(path, padding):
     # arrange
     client = EDSApiClient(base_url=BASE + padding)

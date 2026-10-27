@@ -77,8 +77,7 @@ def test_givenNewsList_whenCheckingCategories_thenOnlyKnownCategoriesAppear(news
 
 
 @pytest.mark.parametrize("query", [{"limit": 1}, {"sort": "newsId desc"}])
-def test_givenUnsupportedParameter_whenGettingNews_thenParameterIsSentAndListIsUnchanged(
-        news_api, requests_mock, query):
+def test_givenUnsupportedParameter_whenGettingNews_thenParameterIsSentAndListIsUnchanged(news_api, requests_mock, query):
     # arrange
     requests_mock.get(news_api.url(), json=load_mock("news_list_sample.json"))
 
@@ -111,8 +110,11 @@ def test_whenGettingActualNewsWithoutCategory_thenBadRequestNamesMissingField(ne
     requests_mock.get(
         news_api.url("actual"),
         status_code=400,
-        json={"title": "One or more validation errors occurred.", "status": 400,
-              "errors": {"category": ["The category field is required."]}},
+        json={
+            "title": "One or more validation errors occurred.",
+            "status": 400,
+            "errors": {"category": ["The category field is required."]},
+        },
         headers=VALIDATION_PROBLEM_JSON,
     )
 
@@ -146,8 +148,7 @@ def test_whenGettingCalendar_thenEachEntryHasYearAndStoryCount(news_api, request
     # assert
     assert isinstance(body, list)
     assert_all_match_schema(body, "news_calendar_schema.json")
-    assert [(entry["dateString"], entry["numberOfNewsStories"]) for entry in body] == [
-        ("2026", 3), ("2025", 2), ("2024", 5)]
+    assert [(entry["dateString"], entry["numberOfNewsStories"]) for entry in body] == [("2026", 3), ("2025", 2), ("2024", 5)]
 
 
 def test_givenDate_whenGettingArchivedNews_thenNewsListIsReturned(news_api, requests_mock):
@@ -180,8 +181,11 @@ def test_givenInvalidDate_whenGettingArchivedNews_thenBadRequestNamesDateField(n
     requests_mock.get(
         news_api.url("archived"),
         status_code=400,
-        json={"title": "One or more validation errors occurred.", "status": 400,
-              "errors": {"date": ["The value 'bogus' is not valid."]}},
+        json={
+            "title": "One or more validation errors occurred.",
+            "status": 400,
+            "errors": {"date": ["The value 'bogus' is not valid."]},
+        },
         headers=VALIDATION_PROBLEM_JSON,
     )
 

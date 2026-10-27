@@ -4,6 +4,7 @@ One request per test, `limit=1`, and a pause before each. Note: `limit=-1` is
 deliberately NOT tested live -- the API treats it as "no limit" and returns the
 whole dataset (millions of records).
 """
+
 import time
 
 import pytest
