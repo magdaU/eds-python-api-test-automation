@@ -126,6 +126,10 @@ The live, always-up-to-date report (with Trend, Duration/Retries trend, Executor
 Categories populated across CI runs) is published on every push to `main`:
 **https://magdau.github.io/eds-python-api-test-automation/**
 
+Each build number in the report's Trend and Executors widgets (e.g. `#95`) is a run of the
+[Tests workflow](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/tests.yml) —
+browse all of them there.
+
 The Environment widget (base URL, Python/OS, library versions, CI branch/commit/run) is written automatically
 by a pytest hook whenever `--alluredir` is used, locally and in CI.
 
