@@ -21,12 +21,12 @@ def test_whenGettingCo2Emis_thenResponseMatchesSchema(co2_response):
 
 
 @pytest.mark.live
-def test_whenGettingElspotprices_thenResponseMatchesSchema(elspotprices_response):
+def test_whenGettingElspotprices_thenResponseMatchesSchema(elspotprices_latest):
     # act
-    body = elspotprices_response.json()
+    body = elspotprices_latest.json()
 
     # assert
-    assert elspotprices_response.status_code == 200
+    assert elspotprices_latest.status_code == 200
     assert body["records"], "no records returned, so the schema was not exercised on any record"
     assert_matches_schema(body, ELSPOTPRICES_DATASET.schema_file)
 

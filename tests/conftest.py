@@ -5,6 +5,7 @@ from client.eds_client import EDSApiClient
 from client.news_api import NewsApi
 from tests.support.allure_environment import environment_from_session
 from tests.support.datasets import ALL_DATASETS, CO2EMIS_DATASET, ELSPOTPRICES_DATASET
+from tests.support.live import ELSPOTPRICES_LIVE_QUERY
 from tests.support.scripted_server import ScriptedServer
 
 
@@ -62,6 +63,7 @@ def co2_response(co2_api):
     return co2_api.get(limit=1)
 
 
-@pytest.fixture
-def elspotprices_response(elspotprices_api):
-    return elspotprices_api.get(limit=1)
+@pytest.fixture(scope="session")
+def elspotprices_latest(eds_client):
+    """The only live query a test run sends to Elspotprices, shared by every live test that needs its data."""
+    return DatasetApi(eds_client, ELSPOTPRICES_DATASET.name).get(**ELSPOTPRICES_LIVE_QUERY)
