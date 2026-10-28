@@ -1,28 +1,30 @@
 # Test report
 
-Test summary report for the state of `main` at commit `b304c99` (CI build #128), 2026-10-28.
+Test summary report for the state of `main` at commit `e65760c` (CI build #132), 2026-10-28.
 Related: [test strategy](test-strategy.md) · [test plan](test-plan.md) · [test cases](test-cases.md) ·
 [test coverage](test-coverage.md) · [test results](test-results.md).
 
 ## 1. Summary and recommendation
 
-All 136 automated test cases passed: 120 offline and 16 against the live EDS API. Static analysis is clean and code
+All 146 automated test cases passed: 130 offline and 16 against the live EDS API. Static analysis is clean and code
 coverage of the client is 100% (statements and branches). The nightly live run has passed on each of its last five
 executions. **Every exit criterion in the [test strategy](test-strategy.md#9-entry-and-exit-criteria) is met, and the
 suite is fit for its purpose: gating changes to the client and detecting drift in the EDS API.**
 
-Known limits are listed in section 7 and, in full, in [test coverage](test-coverage.md#6-known-gaps).
+One open observation needs attention: the duration of a full run on `main` is either about 5 minutes or about 30
+seconds, for a reason that has not been confirmed (section 7).
 
 ## 2. What was tested
 
 As in the [test plan](test-plan.md): dataset queries (`CO2Emis`, `Elspotprices`), the News endpoints, the response
-contract, client robustness (retry, timeout, logging), the test infrastructure and a low-load performance baseline.
+contract, client robustness (retry, timeout, logging), the test infrastructure (including the Allure failure
+categories) and a low-load performance baseline.
 
 ## 3. Results
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| Offline tests (120) | 120 passed | [test results](test-results.md) |
+| Offline tests (130) | 130 passed | [test results](test-results.md) |
 | Live tests (16) | 16 passed | [test results](test-results.md) |
 | Failed, broken or skipped tests | 0 | [test results](test-results.md) |
 | `ruff` | no findings | `Quality` workflow |
@@ -38,12 +40,12 @@ Live Allure report with history: <https://magdau.github.io/eds-python-api-test-a
 
 | Level | Offline | Live | Total |
 | --- | ---: | ---: | ---: |
-| Component | 110 | 0 | 110 |
+| Component | 120 | 0 | 120 |
 | Integration | 10 | 0 | 10 |
 | System | 0 | 16 | 16 |
-| **Total** | **120** | **16** | **136** |
+| **Total** | **130** | **16** | **146** |
 
-85 test functions; the difference is parametrized runs. Details in [test cases](test-cases.md).
+87 test functions; the difference is parametrized runs. Details in [test cases](test-cases.md).
 
 ## 5. Deviations from the plan
 
@@ -51,7 +53,7 @@ None. All planned triggers ran, and no test was skipped, disabled or excluded.
 
 ## 6. Defects and weaknesses found and resolved
 
-Found by reviewing CI results and by an audit of the tests and documentation against the strategy.
+Found by reviewing CI results and by audits of the tests and documentation against the strategy.
 
 | # | Finding | Impact | Resolved in |
 | --- | --- | --- | --- |
@@ -61,16 +63,25 @@ Found by reviewing CI results and by an audit of the tests and documentation aga
 | 4 | Test fixtures used paths relative to the working directory | Tests failed when run from another directory | PR #60: paths are resolved from the code's location, with regression tests |
 | 5 | Several tests only repeated what the mock returned, and some compared lower-cased query values; tests for `Elspotprices` were missing; some live checks were too weak (`status != 200`) | Regressions in the client could pass unnoticed | PR #61: tests assert the request that was sent, exact case, both datasets, exact live statuses; mutation checks added |
 | 6 | A misspelled per-dataset retry setting was silently ignored | A wrong configuration looked valid | PR #64: `RetryConfig` raises `TypeError` for unknown settings |
+| 7 | Live schema, sort and news tests passed on an empty result (an empty list satisfies the schema and the sort check) | A live API returning no data would have shown green | PR #66: the schema helper rejects an empty list and live tests assert status and record count |
+| 8 | Allure failure categories were wrong: any message containing "429" (a port number, `KeyError: 4290`) counted as an infrastructure problem, while a real `RetryError` counted as a test defect | Misleading failure triage in the report | PR #66: pattern fixed, verified with Allure 2.46.1, `test_allure_categories.py` guards the mapping |
 
 ## 7. Residual risks and open items
 
+- **Run duration is bimodal (not explained).** In the Allure history, 14 of the last 19 builds took 323-326 s and 5 took
+  16-33 s (build #132 took 33 s). The summed duration of the test bodies is about 17 s in both cases. A fixed wait of about
+  300 s fits the pattern; two live fixtures (`co2_response`, `elspotprices_response`) call the API during setup, which is
+  not counted in the test bodies, and `urllib3` honours the server's `Retry-After`. This is a hypothesis and has not been
+  confirmed. Until it is, a throttled API can stretch a run to minutes; the job timeout (30 min) is the only limit.
 - **External dependency.** Live tests depend on the public EDS API (availability, rate limits, contract changes). The
   nightly run detects this within a day; offline tests keep gating changes regardless.
 - **Untested areas** (details in [test coverage](test-coverage.md#6-known-gaps)): other datasets and query parameters,
   correctness of data values, security, stress and soak load, other Python versions.
-- **Process.** Pull request #61 was merged about 20 seconds before its `Tests` run finished (CI was green, but the merge
-  did not wait for it). Requiring the `Tests` and `Quality` checks before merge (branch protection) would make the gate
-  automatic.
+- **Diagnostics.** A failed live test shows only the assertion; the request and response are neither logged at a visible
+  level nor attached to the Allure report. The nightly run produces no Allure report at all.
+- **Process.** At least three pull requests (#61, #65, #66) were merged 20-35 seconds before their `Tests` run finished.
+  CI was green each time, but the merge did not wait for it. Requiring the `Tests` and `Quality` checks before merge
+  (branch protection) would make the gate automatic.
 - **Manual evidence.** Mutation checks and the CI publish-guard simulation are not repeated automatically.
 
 ## 8. How this report is kept current

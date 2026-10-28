@@ -1,6 +1,6 @@
 # Test coverage
 
-What the tests cover and what they do not. Measured on commit `b304c99` (2026-10-28), Python 3.12.2. Related:
+What the tests cover and what they do not. Measured on commit `e65760c` (2026-10-28), Python 3.12.2. Related:
 [test strategy](test-strategy.md) · [test cases](test-cases.md) · [test results](test-results.md) · [test report](test-report.md).
 
 ## 1. Code coverage
@@ -31,8 +31,10 @@ checked by hand-made mutations: one line of the client is changed or removed and
 | `sort` is sent in lower case | 7 | yes |
 | News `category` is sent in lower case | 2 | yes |
 | Dataset URL path is wrong (`/datasets/...`) | 4 | yes |
+| `offset` is never sent | 9 | yes |
 
-These checks were run once on 2026-10-28 against the suite as of pull request #61 and are not part of CI. Before that
+The first six checks were run once on 2026-10-28 against the suite as of pull request #61, the `offset` check against
+the suite as of #66; they are not part of CI. The live paging test also fails when `offset` is ignored. Before that
 pull request, the same mutations were detected only by the parameter-focused modules (boundary values, parameter
 combinations, filter encoding, properties) and by none of the dataset contract, pagination or negative-scenario tests;
 see the [test report](test-report.md).
@@ -61,6 +63,7 @@ see the [test report](test-report.md).
 | | Real JSON round-trip over HTTP | `dataset_contract` | Integration |
 | Test infrastructure | Allure environment properties | `allure_environment` | Component |
 | | Fixtures load from any working directory | `support_paths` | Component |
+| | Allure failure categories assign the expected category to typical failure messages | `allure_categories` | Component |
 | Non-functional | Latency and error rate, 4 endpoints, 2 users, 30 s | `performance/` (JMeter, not pytest) | Non-functional |
 | | Style, bugs, types | `ruff`, `mypy --strict` | Static |
 
@@ -96,4 +99,5 @@ there is no formal requirements document, so features rather than requirement ID
 - Performance covers a low-load baseline only; there is no stress, soak or spike test.
 - No security or TLS tests.
 - The CI publish guard is verified by simulating exit codes, not by an automated test.
+- Request and response bodies of failed live tests are not captured, so some failures cannot be diagnosed from the report alone.
 - Mutation checks are manual and not repeated in CI.
