@@ -1,1 +1,0 @@
-WARNING  client.eds_client:eds_client.py:128 Giving up on http://127.0.0.1:35501/dataset/CO2Emis after retries, 1 ms: HTTPConnectionPool(host='127.0.0.1', port=35501): Max retries exceeded with url: /dataset/CO2Emis (Caused by ResponseError('too many 503 error responses'))
