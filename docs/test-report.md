@@ -68,17 +68,21 @@ Found by reviewing CI results and by audits of the tests and documentation again
 
 ## 7. Residual risks and open items
 
-- **Run duration is bimodal (not explained).** In the Allure history, 14 of the last 19 builds took 323-326 s and 5 took
-  16-33 s (build #132 took 33 s). The summed duration of the test bodies is about 17 s in both cases. A fixed wait of about
-  300 s fits the pattern; two live fixtures (`co2_response`, `elspotprices_response`) call the API during setup, which is
-  not counted in the test bodies, and `urllib3` honours the server's `Retry-After`. This is a hypothesis and has not been
-  confirmed. Until it is, a throttled API can stretch a run to minutes; the job timeout (30 min) is the only limit.
+- **Run duration is bimodal; the public API throttles.** In the Allure history, 14 of the last 19 builds took 323-326 s
+  and 5 took 16-33 s (build #132 took 33 s). The summed duration of the test bodies is about 17 s in both cases. Request
+  diagnostics added afterwards showed the cause on a local run: the API answered `429` with `Retry-After` and the client
+  waited it out (`Retrying in 217.0 s because the server sent Retry-After (status 429)`; an earlier attempt waited 300 s).
+  The waits happen in fixtures that call the live API during setup (`co2_response`, `elspotprices_response`), which is why
+  they are not part of the test bodies. That the slow CI builds have the same cause is an inference from their uniform
+  duration; their logs were not captured. The client has no cap on the wait, so a throttled API can stretch a run to
+  minutes; the job timeout (30 min) is the only limit.
 - **External dependency.** Live tests depend on the public EDS API (availability, rate limits, contract changes). The
   nightly run detects this within a day; offline tests keep gating changes regardless.
 - **Untested areas** (details in [test coverage](test-coverage.md#6-known-gaps)): other datasets and query parameters,
   correctness of data values, security, stress and soak load, other Python versions.
-- **Diagnostics.** A failed live test shows only the assertion; the request and response are neither logged at a visible
-  level nor attached to the Allure report. The nightly run produces no Allure report at all.
+- **Diagnostics.** Since the diagnostics change, every request is logged (status, duration, start of an error body) together
+  with the wait before each retry and its reason, and Allure attaches the log to the test. The nightly run produces no
+  Allure report, but its workflow log contains the same lines.
 - **Process.** At least three pull requests (#61, #65, #66) were merged 20-35 seconds before their `Tests` run finished.
   CI was green each time, but the merge did not wait for it. Requiring the `Tests` and `Quality` checks before merge
   (branch protection) would make the gate automatic.

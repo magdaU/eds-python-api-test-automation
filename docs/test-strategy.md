@@ -69,6 +69,9 @@ The number of test cases per level is in [test-cases.md](test-cases.md).
   ones that depend on an external system.
 - **One reason to fail.** A test asserts one behaviour; mapping tests assert every attribute and use distinct values per
   attribute so that swapped fields are detected.
+- **Diagnosable failures.** The client logs one line per request (URL, parameters, status, duration including retry waits,
+  the start of an error body) and the wait before each retry with its reason. pytest captures these logs, including those of
+  fixtures, and Allure attaches them to the test, so a failed or slow live test explains itself.
 - **No vacuous passes.** A test that validates items must first prove that there are items: the schema helper rejects
   an empty list, and live tests assert that records arrived (for example five records for `limit=5`).
 - **Mock-first, live-bounded.** Edge cases and error paths are proven offline. Live tests are limited to smoke checks
@@ -134,7 +137,7 @@ the Allure report shows no failed or broken test.
 | --- | --- | --- | --- |
 | EDS API changes a field, status or message | Medium | Live tests fail, schemas outdated | Nightly live run (its result is the Actions run, not an Allure report), JSON Schemas; on `main` runs the Allure *Contract drift* category |
 | Public API rate limiting (429) | Medium | Flaky live tests, blocked client | Few and small live requests, retry with backoff, rerun on network errors only, 429 is never triggered on purpose |
-| A throttled API makes a run wait minutes (full runs on `main` take either about 30 s or about 5 min; cause not confirmed, see the [test report](test-report.md#7-residual-risks-and-open-items)) | Medium | Slow feedback, job near its timeout | Job timeout of 30 minutes; investigate and bound the wait |
+| The public API answers 429 with a long `Retry-After` (up to 300 s observed) and the client waits it out, so a full run takes about 5 minutes instead of 30 seconds (see the [test report](test-report.md#7-residual-risks-and-open-items)) | High | Slow feedback, job near its timeout | The wait and its reason are logged; job timeout of 30 minutes. Open: fewer live requests in fixtures, or a cap on the wait |
 | Retry logic is wrong but untested | Medium | Hammering the API, or silent failures | Retry behaviour tested against a real local server, not only mocks |
 | Tests pass although the client is broken | Medium | False confidence | Mutation checks, request-based assertions, coverage is not trusted alone (see [test coverage](test-coverage.md)) |
 | Report shows misleading history | Low | Wrong decisions | Publish guard in CI, Allure categories |

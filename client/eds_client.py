@@ -1,11 +1,13 @@
 import json
 import logging
+import time
 from dataclasses import dataclass
 from typing import Any
 
 import requests
 from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+
+from client.retry import LoggingRetry
 
 BASE_URL = "https://api.energidataservice.dk"
 DEFAULT_MAX_RETRIES = 3
@@ -14,6 +16,7 @@ DEFAULT_BACKOFF_JITTER = 0.0
 DEFAULT_TIMEOUT = 10
 RETRYABLE_STATUS_CODES = frozenset({429, 500, 502, 503, 504})
 SANE_MAX_RETRIES = 10
+ERROR_BODY_PREVIEW_CHARS = 300
 logger = logging.getLogger(__name__)
 
 
@@ -69,7 +72,7 @@ class EDSApiClient:
                 SANE_MAX_RETRIES,
             )
 
-        retry = Retry(
+        retry = LoggingRetry(
             total=config.max_retries,
             backoff_factor=config.backoff_factor,
             backoff_jitter=config.backoff_jitter,
@@ -116,12 +119,29 @@ class EDSApiClient:
         return "/".join(part for part in (f"{self.base_url}/News", path.strip("/")) if part)
 
     def _get(self, url: str, params: dict[str, Any]) -> requests.Response:
-        logger.debug("GET %s params=%s", url, params)
-
+        started = time.perf_counter()
         try:
-            return self.session.get(url, params=params, timeout=self.timeout)
+            response = self.session.get(url, params=params, timeout=self.timeout)
         except requests.exceptions.RetryError as error:
             # Retryable statuses never reach the caller as a response: urllib3 retries them and,
             # once the budget is spent, raises. This is where that would otherwise go unnoticed.
-            logger.warning("Giving up on %s after retries: %s", url, error)
+            logger.warning("Giving up on %s after retries, %.0f ms: %s", url, _milliseconds_since(started), error)
             raise
+        self._log_response(url, params, response, started)
+        return response
+
+    @staticmethod
+    def _log_response(url: str, params: dict[str, Any], response: requests.Response, started: float) -> None:
+        """One line per request: what was asked, the status and how long it took (waits for retries included).
+
+        An error response also gets the start of its body, which is where the API says what was wrong.
+        """
+        line = f"GET {url} params={params} -> {response.status_code} in {_milliseconds_since(started):.0f} ms"
+        if response.ok:
+            logger.info(line)
+        else:
+            logger.info("%s body=%s", line, response.text[:ERROR_BODY_PREVIEW_CHARS])
+
+
+def _milliseconds_since(started: float) -> float:
+    return (time.perf_counter() - started) * 1000
