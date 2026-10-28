@@ -3,6 +3,7 @@ import logging
 import time
 from dataclasses import dataclass
 from typing import Any
+from urllib.parse import quote
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -113,7 +114,7 @@ class EDSApiClient:
         return self._get(self.news_url(path), params or {})
 
     def dataset_url(self, dataset: str) -> str:
-        return f"{self.base_url}/dataset/{dataset}"
+        return f"{self.base_url}/dataset/{quote(dataset, safe='')}"
 
     def news_url(self, path: str = "") -> str:
         return "/".join(part for part in (f"{self.base_url}/News", path.strip("/")) if part)
