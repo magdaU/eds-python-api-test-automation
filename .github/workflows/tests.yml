@@ -13,6 +13,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      publishable: ${{ steps.guard.outputs.publishable }}
 
     steps:
       - name: Checkout repository
@@ -36,12 +38,40 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # Fails fast on import/collection errors (e.g. a dependency missing from requirements.txt).
+      - name: Check test collection
+        run: pytest --collect-only -q
+
       # Pull requests run offline tests only; live tests hit the public EDS API, so they run on main.
+      # The exit code is captured instead of failing here, so the guard below decides about the report;
+      # the last step fails the job.
       - name: Run tests
-        run: pytest -v --alluredir=allure-results ${{ github.event_name == 'pull_request' && '-m "not live"' || '' }}
+        id: pytest
+        run: |
+          rc=0
+          pytest -v --alluredir=allure-results ${{ github.event_name == 'pull_request' && '-m "not live"' || '' }} || rc=$?
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+
+      # Only exit codes 0 (all passed) and 1 (some failed) produce a report worth publishing.
+      # 2 (interrupted / collection error), 3, 4, 5 (no tests collected) or empty results would
+      # add a bogus 0-test run to the Allure Trend history.
+      - name: Guard against empty or broken runs
+        id: guard
+        env:
+          PYTEST_EXIT_CODE: ${{ steps.pytest.outputs.exit_code }}
+        run: |
+          publishable=true
+          if [ "$PYTEST_EXIT_CODE" != "0" ] && [ "$PYTEST_EXIT_CODE" != "1" ]; then
+            echo "::error::pytest exited with code $PYTEST_EXIT_CODE (2=interrupted/collection error, 3=internal error, 4=usage error, 5=no tests collected). Skipping Allure report and gh-pages publish."
+            publishable=false
+          elif ! find allure-results -name '*-result.json' 2>/dev/null | grep -q .; then
+            echo "::error::allure-results contains no test results. Skipping Allure report and gh-pages publish."
+            publishable=false
+          fi
+          echo "publishable=$publishable" >> "$GITHUB_OUTPUT"
 
       - name: Write Allure executor info
-        if: always()
+        if: steps.guard.outputs.publishable == 'true'
         run: |
           mkdir -p allure-results
           cat > allure-results/executor.json <<EOF
@@ -55,11 +85,11 @@ jobs:
           EOF
 
       - name: Add Allure categories
-        if: always()
+        if: steps.guard.outputs.publishable == 'true'
         run: cp allure/categories.json allure-results/categories.json
 
       - name: Restore previous report history (for Trend/Duration/Retries/Categories trend)
-        if: always()
+        if: steps.guard.outputs.publishable == 'true'
         run: |
           mkdir -p allure-results/history
           if [ -d gh-pages-previous/history ]; then
@@ -67,29 +97,42 @@ jobs:
           fi
 
       - name: Upload Allure results
-        if: always()
+        if: always() && steps.guard.outputs.publishable == 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: allure-results
           path: allure-results
 
       - name: Generate Allure report
-        if: always()
+        if: steps.guard.outputs.publishable == 'true'
         run: |
           npm install -g allure-commandline@2.46.1
           allure generate allure-results --clean -o allure-report
 
       - name: Upload Allure report
-        if: always()
+        if: steps.guard.outputs.publishable == 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: allure-report
           path: allure-report
 
+      # The report steps above ran (or were skipped by the guard); now fail the job if needed.
+      - name: Fail job on test failures or a broken run
+        if: always() && steps.pytest.conclusion == 'success'
+        env:
+          PYTEST_EXIT_CODE: ${{ steps.pytest.outputs.exit_code }}
+          PUBLISHABLE: ${{ steps.guard.outputs.publishable }}
+        run: |
+          if [ "$PUBLISHABLE" != "true" ]; then
+            echo "::error::Run was not publishable (see the guard step); failing the job."
+            exit 1
+          fi
+          exit "$PYTEST_EXIT_CODE"
+
   # Separate job so only the publish step gets write access, and never on pull requests.
   publish:
     needs: test
-    if: always() && github.ref == 'refs/heads/main'
+    if: always() && github.ref == 'refs/heads/main' && needs.test.outputs.publishable == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
