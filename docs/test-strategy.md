@@ -59,8 +59,9 @@ The number of test cases per level is in [test-cases.md](test-cases.md).
 
 ## 5. Test design principles
 
-- **Name and structure.** Tests are named `givenX_whenY_thenZ` (or `whenY_thenZ`) and have three sections: `# arrange`,
-  `# act`, `# assert`. A test name reads as a test case, which is why [test-cases.md](test-cases.md) is generated from them.
+- **Name and structure.** Tests are named `givenX_whenY_thenZ` (or `whenY_thenZ`) and have the sections `# arrange`,
+  `# act`, `# assert`. A section is left out when it would be empty (live tests have no arrange), and act and assert are
+  combined as `# act / assert` around `pytest.raises`. A test name reads as a test case, which is why [test-cases.md](test-cases.md) is generated from them.
 - **Test the system, not the double.** A mocked test must assert what the client *sent* (path, parameters with exact
   case), not what the mock returns. Tests that only echo the mock were removed because they cannot fail when the client
   breaks.
@@ -68,11 +69,14 @@ The number of test cases per level is in [test-cases.md](test-cases.md).
   ones that depend on an external system.
 - **One reason to fail.** A test asserts one behaviour; mapping tests assert every attribute and use distinct values per
   attribute so that swapped fields are detected.
+- **No vacuous passes.** A test that validates items must first prove that there are items: the schema helper rejects
+  an empty list, and live tests assert that records arrived (for example five records for `limit=5`).
 - **Mock-first, live-bounded.** Edge cases and error paths are proven offline. Live tests are limited to smoke checks
   and a few edge cases. Edge-case tests send one `limit=1` request each, with a pause between requests. `limit=-1` is never sent live:
   the API treats it as "no limit" and returns millions of records.
-- **Tolerate only transient failures.** Live tests rerun (`pytest-rerunfailures`) only on network errors
-  (`ConnectionError`, `Timeout`, `RetryError`), never on assertion failures, so a real defect is not hidden by a rerun.
+- **Tolerate only transient failures.** The live tests marked flaky (all live edge-case tests and the live sort smoke test)
+  rerun (`pytest-rerunfailures`) only on network errors (`ConnectionError`, `Timeout`, `RetryError`), never on assertion
+  failures, so a real defect is not hidden by a rerun. Other live tests do not rerun.
 - **Fixtures are path-independent.** Mocks and schemas are located relative to the code, so tests run from any directory.
 
 ## 6. Test data
@@ -103,7 +107,7 @@ The number of test cases per level is in [test-cases.md](test-cases.md).
 | `Tests` | pull request to `main` | Offline tests only (`-m "not live"`), Allure results as artifact |
 | `Tests` | push to `main` | All tests including live, Allure report published to GitHub Pages |
 | `Quality` | pull request, push to `main` | `ruff`, `mypy`, offline tests with the coverage gate |
-| `Live nightly` | daily 02:00 UTC, manual | Live tests only, to catch API drift |
+| `Live nightly` | daily 02:00 UTC, manual | Live tests only, to catch API drift. No Allure report: the result is the workflow run itself |
 | `Performance` | Monday 03:00 UTC, manual | JMeter plan, fails on any failed sample |
 
 A guard in the `Tests` workflow publishes the Allure report only when pytest exits with code 0 or 1 and results exist,
@@ -128,7 +132,7 @@ the Allure report shows no failed or broken test.
 
 | Risk | Likelihood | Impact | Mitigation |
 | --- | --- | --- | --- |
-| EDS API changes a field, status or message | Medium | Live tests fail, schemas outdated | Nightly live run, JSON Schemas, Allure *Contract drift* category |
+| EDS API changes a field, status or message | Medium | Live tests fail, schemas outdated | Nightly live run (its result is the Actions run, not an Allure report), JSON Schemas; on `main` runs the Allure *Contract drift* category |
 | Public API rate limiting (429) | Medium | Flaky live tests, blocked client | Few and small live requests, retry with backoff, rerun on network errors only, 429 is never triggered on purpose |
 | Retry logic is wrong but untested | Medium | Hammering the API, or silent failures | Retry behaviour tested against a real local server, not only mocks |
 | Tests pass although the client is broken | Medium | False confidence | Mutation checks, request-based assertions, coverage is not trusted alone (see [test coverage](test-coverage.md)) |

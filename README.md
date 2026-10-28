@@ -102,7 +102,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-136 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
+146 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -148,7 +148,7 @@ A nightly workflow (`live-nightly.yml`, also runnable manually) runs only the li
 Code quality (same checks as the `Quality` workflow; install dev tools with `pip install -r requirements-dev.txt`):
 
 ```bash
-ruff check .                         # lint + import order
+ruff check .                         # lint, import order, bug patterns, complexity
 mypy                                 # type check (client, models)
 pytest -m "not live" --cov           # offline tests; fails under 90% coverage
 ```

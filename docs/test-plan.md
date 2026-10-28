@@ -50,7 +50,7 @@ Exit criteria for merging and for a healthy `main` are listed in the [test strat
 
 | Situation | Action |
 | --- | --- |
-| The public EDS API returns 429 or 5xx persistently | Live runs fail for infrastructure reasons (Allure category *Infrastructure problems*). Do not raise retries or add requests; wait for the nightly run to recover. Offline tests are unaffected and keep gating pull requests. |
+| The public EDS API returns 429 or 5xx persistently | Live runs fail for infrastructure reasons (on `main` runs the Allure category *Infrastructure problems*; the nightly run has no Allure report, so read its log). Do not raise retries or add requests; wait for the nightly run to recover. Offline tests are unaffected and keep gating pull requests. |
 | The EDS API changes a contract | Treat the nightly failure as a finding: update the schema or test if the change is intended, report it otherwise. |
 | A run produces no results (collection error) | The CI guard blocks publishing; fix the cause (for example a missing dependency) and re-run. |
 

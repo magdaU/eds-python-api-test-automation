@@ -4,7 +4,7 @@ import pytest
 from tests.support.allure_labels import labels
 from tests.support.datasets import CO2EMIS_DATASET, ELSPOTPRICES_DATASET
 from tests.support.mocks import load_mock
-from tests.support.schema import assert_matches_schema
+from tests.support.schema import assert_all_match_schema, assert_matches_schema
 
 pytestmark = labels("Dataset API", "Schema validation")
 
@@ -15,6 +15,8 @@ def test_whenGettingCo2Emis_thenResponseMatchesSchema(co2_response):
     body = co2_response.json()
 
     # assert
+    assert co2_response.status_code == 200
+    assert body["records"], "no records returned, so the schema was not exercised on any record"
     assert_matches_schema(body, CO2EMIS_DATASET.schema_file)
 
 
@@ -24,7 +26,15 @@ def test_whenGettingElspotprices_thenResponseMatchesSchema(elspotprices_response
     body = elspotprices_response.json()
 
     # assert
+    assert elspotprices_response.status_code == 200
+    assert body["records"], "no records returned, so the schema was not exercised on any record"
     assert_matches_schema(body, ELSPOTPRICES_DATASET.schema_file)
+
+
+def test_givenNoItems_whenValidatingAllAgainstSchema_thenItFailsInsteadOfPassingVacuously():
+    # act / assert
+    with pytest.raises(AssertionError, match="nothing to validate"):
+        assert_all_match_schema([], "news_schema.json")
 
 
 def test_givenEmptyRecordsList_whenValidating_thenSchemaIsSatisfied(dataset):

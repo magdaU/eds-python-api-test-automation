@@ -13,5 +13,6 @@ def assert_matches_schema(instance, schema_filename):
 
 
 def assert_all_match_schema(items, schema_filename):
+    assert items, f"nothing to validate against {schema_filename}: an empty result would pass vacuously"
     for item in items:
         assert_matches_schema(item, schema_filename)
