@@ -1,0 +1,1 @@
+INFO     client.eds_client:eds_client.py:141 GET https://api.energidataservice.dk/dataset/Elspotprices params={'filter': '{"PriceArea":"\\u00c6r\\u00f8 \\u00d8 \\u00e5"}'} -> 200 in 0 ms
