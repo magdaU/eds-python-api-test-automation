@@ -1,3 +1,5 @@
+from typing import Any
+
 import requests
 
 from client.eds_client import EDSApiClient
@@ -12,7 +14,7 @@ class NewsApi:
     def url(self, path: str = "") -> str:
         return self.client.news_url(path)
 
-    def get(self, path: str = "", params: dict | None = None) -> requests.Response:
+    def get(self, path: str = "", params: dict[str, Any] | None = None) -> requests.Response:
         return self.client.get_news(path, params)
 
     def list(self) -> requests.Response:

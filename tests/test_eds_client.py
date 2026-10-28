@@ -1,4 +1,4 @@
-from client.eds_client import DEFAULT_TIMEOUT, RETRYABLE_STATUS_CODES, EDSApiClient
+from client.eds_client import DEFAULT_TIMEOUT, RETRYABLE_STATUS_CODES, EDSApiClient, RetryConfig
 from tests.support.allure_labels import labels
 
 pytestmark = labels("Client library", "Client configuration")
@@ -19,7 +19,7 @@ def test_whenCreatingClientWithDefaults_thenDefaultRetryConfigurationIsApplied()
 
 def test_givenCustomRetrySettings_whenCreatingClient_thenTheyAreApplied():
     # arrange
-    client = EDSApiClient(max_retries=5, backoff_factor=2.0)
+    client = EDSApiClient(retry=RetryConfig(max_retries=5, backoff_factor=2.0))
 
     # act
     adapter = client.session.get_adapter(client.base_url)
