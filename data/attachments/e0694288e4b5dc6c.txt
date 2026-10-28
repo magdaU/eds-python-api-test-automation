@@ -1,3 +1,0 @@
-INFO     client.eds_client:eds_client.py:142 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 5, 'offset': 0} -> 200 in 1 ms
-INFO     client.eds_client:eds_client.py:142 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 5, 'offset': 5} -> 200 in 1 ms
-INFO     client.eds_client:eds_client.py:142 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 5, 'offset': 10} -> 200 in 1 ms

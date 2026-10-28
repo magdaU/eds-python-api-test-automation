@@ -1,1 +1,0 @@
-INFO     client.eds_client:eds_client.py:144 GET http://127.0.0.1:39361/dataset/CO2Emis params={} -> 404 in 2 ms body={"records": [], "total": 0}
