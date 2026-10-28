@@ -1,0 +1,1 @@
+INFO     client.eds_client:eds_client.py:149 GET https://api.energidataservice.dk/dataset/Elspotprices params={'limit': 3, 'filter': '{"PriceArea":"DK2"}'} -> 200 in 1 ms

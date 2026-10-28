@@ -1,0 +1,1 @@
+WARNING  client.eds_client:eds_client.py:131 Giving up on https://api.energidataservice.dk/dataset/Elspotprices: The server asked to wait 287 s (Retry-After, status 429), more than the 60 s allowed; not waiting

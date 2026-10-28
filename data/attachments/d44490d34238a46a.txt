@@ -1,0 +1,1 @@
+INFO     client.eds_client:eds_client.py:151 GET https://api.energidataservice.dk/News/nosuchpath params={} -> 404 in 120 ms body=
