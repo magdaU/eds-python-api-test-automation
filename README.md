@@ -35,7 +35,7 @@ Regenerate the generated ones with `python scripts/generate_test_cases.py` and `
 
 ## 🛠️ Technologies
 
-Python · pytest · ruff · mypy · pytest-cov · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · JMeter · Git · GitHub Actions · GitHub Pages
+Python · pytest · pytest-bdd (Gherkin) · ruff · mypy · pytest-cov · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · JMeter · Git · GitHub Actions · GitHub Pages
 
 ## 📁 Project Structure
 
@@ -58,6 +58,7 @@ eds-python-api-test-automation/
 │   ├── conftest.py                   # fixtures: client, API objects, parametrized dataset
 │   ├── support/                      # shared test helpers: mock loading, schema asserts, dataset configs, scripted local server
 │   ├── mocks/                        # requests-mock fixture data
+│   ├── bdd/                          # BDD: Gherkin scenarios (features/*.feature) and their step definitions
 │   ├── test_dataset_contract.py      # CO2Emis + Elspotprices: sample vs schema, request URL/parameters, real HTTP round-trip
 │   ├── test_news_api.py              # News API: endpoint paths, parameters, sample vs schema (mocked)
 │   ├── test_live_smoke.py            # bounded live smoke tests against the real API
@@ -103,7 +104,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-156 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
+169 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -121,6 +122,8 @@ with a handful of bounded live smoke tests against the real API:
   no retry on 4xx), plus a request timeout on every call
 * Low-load live edge cases (one `limit=1` request each): negative offset, unknown sort/filter column,
   filter or offset matching nothing, unknown News category/path
+* BDD scenarios (`pytest-bdd`, Gherkin in `tests/bdd/features/`): query parameters, retry behaviour against a local
+  server, and News parameters, written as Given/When/Then and run through the same API objects as the other tests
 * Property-based tests (`hypothesis`): filter JSON round-trip, parameters surviving the URL, negative `limit`, URL building, record parsing
 * Client diagnostics (against a real local server): one log line per request with status, duration and the start of an
   error body, the wait before each retry and why (`Retry-After` or backoff), and a warning when retries are exhausted;
