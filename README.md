@@ -229,6 +229,7 @@ automatically.
 * [x] Allure Retries trend
 * [x] News API endpoint tests (`/News`, `/actual`, `/calendar`, `/archived`)
 * [x] JMeter performance tests
+* [x] CI guard against empty or broken Allure reports
 
 All planned items are done. See [ROADMAP.md](ROADMAP.md) for the step-by-step plan behind each one.
 
