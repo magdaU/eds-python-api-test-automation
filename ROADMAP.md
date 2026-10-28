@@ -244,8 +244,8 @@ All plans favor mocked tests (`requests-mock`) for bulk/edge-case coverage, with
 
 ---
 
-## Open questions
+## Resolved questions
 
-1. **Allure publishing target (item 7):** upload `allure-results`/`allure-report` as a downloadable CI artifact only, or also publish to GitHub Pages?
-2. **Jitter support (item 9):** true randomized jitter needs urllib3 ≥1.26.9 (`backoff_jitter`), currently unpinned in `requirements.txt` — OK to pin it, or is a custom backoff implementation preferred?
-3. **Docker (item 8):** plan is a single `Dockerfile` only, no `docker-compose.yml` (e.g. for an Allure-viewer container) — confirm that's in scope, or out.
+1. **Allure publishing target (item 7):** the report is also published to GitHub Pages (`gh-pages` branch), not only uploaded as a CI artifact.
+2. **Jitter support (item 9):** true randomized jitter uses urllib3's `backoff_jitter`; `requirements.txt` keeps `urllib3>=1.26.9` as a minimum bound rather than an exact pin.
+3. **Docker (item 8):** a single `Dockerfile` only, no `docker-compose.yml`.
