@@ -8,12 +8,14 @@ from urllib.parse import quote
 import requests
 from requests.adapters import HTTPAdapter
 
-from client.retry import LoggingRetry
+from client.retry import LoggingRetry, RetryAfterTooLong, RetryAfterTooLongError
 
 BASE_URL = "https://api.energidataservice.dk"
 DEFAULT_MAX_RETRIES = 3
 DEFAULT_BACKOFF_FACTOR = 1.0
 DEFAULT_BACKOFF_JITTER = 0.0
+# seconds; the API has asked for 4-7 s routinely and for 217-300 s when it throttled a run
+DEFAULT_MAX_RETRY_AFTER = 60.0
 DEFAULT_TIMEOUT = 10
 RETRYABLE_STATUS_CODES = frozenset({429, 500, 502, 503, 504})
 SANE_MAX_RETRIES = 10
@@ -28,6 +30,7 @@ class RetryConfig:
     max_retries: int = DEFAULT_MAX_RETRIES
     backoff_factor: float = DEFAULT_BACKOFF_FACTOR
     backoff_jitter: float = DEFAULT_BACKOFF_JITTER
+    max_retry_after: float | None = DEFAULT_MAX_RETRY_AFTER
 
 
 DEFAULT_RETRY = RetryConfig()
@@ -77,6 +80,7 @@ class EDSApiClient:
             total=config.max_retries,
             backoff_factor=config.backoff_factor,
             backoff_jitter=config.backoff_jitter,
+            max_retry_after=config.max_retry_after,
             status_forcelist=RETRYABLE_STATUS_CODES,
             allowed_methods=["GET"],
         )
@@ -123,6 +127,9 @@ class EDSApiClient:
         started = time.perf_counter()
         try:
             response = self.session.get(url, params=params, timeout=self.timeout)
+        except RetryAfterTooLong as error:
+            logger.warning("Giving up on %s: %s", url, error)
+            raise RetryAfterTooLongError(str(error)) from error
         except requests.exceptions.RetryError as error:
             # Retryable statuses never reach the caller as a response: urllib3 retries them and,
             # once the budget is spent, raises. This is where that would otherwise go unnoticed.

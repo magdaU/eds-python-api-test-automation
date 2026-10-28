@@ -59,6 +59,7 @@ see the [test report](test-report.md).
 | | JSON Schema of live responses | `schema_validation`, `live_smoke` | System |
 | | Pydantic parsing: valid, missing field, wrong type, null, extra field, empty | `models` | Component |
 | Client robustness | Retry on 429/503 then success; exhaustion; no retry on 400/404; zero retries; News endpoints | `retry_behavior` | Integration |
+| | A `Retry-After` above the limit (60 s) ends the request at once; at the limit it is waited; no limit waits any time; the limit survives retries | `retry_after_cap`, BDD `resilience` | Integration |
 | | Retry, backoff, jitter and per-dataset overrides configured; warning above 10 retries | `retry_config`, `eds_client` | Component |
 | | Request line (status, duration), error body preview, wait before a retry and its reason, warning when retries are exhausted | `logging` | Integration |
 | | Connect timeout, refused connection, request timeout | `negative_scenarios`, `eds_client` | Component |
@@ -101,7 +102,8 @@ there is no formal requirements document, so features rather than requirement ID
 - Data values are not compared with an authoritative source. Only shape, types, order and error messages are checked.
 - A live 429 is never provoked on purpose, so rate-limit handling is proven only against the local server. `Retry-After`
   handling is `urllib3`'s; the wait and its logging are tested against the local server. The real API has answered 429 with
-  `Retry-After` of up to 300 s, and the client has no cap on that wait.
+  `Retry-After` of up to 300 s; the client refuses waits above 60 s by default (`RetryConfig.max_retry_after`, tested against the
+  local server) and fails with `RetryAfterTooLongError`.
 - Performance covers a low-load baseline only; there is no stress, soak or spike test.
 - No security or TLS tests.
 - The CI publish guard is verified by simulating exit codes, not by an automated test.

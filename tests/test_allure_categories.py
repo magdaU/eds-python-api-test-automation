@@ -26,6 +26,11 @@ def category_of(status, message):
     [
         ("broken", "RetryError: Max retries exceeded (Caused by ResponseError('too many 503 error responses'))", INFRASTRUCTURE),
         ("failed", "HTTPError: 429 Client Error: Too Many Requests", INFRASTRUCTURE),
+        (
+            "broken",
+            "RetryAfterTooLongError: The server asked to wait 300 s (Retry-After, status 429), more than the 60 s allowed",
+            INFRASTRUCTURE,
+        ),
         ("broken", "requests.exceptions.ConnectionError: refused", INFRASTRUCTURE),
         ("failed", "AssertionError: assert 'a' == 'b' at port 42951", "Product defects"),
         ("broken", "KeyError: 4290", CONTRACT_DRIFT),
@@ -37,6 +42,7 @@ def category_of(status, message):
     ids=[
         "retries-exhausted",
         "http-429",
+        "retry-after-too-long",
         "connection-refused",
         "digits-of-a-port-are-not-429",
         "digits-in-key-error-are-not-429",

@@ -9,6 +9,12 @@ Feature: Resilience when the API misbehaves
     Then the client waited 2 seconds before it retried
     And the response status is 200
 
+  Scenario: The client refuses to wait much longer than it allows
+    Given an API that answers 429 with "Retry-After: 300" and then 200
+    When I get a dataset
+    Then the request fails because the server asked for a longer wait than allowed
+    And the client did not wait
+
   Scenario: The client gives up when the API keeps failing
     Given an API that always answers 503
     When I get a dataset
