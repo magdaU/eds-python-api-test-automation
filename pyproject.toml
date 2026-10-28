@@ -3,14 +3,12 @@ line-length = 130
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "RUF013"]
+select = ["E", "F", "I", "RUF013", "B", "SIM", "UP", "C90", "PLC0415"]
 
 [tool.mypy]
 python_version = "3.12"
 files = ["client", "models"]
-strict_optional = true
-warn_unused_ignores = true
-disallow_untyped_defs = true
+strict = true
 
 [tool.coverage.run]
 source = ["client", "models"]

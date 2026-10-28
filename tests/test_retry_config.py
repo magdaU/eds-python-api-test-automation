@@ -1,6 +1,8 @@
 import logging
 
-from client.eds_client import SANE_MAX_RETRIES, EDSApiClient
+import pytest
+
+from client.eds_client import SANE_MAX_RETRIES, EDSApiClient, RetryConfig
 from tests.support.allure_labels import labels
 
 pytestmark = labels("Client library", "Retry configuration")
@@ -12,7 +14,7 @@ def _retry_of(client, dataset):
 
 def test_givenDefaultRetrySettings_whenResolvingAnyDataset_thenDefaultsApply():
     # arrange
-    client = EDSApiClient(max_retries=3, backoff_factor=1.0, backoff_jitter=0.0)
+    client = EDSApiClient(retry=RetryConfig(max_retries=3, backoff_factor=1.0, backoff_jitter=0.0))
 
     # act
     retry = _retry_of(client, "CO2Emis")
@@ -26,9 +28,8 @@ def test_givenDefaultRetrySettings_whenResolvingAnyDataset_thenDefaultsApply():
 def test_givenDatasetOverride_whenResolvingDatasets_thenOverrideAppliesOnlyToThatDataset():
     # arrange
     client = EDSApiClient(
-        max_retries=3,
-        backoff_factor=1.0,
-        dataset_overrides={"Elspotprices": {"max_retries": 5, "backoff_factor": 2.0}},
+        retry=RetryConfig(max_retries=3, backoff_factor=1.0),
+        dataset_overrides={"Elspotprices": RetryConfig(max_retries=5, backoff_factor=2.0)},
     )
 
     # act
@@ -46,8 +47,8 @@ def test_givenBaseUrlWithTrailingSlash_whenResolvingOverriddenDataset_thenOverri
     # arrange
     client = EDSApiClient(
         base_url="https://api.energidataservice.dk/",
-        max_retries=3,
-        dataset_overrides={"Elspotprices": {"max_retries": 5}},
+        retry=RetryConfig(max_retries=3),
+        dataset_overrides={"Elspotprices": RetryConfig(max_retries=5)},
     )
 
     # act
@@ -59,7 +60,7 @@ def test_givenBaseUrlWithTrailingSlash_whenResolvingOverriddenDataset_thenOverri
 
 def test_givenBackoffJitter_whenCreatingClient_thenItIsConfiguredOnTheRetryObject():
     # arrange
-    client = EDSApiClient(backoff_jitter=0.5)
+    client = EDSApiClient(retry=RetryConfig(backoff_jitter=0.5))
 
     # act
     retry = _retry_of(client, "CO2Emis")
@@ -71,8 +72,8 @@ def test_givenBackoffJitter_whenCreatingClient_thenItIsConfiguredOnTheRetryObjec
 def test_givenDatasetOverrideWithJitter_whenResolvingDatasets_thenOnlyThatDatasetHasJitter():
     # arrange
     client = EDSApiClient(
-        backoff_jitter=0.0,
-        dataset_overrides={"Elspotprices": {"backoff_jitter": 0.5}},
+        retry=RetryConfig(backoff_jitter=0.0),
+        dataset_overrides={"Elspotprices": RetryConfig(backoff_jitter=0.5)},
     )
 
     # act
@@ -84,10 +85,16 @@ def test_givenDatasetOverrideWithJitter_whenResolvingDatasets_thenOnlyThatDatase
     assert default.backoff_jitter == 0.0
 
 
+def test_givenMisspelledRetrySetting_whenCreatingRetryConfig_thenTypeErrorIsRaised():
+    # act / assert
+    with pytest.raises(TypeError):
+        RetryConfig(max_retry=9)
+
+
 def test_givenExcessiveMaxRetries_whenCreatingClient_thenWarningIsLogged(caplog):
     # act
     with caplog.at_level(logging.WARNING):
-        EDSApiClient(max_retries=SANE_MAX_RETRIES + 1)
+        EDSApiClient(retry=RetryConfig(max_retries=SANE_MAX_RETRIES + 1))
 
     # assert
     assert any(record.levelname == "WARNING" for record in caplog.records)
@@ -96,7 +103,7 @@ def test_givenExcessiveMaxRetries_whenCreatingClient_thenWarningIsLogged(caplog)
 def test_givenDatasetOverrideWithExcessiveMaxRetries_whenCreatingClient_thenWarningIsLogged(caplog):
     # act
     with caplog.at_level(logging.WARNING):
-        EDSApiClient(dataset_overrides={"Elspotprices": {"max_retries": SANE_MAX_RETRIES + 1}})
+        EDSApiClient(dataset_overrides={"Elspotprices": RetryConfig(max_retries=SANE_MAX_RETRIES + 1)})
 
     # assert
     assert any(record.levelname == "WARNING" for record in caplog.records)
@@ -105,7 +112,7 @@ def test_givenDatasetOverrideWithExcessiveMaxRetries_whenCreatingClient_thenWarn
 def test_givenSaneMaxRetries_whenCreatingClient_thenNoWarningIsLogged(caplog):
     # act
     with caplog.at_level(logging.WARNING):
-        EDSApiClient(max_retries=SANE_MAX_RETRIES)
+        EDSApiClient(retry=RetryConfig(max_retries=SANE_MAX_RETRIES))
 
     # assert
     assert caplog.records == []

@@ -3,7 +3,7 @@ import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from client.dataset_api import DatasetApi
-from client.eds_client import EDSApiClient
+from client.eds_client import EDSApiClient, RetryConfig
 
 
 class ScriptedServer:
@@ -38,7 +38,7 @@ class ScriptedServer:
 
 
 def client_for(server, max_retries=2):
-    return EDSApiClient(base_url=server.url, max_retries=max_retries, backoff_factor=0)
+    return EDSApiClient(base_url=server.url, retry=RetryConfig(max_retries=max_retries, backoff_factor=0))
 
 
 def api_for(server, max_retries=2):

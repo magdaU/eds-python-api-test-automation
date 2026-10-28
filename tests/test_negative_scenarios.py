@@ -4,7 +4,7 @@ import pytest
 import requests
 
 from client.dataset_api import DatasetApi
-from client.eds_client import EDSApiClient
+from client.eds_client import EDSApiClient, RetryConfig
 from tests.support.allure_labels import labels
 
 pytestmark = labels("Client library", "Negative scenarios")
@@ -30,7 +30,8 @@ def test_givenNothingListening_whenGettingDataset_thenConnectionErrorIsRaised():
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         free_port = probe.getsockname()[1]
-    api = DatasetApi(EDSApiClient(base_url=f"http://127.0.0.1:{free_port}", max_retries=1, backoff_factor=0), "CO2Emis")
+    client = EDSApiClient(base_url=f"http://127.0.0.1:{free_port}", retry=RetryConfig(max_retries=1, backoff_factor=0))
+    api = DatasetApi(client, "CO2Emis")
 
     # act / assert
     with pytest.raises(requests.exceptions.ConnectionError):

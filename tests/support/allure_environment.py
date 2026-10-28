@@ -3,6 +3,8 @@ import platform
 from importlib.metadata import version
 from pathlib import Path
 
+from client.eds_client import BASE_URL
+
 TRACKED_PACKAGES = ["pytest", "allure-pytest", "requests", "urllib3", "pydantic", "jsonschema", "hypothesis"]
 
 
@@ -31,8 +33,6 @@ def write_environment(directory: str, properties: dict[str, str]) -> None:
 
 def environment_from_session(config) -> None:
     """pytest hook helper: write environment.properties when `--alluredir` is in use."""
-    from client.eds_client import BASE_URL
-
     directory = config.getoption("allure_report_dir", None)
     if directory:
         write_environment(directory, build_environment(BASE_URL, config.option.markexpr, dict(os.environ)))

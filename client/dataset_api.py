@@ -1,3 +1,5 @@
+from typing import Any
+
 import requests
 
 from client.eds_client import EDSApiClient
@@ -19,6 +21,6 @@ class DatasetApi:
         limit: int | None = None,
         offset: int | None = None,
         sort: str | None = None,
-        filters: dict | None = None,
+        filters: dict[str, Any] | None = None,
     ) -> requests.Response:
         return self.client.get_dataset(self.dataset, limit=limit, offset=offset, sort=sort, filters=filters)
