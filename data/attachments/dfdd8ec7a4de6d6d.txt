@@ -1,1 +1,0 @@
-INFO     client.eds_client:eds_client.py:141 GET https://api.energidataservice.dk/dataset/Elspotprices params={'limit': 1} -> 200 in 119 ms
