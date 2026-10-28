@@ -3,7 +3,6 @@
 import pytest
 
 import allure
-from tests.support.live import TRANSIENT_NETWORK_ERRORS
 from tests.support.schema import assert_all_match_schema, assert_matches_schema
 
 pytestmark = [pytest.mark.live, allure.epic("Live API")]
@@ -36,10 +35,9 @@ def test_givenUnknownDataset_whenGettingIt_thenNotFoundNamesTheDataset(eds_clien
 
 
 @allure.feature("Elspotprices")
-@pytest.mark.flaky(reruns=2, reruns_delay=5, only_rerun=TRANSIENT_NETWORK_ERRORS)
-def test_givenDescendingSort_whenGettingElspotprices_thenPricesAreDescending(elspotprices_api):
+def test_givenDescendingSort_whenGettingElspotprices_thenPricesAreDescending(elspotprices_latest):
     # act
-    response = elspotprices_api.get(limit=5, sort="SpotPriceDKK desc")
+    response = elspotprices_latest
 
     # assert
     prices = [record["SpotPriceDKK"] for record in response.json()["records"]]

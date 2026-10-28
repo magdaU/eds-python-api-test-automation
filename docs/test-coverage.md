@@ -104,6 +104,8 @@ there is no formal requirements document, so features rather than requirement ID
   handling is `urllib3`'s; the wait and its logging are tested against the local server. The real API has answered 429 with
   `Retry-After` of up to 300 s; the client refuses waits above 60 s by default (`RetryConfig.max_retry_after`, tested against the
   local server) and fails with `RetryAfterTooLongError`.
+- Live `Elspotprices` checks use a single shared query per run because the API answers one query per ~300 s window. They cannot
+  verify more than that one request (sort order and schema are checked on it), and two runs less than five minutes apart can collide.
 - Performance covers a low-load baseline only; there is no stress, soak or spike test.
 - No security or TLS tests.
 - The CI publish guard is verified by simulating exit codes, not by an automated test.
