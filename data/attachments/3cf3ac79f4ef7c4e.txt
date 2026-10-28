@@ -1,0 +1,1 @@
+WARNING  client.eds_client:eds_client.py:126 Giving up on http://127.0.0.1:33829/News after retries: HTTPConnectionPool(host='127.0.0.1', port=33829): Max retries exceeded with url: /News (Caused by ResponseError('too many 500 error responses'))
