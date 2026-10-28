@@ -1,2 +1,0 @@
-WARNING  client.retry:retry.py:20 Retrying in 289.0 s because the server sent Retry-After (status 429)
-INFO     client.eds_client:eds_client.py:141 GET https://api.energidataservice.dk/dataset/Elspotprices params={'limit': 1} -> 200 in 289945 ms
