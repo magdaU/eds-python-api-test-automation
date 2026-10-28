@@ -101,6 +101,6 @@ there is no formal requirements document, so features rather than requirement ID
 - Performance covers a low-load baseline only; there is no stress, soak or spike test.
 - No security or TLS tests.
 - The CI publish guard is verified by simulating exit codes, not by an automated test.
-- The JavaScript that explains empty Categories widgets has no automated test; it was verified against real Allure reports in headless Chrome (a report with one build, one with a three-build history, and one with failures) and against the published report.
+- The JavaScript that explains empty Categories widgets has no automated test; it was verified against real Allure reports in headless Chrome for five situations (green first build, green with history, a failing run, green after a failing run, only a skipped test) in the three places it writes a note (Overview widget, Categories page, Categories trend): the note appears when nothing failed, broke or was skipped and disappears as soon as a run has failures; the trend note stays hidden while a failure is in the recorded history.
 - Diagnostics log only the start (300 characters) of an error response body and never the body of a successful response.
 - Mutation checks are manual and not repeated in CI.

@@ -1,14 +1,18 @@
-// Explains empty Categories widgets in the generated Allure report, so that an empty widget does not read as
-// "something is missing". Added to the report by scripts/inject_report_notes.py, never loaded by `allure serve`.
+// Explains empty Categories views in the generated Allure report (the Overview widget, the Categories page and the
+// Categories trend graph), so that an empty view does not read as "something is missing". Added to the report by
+// scripts/inject_report_notes.py, never loaded by `allure serve`.
 //
 // A note appears only when the report's own data confirms it: no failed, broken or skipped test (summary.json) for the
-// Overview widget, and no category in any recorded run (categories-trend.json) for the trend. If a request fails
-// or a widget is not empty, nothing is changed.
+// Overview widget and the Categories page, and no category in any recorded run (categories-trend.json) for the trend.
+// If a request fails or a view is not empty, nothing is changed.
 (function () {
   "use strict";
 
   var OVERVIEW_NOTE =
     "No test failed, broke or was skipped in this run, so there is nothing to categorize. This is expected, not missing data.";
+  var PAGE_NOTE =
+    "No test failed, broke or was skipped in this run, so no category applies. " +
+    "Categories list only such tests; an empty list is expected on a green run, not missing data.";
   var TREND_NOTE =
     "No test failed, broke or was skipped in any recorded run, so there is nothing to categorize. " +
     "The trend fills as soon as one does.";
@@ -44,6 +48,20 @@
           note.setAttribute(MARK, "");
           note.textContent = OVERVIEW_NOTE;
           title.insertAdjacentElement("afterend", note);
+        }
+      });
+    }
+    if (facts.noCategorizedTests) {
+      // the Categories page (side bar): its list pane says "There are no items"
+      document.querySelectorAll("allure-tree-view-container").forEach(function (container) {
+        var empty = container.querySelector(".tree__empty");
+        var isCategories = container.querySelector('[data-download="data/categories.csv"]');
+        if (empty && isCategories && !container.querySelector("[" + MARK + "]")) {
+          var note = document.createElement("div");
+          note.className = "tree__empty";
+          note.setAttribute(MARK, "");
+          note.textContent = PAGE_NOTE;
+          empty.insertAdjacentElement("afterend", note);
         }
       });
     }
