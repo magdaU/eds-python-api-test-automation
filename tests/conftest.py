@@ -9,7 +9,7 @@ from tests.support.scripted_server import ScriptedServer
 
 
 def pytest_sessionfinish(session):
-    environment_from_session(session.config)
+    environment_from_session(session)
 
 
 @pytest.fixture

@@ -61,7 +61,7 @@ see the [test report](test-report.md).
 | | Connect timeout, refused connection, request timeout | `negative_scenarios`, `eds_client` | Component |
 | | Negative `limit` rejected before sending | `boundary_values`, `properties` | Component |
 | | Real JSON round-trip over HTTP | `dataset_contract` | Integration |
-| Test infrastructure | Allure environment properties | `allure_environment` | Component |
+| Test infrastructure | Allure environment properties, including the note that explains empty Categories widgets | `allure_environment` | Component |
 | | Fixtures load from any working directory | `support_paths` | Component |
 | | Allure failure categories assign the expected category to typical failure messages | `allure_categories` | Component |
 | Non-functional | Latency and error rate, 4 endpoints, 2 users, 30 s | `performance/` (JMeter, not pytest) | Non-functional |

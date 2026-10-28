@@ -102,7 +102,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-150 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
+154 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -171,7 +171,8 @@ An ad hoc local `allure serve` run only shows that single run — it won't have 
 trend/executor/categories data unless you copy it in yourself.
 
 The **Categories** widget groups only failed, broken and skipped tests (see `allure/categories.json`), so
-an empty widget ("0 items total") means the run had no failures, not that categories are missing.
+an empty widget ("0 items total") means the run had no failures, not that categories are missing. The report's
+Environment widget says so too, in its `Categories` line.
 
 ### Performance tests (JMeter)
 

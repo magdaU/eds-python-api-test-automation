@@ -73,8 +73,9 @@ Found by reviewing CI results and by audits of the tests and documentation again
   diagnostics added afterwards showed the cause on a local run: the API answered `429` with `Retry-After` and the client
   waited it out (`Retrying in 217.0 s because the server sent Retry-After (status 429)`; an earlier attempt waited 300 s).
   The waits happen in fixtures that call the live API during setup (`co2_response`, `elspotprices_response`), which is why
-  they are not part of the test bodies. That the slow CI builds have the same cause is an inference from their uniform
-  duration; their logs were not captured. The client has no cap on the wait, so a throttled API can stretch a run to
+  they are not part of the test bodies. The same cause was confirmed in CI: the log attached to a test in build #136 shows
+  `Retrying in 289.0 s because the server sent Retry-After (status 429)` for the same request (`Elspotprices`, `limit=1`);
+  other live tests waited 4 s and 7 s. The client has no cap on the wait, so a throttled API can stretch a run to
   minutes; the job timeout (30 min) is the only limit.
 - **External dependency.** Live tests depend on the public EDS API (availability, rate limits, contract changes). The
   nightly run detects this within a day; offline tests keep gating changes regardless.
