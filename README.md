@@ -51,7 +51,8 @@ eds-python-api-test-automation/
 ├── models/               # Pydantic models (CO2EmisRecord, ElspotpricesRecord)
 ├── schemas/               # JSON Schema per dataset / News item, for response validation
 ├── allure/
-│   └── categories.json   # Allure report failure categories
+│   ├── categories.json   # Allure report failure categories
+│   └── report-notes.js   # explains empty Categories widgets in the generated report
 │
 ├── tests/
 │   ├── conftest.py                   # fixtures: client, API objects, parametrized dataset
@@ -87,7 +88,7 @@ eds-python-api-test-automation/
 │   └── endpoints.csv           # endpoints the plan iterates over
 │
 ├── docs/                  # test documentation (strategy, plan, cases, coverage, results, report) + README images
-├── scripts/               # generators for docs/test-cases.md and docs/test-results.md
+├── scripts/               # generators for docs/test-cases.md and docs/test-results.md, report note injector
 │
 ├── Dockerfile
 ├── requirements.txt
@@ -102,7 +103,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-154 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
+156 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -171,8 +172,10 @@ An ad hoc local `allure serve` run only shows that single run — it won't have 
 trend/executor/categories data unless you copy it in yourself.
 
 The **Categories** widget groups only failed, broken and skipped tests (see `allure/categories.json`), so
-an empty widget ("0 items total") means the run had no failures, not that categories are missing. The report's
-Environment widget says so too, in its `Categories` line.
+an empty widget ("0 items total") means the run had no failures, not that categories are missing. In the published
+report the widget and **Categories trend** say so themselves (`allure/report-notes.js`, added after the report is
+generated; it writes the note only when the report's own data confirms there is nothing to categorize), and the
+Environment widget repeats it in its `Categories` line.
 
 ### Performance tests (JMeter)
 

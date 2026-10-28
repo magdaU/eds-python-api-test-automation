@@ -64,6 +64,7 @@ see the [test report](test-report.md).
 | Test infrastructure | Allure environment properties, including the note that explains empty Categories widgets | `allure_environment` | Component |
 | | Fixtures load from any working directory | `support_paths` | Component |
 | | Allure failure categories assign the expected category to typical failure messages | `allure_categories` | Component |
+| | The empty-widget note is added to a generated report once (the script's browser behaviour was checked by hand, not by a test) | `inject_report_notes` | Component |
 | Non-functional | Latency and error rate, 4 endpoints, 2 users, 30 s | `performance/` (JMeter, not pytest) | Non-functional |
 | | Style, bugs, types | `ruff`, `mypy --strict` | Static |
 
@@ -100,5 +101,6 @@ there is no formal requirements document, so features rather than requirement ID
 - Performance covers a low-load baseline only; there is no stress, soak or spike test.
 - No security or TLS tests.
 - The CI publish guard is verified by simulating exit codes, not by an automated test.
+- The JavaScript that explains empty Categories widgets has no automated test; it was verified once against real reports in headless Chrome.
 - Diagnostics log only the start (300 characters) of an error response body and never the body of a successful response.
 - Mutation checks are manual and not repeated in CI.

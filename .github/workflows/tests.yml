@@ -109,6 +109,11 @@ jobs:
           npm install -g allure-commandline@2.46.1
           allure generate allure-results --clean -o allure-report
 
+      # Cosmetic, so a changed report layout only warns instead of failing the build.
+      - name: Explain empty Categories widgets in the report
+        if: steps.guard.outputs.publishable == 'true'
+        run: python scripts/inject_report_notes.py allure-report || echo "::warning::Could not add the empty-widget note to the Allure report"
+
       - name: Upload Allure report
         if: steps.guard.outputs.publishable == 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
