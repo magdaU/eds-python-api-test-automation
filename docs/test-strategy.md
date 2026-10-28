@@ -72,6 +72,8 @@ The number of test cases per level is in [test-cases.md](test-cases.md).
 - **Diagnosable failures.** The client logs one line per request (URL, parameters, status, duration including retry waits,
   the start of an error body) and the wait before each retry with its reason. pytest captures these logs, including those of
   fixtures, and Allure attaches them to the test, so a failed or slow live test explains itself.
+- **Reports explain themselves.** An empty widget must not read as missing data: the Allure report states why the Categories
+  widgets are empty (`allure/report-notes.js`), but only when the report's own data confirms it.
 - **No vacuous passes.** A test that validates items must first prove that there are items: the schema helper rejects
   an empty list, and live tests assert that records arrived (for example five records for `limit=5`).
 - **Mock-first, live-bounded.** Edge cases and error paths are proven offline. Live tests are limited to smoke checks
