@@ -174,6 +174,12 @@ docker build -t eds-api-tests .
 docker run --rm eds-api-tests
 ```
 
+**CI guard against empty reports.** The `Tests` workflow runs `pytest --collect-only` first and publishes the Allure
+report only when pytest exits with `0` (all passed) or `1` (some failed) and `allure-results` is not empty. On any other
+outcome (collection error, no tests collected) it skips the report and the `gh-pages` publish, annotates the run with
+`::error::` and fails the job. It exists because a missing dependency once made collection fail, and the resulting
+0-test report dropped the Allure Trend history to zero.
+
 <details>
 <summary>One-time GitHub Pages setup (only needed once, when forking/recreating this repo)</summary>
 
