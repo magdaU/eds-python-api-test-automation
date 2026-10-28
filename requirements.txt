@@ -6,4 +6,5 @@ jsonschema==4.23.0
 pydantic==2.12.5
 allure-pytest==2.16.0
 pytest-rerunfailures==16.7
+pytest-bdd==9.0.0
 hypothesis==6.170.8

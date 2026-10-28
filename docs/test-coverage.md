@@ -79,6 +79,7 @@ there is no formal requirements document, so features rather than requirement ID
 | Boundary value analysis | `limit`, `offset` |
 | Decision table | the four optional dataset parameters |
 | Property-based testing | filters, parameters in the URL, negative `limit`, news URLs, record parsing |
+| Executable specification (Gherkin) | query parameters, retry and give-up behaviour, News parameters (`tests/bdd/features/`) |
 | Error guessing | unknown column/path/category, invalid date, offset far beyond data |
 | State-based | retry sequences against the scripted server (failures, then success) |
 

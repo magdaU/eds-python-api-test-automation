@@ -57,6 +57,24 @@ The number of test cases per level is in [test-cases.md](test-cases.md).
 | Static analysis | `ruff` (style, bugs, complexity) and `mypy` in strict mode | `quality.yml` |
 | Performance | Low-load baseline with a response-time assertion | `performance/`, `performance.yml` |
 
+### Executable specifications (BDD)
+
+A small set of behaviours is written as Gherkin scenarios in [`tests/bdd/features/`](../tests/bdd/features) and run with
+`pytest-bdd`. They exist for behaviour that is worth reading as a specification: which query parameters reach the API,
+what the client does when the API throttles or fails, and how News parameters are sent. Step definitions
+([`tests/bdd/conftest.py`](../tests/bdd/conftest.py)) reuse the API objects, `requests-mock` and the scripted local server,
+so a scenario exercises the same code as every other test.
+
+- A scenario states one behaviour and its steps use the vocabulary of the API (dataset, limit, retry), not of the code.
+- Scenario Outlines are used for data variants; tags would select subsets (`@live` would map to the `live` marker).
+- Scenarios are offline and deterministic. Bulk edge cases, property-based tests and live checks stay in plain pytest, where
+  they are shorter and clearer.
+- [test-cases.md](test-cases.md) is generated from the feature files for these scenarios, so the specification and the
+  catalogue cannot drift apart.
+
+BDD is not applied everywhere on purpose: the project has no business stakeholders to write scenarios with, and
+a scenario layer on every test would only add indirection.
+
 ## 5. Test design principles
 
 - **Name and structure.** Tests are named `givenX_whenY_thenZ` (or `whenY_thenZ`) and have the sections `# arrange`,
