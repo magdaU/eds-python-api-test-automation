@@ -7,7 +7,10 @@ from client.eds_client import EDSApiClient, RetryConfig
 
 
 class ScriptedServer:
-    """Answers each request with the next scripted status; the last one repeats. `headers` go on every response."""
+    """Answers each request with the next scripted status; the last one repeats.
+
+    `headers` is one dict for every response, or a list with one dict per response (the last one repeats).
+    """
 
     def __init__(self, statuses, headers=None):
         self.statuses = statuses
@@ -23,7 +26,8 @@ class ScriptedServer:
                 self.send_response(outer.statuses[index])
                 self.send_header("Content-Type", "application/json")
                 self.send_header("Content-Length", str(len(body)))
-                for name, value in outer.headers.items():
+                headers = outer.headers[min(index, len(outer.headers) - 1)] if isinstance(outer.headers, list) else outer.headers
+                for name, value in headers.items():
                     self.send_header(name, value)
                 self.end_headers()
                 self.wfile.write(body)
@@ -40,9 +44,10 @@ class ScriptedServer:
         self.httpd.server_close()
 
 
-def client_for(server, max_retries=2):
-    return EDSApiClient(base_url=server.url, retry=RetryConfig(max_retries=max_retries, backoff_factor=0))
+def client_for(server, max_retries=2, **retry_options):
+    retry = RetryConfig(max_retries=max_retries, backoff_factor=0, **retry_options)
+    return EDSApiClient(base_url=server.url, retry=retry)
 
 
-def api_for(server, max_retries=2):
-    return DatasetApi(client_for(server, max_retries), "CO2Emis")
+def api_for(server, max_retries=2, **retry_options):
+    return DatasetApi(client_for(server, max_retries, **retry_options), "CO2Emis")

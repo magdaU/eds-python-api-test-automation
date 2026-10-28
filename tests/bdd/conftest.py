@@ -12,6 +12,7 @@ import requests
 from pytest_bdd import given, parsers, then, when
 
 from client.dataset_api import DatasetApi
+from client.retry import RetryAfterTooLongError
 from tests.support.mocks import load_mock, records_response, sent_query
 from tests.support.scripted_server import api_for
 
@@ -118,6 +119,16 @@ def get_a_dataset(world):
 @then(parsers.parse("the client waited {seconds:d} seconds before it retried"))
 def client_waited(world, seconds):
     assert world.waits == [seconds]
+
+
+@then("the request fails because the server asked for a longer wait than allowed")
+def fails_because_wait_too_long(world):
+    assert isinstance(world.error, RetryAfterTooLongError)
+
+
+@then("the client did not wait")
+def client_did_not_wait(world):
+    assert world.waits == []
 
 
 @then(parsers.parse("the response status is {status:d}"))

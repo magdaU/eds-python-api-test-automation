@@ -37,6 +37,7 @@ MODULES = {
     "test_parameter_combinations": ("Component", "mocked HTTP", "Decision table"),
     "test_properties": ("Component", "mocked HTTP", "Property-based testing"),
     "test_resilience": ("Integration", "local HTTP server", "Executable specification (Gherkin)"),
+    "test_retry_after_cap": ("Integration", "local HTTP server", "Boundary value analysis, state-based testing"),
     "test_retry_behavior": ("Integration", "local HTTP server", "State-based, negative testing"),
     "test_retry_config": ("Component", "none", "Configuration checks"),
     "test_schema_validation": (
