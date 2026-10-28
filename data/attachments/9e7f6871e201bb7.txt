@@ -1,0 +1,1 @@
+WARNING  client.eds_client:eds_client.py:126 Giving up on http://127.0.0.1:37641/News/calendar after retries: HTTPConnectionPool(host='127.0.0.1', port=37641): Max retries exceeded with url: /News/calendar (Caused by ResponseError('too many 500 error responses'))
