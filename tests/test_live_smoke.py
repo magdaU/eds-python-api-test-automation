@@ -25,12 +25,13 @@ def test_whenGettingConsecutivePages_thenPagesAreDifferent(co2_api):
 
 
 @allure.feature("CO2Emis")
-def test_givenUnknownDataset_whenGettingIt_thenStatusIsNotOk(eds_client):
+def test_givenUnknownDataset_whenGettingIt_thenNotFoundNamesTheDataset(eds_client):
     # act
     response = eds_client.get_dataset("NotARealDataset")
 
     # assert
-    assert response.status_code != 200
+    assert response.status_code == 404
+    assert "NotARealDataset" in response.text
 
 
 @allure.feature("Elspotprices")
@@ -57,13 +58,17 @@ def test_whenGettingLiveNews_thenEveryItemMatchesSchema(news_api):
 @allure.feature("News")
 def test_whenGettingLiveCalendar_thenEveryEntryMatchesSchemaAndArchiveAgrees(news_api):
     # arrange
-    calendar = news_api.calendar().json()
-    latest = calendar[0]
+    calendar_response = news_api.calendar()
+    calendar = calendar_response.json()
+    latest = max(calendar, key=lambda entry: entry["dateString"])
 
     # act
-    archived = news_api.archived(date=f"{latest['dateString']}-01-01").json()
+    archived_response = news_api.archived(date=f"{latest['dateString']}-01-01")
+    archived = archived_response.json()
 
     # assert
+    assert calendar_response.status_code == 200
+    assert archived_response.status_code == 200
     assert_all_match_schema(calendar, "news_calendar_schema.json")
     assert len(archived) == latest["numberOfNewsStories"]
     assert all(item["validFrom"].startswith(latest["dateString"]) for item in archived)

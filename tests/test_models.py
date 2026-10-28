@@ -113,6 +113,25 @@ def test_givenValidElspotpricesJson_whenParsingRecords_thenEveryFieldIsMapped():
     assert records[0].SpotPriceDKK == 567.8
 
 
+@pytest.mark.parametrize(
+    "record",
+    [
+        {"HourUTC": "2024-02-03T04:00:00", "PriceArea": "DK2", "SpotPriceDKK": "not-a-number"},
+        {"HourUTC": "2024-02-03T04:00:00", "PriceArea": "DK2"},
+        {"HourUTC": "2024-02-03T04:00:00", "PriceArea": None, "SpotPriceDKK": 567.8},
+        {"HourUTC": "2024-02-03T04:00:00", "PriceArea": "DK2", "SpotPriceDKK": None},
+    ],
+    ids=["wrong-type", "missing-price", "null-string", "null-number"],
+)
+def test_givenInvalidElspotpricesRecord_whenParsingRecords_thenValidationErrorIsRaised(record):
+    # arrange
+    response_json = {"records": [record], "total": 1}
+
+    # act / assert
+    with pytest.raises(ValidationError):
+        parse_records(response_json, ElspotpricesRecord)
+
+
 def test_givenElspotpricesWithoutHour_whenParsingRecords_thenHourIsNone():
     # arrange
     response_json = {"records": [{"PriceArea": "DK1", "SpotPriceDKK": 12.3}], "total": 1}

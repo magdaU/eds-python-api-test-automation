@@ -1,8 +1,5 @@
-import json
-
 from client.eds_client import DEFAULT_TIMEOUT, RETRYABLE_STATUS_CODES, EDSApiClient
 from tests.support.allure_labels import labels
-from tests.support.mocks import sent_query
 
 pytestmark = labels("Client library", "Client configuration")
 
@@ -54,30 +51,3 @@ def test_givenCustomTimeout_whenGettingDataset_thenItIsPassedToTheRequest(reques
 
     # assert
     assert requests_mock.last_request.timeout == 3
-
-
-def test_givenFilters_whenGettingDataset_thenFilterParameterIsCompactJson(requests_mock):
-    # arrange
-    client = EDSApiClient()
-    requests_mock.get(client.dataset_url("Elspotprices"), json={"records": []})
-
-    # act
-    client.get_dataset("Elspotprices", filters={"PriceArea": "DK1"})
-
-    # assert
-    sent = sent_query(requests_mock)
-    assert sent["filter"] == ['{"PriceArea":"DK1"}']
-
-
-def test_givenFilterValueWithQuoteAndBackslash_whenGettingDataset_thenFilterIsValidJson(requests_mock):
-    # arrange
-    client = EDSApiClient()
-    requests_mock.get(client.dataset_url("Elspotprices"), json={"records": []})
-    filters = {"PriceArea": 'DK"1\\x'}
-
-    # act
-    client.get_dataset("Elspotprices", filters=filters)
-
-    # assert
-    sent = sent_query(requests_mock)
-    assert json.loads(sent["filter"][0]) == filters

@@ -44,11 +44,11 @@ eds-python-api-test-automation/
 │   ├── conftest.py                   # fixtures: client, API objects, parametrized dataset
 │   ├── support/                      # shared test helpers: mock loading, schema asserts, dataset configs, scripted local server
 │   ├── mocks/                        # requests-mock fixture data
-│   ├── test_dataset_contract.py      # CO2Emis + Elspotprices: status/JSON/structure/limit/filter (one parametrized suite)
-│   ├── test_news_api.py              # News API: /News, /actual, /calendar, /archived (mocked)
+│   ├── test_dataset_contract.py      # CO2Emis + Elspotprices: sample vs schema, request URL/parameters, real HTTP round-trip
+│   ├── test_news_api.py              # News API: endpoint paths, parameters, sample vs schema (mocked)
 │   ├── test_live_smoke.py            # bounded live smoke tests against the real API
-│   ├── test_eds_client.py            # default/custom retry configuration
-│   ├── test_pagination.py            # limit/offset paging
+│   ├── test_eds_client.py            # default/custom retry and timeout configuration
+│   ├── test_pagination.py            # consecutive pages advance the offset by the limit
 │   ├── test_boundary_values.py       # limit/offset boundary values
 │   ├── test_parameter_combinations.py # decision table of parameter combinations
 │   ├── test_filter_encoding.py       # filter encoding (non-ASCII, quotes, lists)
@@ -57,8 +57,7 @@ eds-python-api-test-automation/
 │   ├── test_retry_behavior.py        # real retry behavior against a local scripted server
 │   ├── test_live_edge_cases.py       # low-load live edge cases
 │   ├── test_allure_environment.py    # Allure environment.properties
-│   ├── test_sorting.py               # sort parameter
-│   ├── test_negative_scenarios.py    # invalid dataset, 404, connection timeout
+│   ├── test_negative_scenarios.py    # connection timeout, connection refused
 │   ├── test_schema_validation.py     # JSON Schema validation
 │   ├── test_models.py                # Pydantic parsing
 │   ├── test_logging.py               # warning logged when retries are exhausted
@@ -87,15 +86,16 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-148 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
+135 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
 * `limit`, `filter`, `offset` (pagination), `sort` parameters
-* Negative scenarios: invalid dataset, unknown path, connection timeout
-* News API (`/News`, `/News/actual`, `/News/calendar`, `/News/archived`): status/JSON/structure,
-  field mapping, required/invalid parameters (400), empty results (204, empty archive), and
-  calendar vs. archive consistency against the live API
+* Negative scenarios: connection timeout and refused connection; 4xx not retried (real local server);
+  invalid dataset and unknown path against the live API
+* News API (`/News`, `/News/actual`, `/News/calendar`, `/News/archived`): endpoint paths, parameters
+  sent with their exact case, samples vs. schema; live checks of required/invalid parameters (400),
+  empty results (204), unknown path (404), and calendar vs. archive consistency
 * JSON Schema validation of API responses
 * Pydantic model parsing (valid + invalid data)
 * Boundary values (`limit`/`offset`: 0, 1, large, negative), parameter combinations (decision table),
@@ -107,8 +107,8 @@ with a handful of bounded live smoke tests against the real API:
 * Property-based tests (`hypothesis`): filter JSON round-trip, parameters surviving the URL, negative `limit`, URL building, record parsing
 * Client logging when retries are exhausted (against a real local server)
 * Retry/backoff configuration, including per-dataset overrides and jitter
-* Automatic pytest-level rerun (`pytest-rerunfailures`) on the live sort smoke
-  test, feeding Allure's Retries trend
+* Automatic pytest-level rerun (`pytest-rerunfailures`) on the live smoke and edge-case tests
+  (network errors only), feeding Allure's Retries trend
 
 ## 🚀 Getting Started
 

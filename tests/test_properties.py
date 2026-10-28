@@ -3,6 +3,7 @@
 import json
 from urllib.parse import parse_qs, urlparse
 
+import pytest
 import requests_mock
 from hypothesis import given, settings
 from hypothesis import strategies as st
@@ -60,12 +61,8 @@ def test_givenAnyNegativeLimit_whenGettingDataset_thenValueErrorIsRaisedBeforeSe
 
     # act / assert
     with requests_mock.Mocker() as mocker:
-        try:
+        with pytest.raises(ValueError, match="limit"):
             client.get_dataset("CO2Emis", limit=limit)
-        except ValueError:
-            pass
-        else:
-            raise AssertionError("negative limit was accepted")
         assert mocker.call_count == 0
 
 

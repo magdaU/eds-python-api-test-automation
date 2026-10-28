@@ -1,6 +1,7 @@
+import platform
 from importlib.metadata import version
 
-from tests.support.allure_environment import build_environment, write_environment
+from tests.support.allure_environment import TRACKED_PACKAGES, build_environment, write_environment
 from tests.support.allure_labels import labels
 
 pytestmark = labels("Client library", "Allure environment")
@@ -26,7 +27,11 @@ def test_givenCiEnvironment_whenBuildingEnvironment_thenEveryFieldIsMapped():
     assert properties["CI.Run"] == "42"
     assert properties["pytest"] == version("pytest")
     assert properties["requests"] == version("requests")
-    assert properties["Python"].count(".") == 2
+    assert properties["Python"] == platform.python_version()
+    assert properties["OS"] == platform.system()
+    for package in TRACKED_PACKAGES:
+        assert properties[package] == version(package)
+    assert set(properties) == {"Base.URL", "Test.Scope", "Python", "OS", "CI.Branch", "CI.Commit", "CI.Run", *TRACKED_PACKAGES}
 
 
 def test_givenNoMarkerExpressionAndNoCi_whenBuildingEnvironment_thenScopeIsAllAndCiFieldsAreAbsent():
