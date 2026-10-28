@@ -1,11 +1,13 @@
 import json
+from pathlib import Path
 
 import jsonschema
 
+SCHEMAS_DIR = Path(__file__).resolve().parents[2] / "schemas"
+
 
 def assert_matches_schema(instance, schema_filename):
-    with open(f"schemas/{schema_filename}") as f:
-        schema = json.load(f)
+    schema = json.loads((SCHEMAS_DIR / schema_filename).read_text(encoding="utf-8"))
 
     jsonschema.validate(instance=instance, schema=schema)
 

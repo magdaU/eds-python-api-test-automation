@@ -158,7 +158,7 @@ All plans favor mocked tests (`requests-mock`) for bulk/edge-case coverage, with
 
 **Steps:**
 1. Extend `EDSApiClient.__init__` to accept `dataset_overrides: dict[str, dict] | None` (e.g. `{"CO2Emis": {"max_retries": 5, "backoff_factor": 2.0}}`); mount a separate `HTTPAdapter`/`Retry` per overridden dataset path, or resolve the override at `get_dataset` call time.
-2. Investigate `urllib3.util.retry.Retry(backoff_jitter=...)` (available since urllib3 ≥1.26.9) as the jitter mechanism; pin/verify the installed urllib3 version supports it before relying on it.
+2. Investigate `urllib3.util.retry.Retry(backoff_jitter=...)` (available since urllib3 2.0; the original plan wrongly said 1.26.9, and 2.0.0 was yanked, so `requirements.txt` requires ≥2.0.2) as the jitter mechanism; pin/verify the installed urllib3 version supports it before relying on it.
 3. Add `tests/test_retry_config.py`: use `requests-mock` to return N failing responses (429/503) then a 200, assert the total call count matches the configured `max_retries`, for both default and per-dataset-override config.
 4. Assert `backoff_factor`/`backoff_jitter` are correctly set on the constructed `Retry` object (inspect its attributes) rather than measuring real sleep time.
 
@@ -247,5 +247,5 @@ All plans favor mocked tests (`requests-mock`) for bulk/edge-case coverage, with
 ## Resolved questions
 
 1. **Allure publishing target (item 7):** the report is also published to GitHub Pages (`gh-pages` branch), not only uploaded as a CI artifact.
-2. **Jitter support (item 9):** true randomized jitter uses urllib3's `backoff_jitter`; `requirements.txt` keeps `urllib3>=1.26.9` as a minimum bound rather than an exact pin.
+2. **Jitter support (item 9):** true randomized jitter uses urllib3's `backoff_jitter`; `requirements.txt` keeps `urllib3>=2.0.2` as a minimum bound rather than an exact pin (`backoff_jitter` does not exist before 2.0).
 3. **Docker (item 8):** a single `Dockerfile` only, no `docker-compose.yml`.

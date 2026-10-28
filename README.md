@@ -42,7 +42,7 @@ eds-python-api-test-automation/
 │
 ├── tests/
 │   ├── conftest.py                   # fixtures: client, API objects, parametrized dataset
-│   ├── support/                      # shared test helpers: mock loading, schema asserts, dataset configs
+│   ├── support/                      # shared test helpers: mock loading, schema asserts, dataset configs, scripted local server
 │   ├── mocks/                        # requests-mock fixture data
 │   ├── test_dataset_contract.py      # CO2Emis + Elspotprices: status/JSON/structure/limit/filter (one parametrized suite)
 │   ├── test_news_api.py              # News API: /News, /actual, /calendar, /archived (mocked)
@@ -61,7 +61,8 @@ eds-python-api-test-automation/
 │   ├── test_negative_scenarios.py    # invalid dataset, 404, connection timeout
 │   ├── test_schema_validation.py     # JSON Schema validation
 │   ├── test_models.py                # Pydantic parsing
-│   ├── test_logging.py               # retryable-status logging
+│   ├── test_logging.py               # warning logged when retries are exhausted
+│   ├── test_support_paths.py         # fixtures load regardless of the working directory
 │   └── test_retry_config.py          # per-dataset retry/backoff/jitter tuning
 │
 ├── .github/workflows/
@@ -86,7 +87,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-146 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
+148 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -104,7 +105,7 @@ with a handful of bounded live smoke tests against the real API:
 * Low-load live edge cases (one `limit=1` request each): negative offset, unknown sort/filter column,
   filter or offset matching nothing, unknown News category/path
 * Property-based tests (`hypothesis`): filter JSON round-trip, parameters surviving the URL, negative `limit`, URL building, record parsing
-* Client logging on retryable status codes
+* Client logging when retries are exhausted (against a real local server)
 * Retry/backoff configuration, including per-dataset overrides and jitter
 * Automatic pytest-level rerun (`pytest-rerunfailures`) on the live sort smoke
   test, feeding Allure's Retries trend
