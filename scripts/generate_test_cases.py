@@ -18,6 +18,7 @@ OUTPUT = ROOT / "docs" / "test-cases.md"
 
 # module -> (test level, environment / test double, main test design technique); a new module must be classified here
 MODULES = {
+    "test_allure_categories": ("Component", "none", "Equivalence partitioning, configuration checks"),
     "test_allure_environment": ("Component", "none", "Equivalence partitioning"),
     "test_boundary_values": ("Component", "mocked HTTP", "Boundary value analysis"),
     "test_dataset_contract": ("Component", "mocked HTTP, local HTTP server", "Contract and request verification"),

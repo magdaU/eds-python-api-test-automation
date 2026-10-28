@@ -4,7 +4,7 @@ import pytest
 
 import allure
 from tests.support.live import TRANSIENT_NETWORK_ERRORS
-from tests.support.schema import assert_all_match_schema
+from tests.support.schema import assert_all_match_schema, assert_matches_schema
 
 pytestmark = [pytest.mark.live, allure.epic("Live API")]
 
@@ -16,12 +16,13 @@ def test_whenGettingConsecutivePages_thenPagesAreDifferent(co2_api):
     second_page = co2_api.get(limit=5, offset=5).json()
 
     # assert
-    first_timestamps = [record["Minutes5UTC"] for record in first_page["records"]]
-    second_timestamps = [record["Minutes5UTC"] for record in second_page["records"]]
+    # a record is one timestamp per price area, so the timestamp alone is not unique
+    first_records = {(record["Minutes5UTC"], record["PriceArea"]) for record in first_page["records"]}
+    second_records = {(record["Minutes5UTC"], record["PriceArea"]) for record in second_page["records"]}
     assert len(first_page["records"]) == 5
     assert len(second_page["records"]) == 5
-    # tolerant of a single record drifting in live, continuously updated data
-    assert first_timestamps != second_timestamps
+    # live data keeps arriving, so a few records may shift between the two calls; identical pages mean offset was ignored
+    assert len(first_records | second_records) > 5
 
 
 @allure.feature("CO2Emis")
@@ -42,6 +43,8 @@ def test_givenDescendingSort_whenGettingElspotprices_thenPricesAreDescending(els
 
     # assert
     prices = [record["SpotPriceDKK"] for record in response.json()["records"]]
+    assert response.status_code == 200
+    assert len(prices) == 5
     assert prices == sorted(prices, reverse=True)
 
 
@@ -52,7 +55,11 @@ def test_whenGettingLiveNews_thenEveryItemMatchesSchema(news_api):
 
     # assert
     assert response.status_code == 200
-    assert_all_match_schema(response.json(), "news_schema.json")
+    assert isinstance(response.json(), list)
+    # /News lists only current news and may legitimately be empty, so it can't use the helper that rejects an empty list;
+    # the archive test below validates the same schema against real items
+    for item in response.json():
+        assert_matches_schema(item, "news_schema.json")
 
 
 @allure.feature("News")
@@ -60,15 +67,17 @@ def test_whenGettingLiveCalendar_thenEveryEntryMatchesSchemaAndArchiveAgrees(new
     # arrange
     calendar_response = news_api.calendar()
     calendar = calendar_response.json()
-    latest = max(calendar, key=lambda entry: entry["dateString"])
+    years_with_news = [entry for entry in calendar if entry["numberOfNewsStories"] > 0]
+    assert calendar_response.status_code == 200 and years_with_news, "the calendar must list a year with news to compare"
+    latest = max(years_with_news, key=lambda entry: entry["dateString"])
 
     # act
     archived_response = news_api.archived(date=f"{latest['dateString']}-01-01")
     archived = archived_response.json()
 
     # assert
-    assert calendar_response.status_code == 200
     assert archived_response.status_code == 200
     assert_all_match_schema(calendar, "news_calendar_schema.json")
+    assert_all_match_schema(archived, "news_schema.json")
     assert len(archived) == latest["numberOfNewsStories"]
     assert all(item["validFrom"].startswith(latest["dateString"]) for item in archived)

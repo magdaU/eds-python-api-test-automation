@@ -2,7 +2,7 @@
   {
     "name": "Infrastructure problems",
     "matchedStatuses": ["broken", "failed"],
-    "messageRegex": ".*(429|Retry-After|ConnectTimeout|ConnectionError).*"
+    "messageRegex": ".*(\\b429\\b|Retry-After|ConnectTimeout|ConnectionError|RetryError|Max retries exceeded|too many \\d+ error responses).*"
   },
   {
     "name": "Contract drift (schema or model mismatch)",
