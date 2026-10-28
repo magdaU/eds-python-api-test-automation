@@ -1,6 +1,6 @@
 # Test coverage
 
-What the tests cover and what they do not. Measured on commit `3a3309f` (2026-10-28), Python 3.12.2. Related:
+What the tests cover and what they do not. Measured on commit `1943f11` (2026-10-28), Python 3.12.2. Related:
 [test strategy](test-strategy.md) · [test cases](test-cases.md) · [test results](test-results.md) · [test report](test-report.md).
 
 ## 1. Code coverage
@@ -9,9 +9,9 @@ Command: `pytest -m "not live" --cov --cov-branch`
 
 | Package | Statements | Missed | Branches | Missed branches | Coverage |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `client/` | 125 | 0 | 18 | 0 | 100% |
+| `client/` | 128 | 0 | 18 | 0 | 100% |
 | `models/` | 11 | 0 | 0 | 0 | 100% |
-| **Total** | **136** | **0** | **18** | **0** | **100%** |
+| **Total** | **139** | **0** | **18** | **0** | **100%** |
 
 - Scope is `client/` and `models/` (the code under test). Test helpers and scripts are not measured.
 - Only offline tests are needed to reach 100%; live tests add confidence in the real API, not coverage.
@@ -32,9 +32,12 @@ checked by hand-made mutations: one line of the client is changed or removed and
 | News `category` is sent in lower case | 2 | yes |
 | Dataset URL path is wrong (`/datasets/...`) | 4 | yes |
 | `offset` is never sent | 9 | yes |
+| Dataset name is not URL-encoded | 4 | yes |
 
 The first six checks were run once on 2026-10-28 against the suite as of pull request #61, the `offset` check against
-the suite as of #66; they are not part of CI. The live paging test also fails when `offset` is ignored. Before that
+the suite as of #66 and the URL-encoding check while developing #75 (it is the red step of that change); they are not part of CI.
+Seven mutations (`offset`, `sort`, `filter`, negative `limit`, News `category` case, retried 4xx, ignored `Retry-After`) also
+fail the BDD scenarios, which exercise the same code from a different angle. The live paging test also fails when `offset` is ignored. Before that
 pull request, the same mutations were detected only by the parameter-focused modules (boundary values, parameter
 combinations, filter encoding, properties) and by none of the dataset contract, pagination or negative-scenario tests;
 see the [test report](test-report.md).
