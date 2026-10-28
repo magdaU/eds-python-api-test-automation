@@ -27,35 +27,31 @@ def test_whenGettingElspotprices_thenResponseMatchesSchema(elspotprices_response
     assert_matches_schema(body, ELSPOTPRICES_DATASET.schema_file)
 
 
-def test_givenEmptyRecordsList_whenValidating_thenSchemaIsSatisfied():
+def test_givenEmptyRecordsList_whenValidating_thenSchemaIsSatisfied(dataset):
     # arrange
     body = {"records": [], "total": 0}
 
     # act / assert
-    assert_matches_schema(body, CO2EMIS_DATASET.schema_file)
+    assert_matches_schema(body, dataset.schema_file)
 
 
-def test_givenRecordWithoutOptionalField_whenValidating_thenSchemaIsSatisfied():
+def test_givenRecordWithoutOptionalField_whenValidating_thenSchemaIsSatisfied(dataset):
     # arrange
-    body = {
-        "records": [{"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK1", "CO2Emission": 100.0}],
-        "total": 1,
-    }
+    body = load_mock(dataset.sample_response_file)
+    del body["records"][0][dataset.optional_field]
 
     # act / assert
-    assert_matches_schema(body, CO2EMIS_DATASET.schema_file)
+    assert_matches_schema(body, dataset.schema_file)
 
 
-def test_givenRecordWithoutRequiredField_whenValidating_thenValidationFails():
+def test_givenRecordWithoutRequiredField_whenValidating_thenValidationFails(dataset):
     # arrange
-    body = {
-        "records": [{"PriceArea": "DK1", "CO2Emission": 100.0}],
-        "total": 1,
-    }
+    body = load_mock(dataset.sample_response_file)
+    del body["records"][0][dataset.required_field]
 
     # act / assert
     with pytest.raises(jsonschema.exceptions.ValidationError):
-        assert_matches_schema(body, CO2EMIS_DATASET.schema_file)
+        assert_matches_schema(body, dataset.schema_file)
 
 
 @pytest.mark.parametrize(

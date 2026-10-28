@@ -19,8 +19,9 @@ def sent_filter(requests_mock):
         {"PriceArea": "Ærø Ø å"},
         {"PriceArea": "DK1,DK2"},
         {"PriceArea": ["DK1", "DK2"]},
+        {"PriceArea": 'DK"1\\x'},
     ],
-    ids=["two-keys", "non-ascii", "comma-in-value", "list-of-values"],
+    ids=["two-keys", "non-ascii", "comma-in-value", "list-of-values", "quote-and-backslash"],
 )
 def test_givenFilters_whenGettingDataset_thenFilterRoundTripsThroughJson(elspotprices_api, requests_mock, filters):
     # arrange

@@ -88,6 +88,26 @@ def test_givenUnknownCategory_whenGettingActualNews_thenNoContentIsReturned(news
 
 
 @allure.feature("News")
+def test_givenNoCategory_whenGettingActualNews_thenBadRequestNamesCategory(news_api):
+    # act
+    response = news_api.actual()
+
+    # assert
+    assert response.status_code == 400
+    assert "category" in response.json()["errors"]
+
+
+@allure.feature("News")
+def test_givenInvalidDate_whenGettingArchivedNews_thenBadRequestNamesDate(news_api):
+    # act
+    response = news_api.archived(date="bogus")
+
+    # assert
+    assert response.status_code == 400
+    assert "date" in response.json()["errors"]
+
+
+@allure.feature("News")
 def test_givenUnknownNewsPath_whenGettingNews_thenNotFoundIsReturned(news_api):
     # act
     response = news_api.get("nosuchpath")
