@@ -20,6 +20,19 @@ Python-based API test automation framework for the [Energi Data Service (EDS)](h
 | Nightly live API check (catches API drift) | [Live nightly workflow](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/live-nightly.yml) |
 | Code quality (ruff, mypy, coverage) | [Quality workflow](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/quality.yml) |
 
+## 📚 Test Documentation
+
+| Document | Content |
+| --- | --- |
+| [Test strategy](docs/test-strategy.md) | Objectives, scope, test levels, techniques, environments, entry/exit criteria, risks |
+| [Test plan](docs/test-plan.md) | What is tested, when, by what, and when testing is done |
+| [Test cases](docs/test-cases.md) | Catalogue of all test cases (generated from the tests) |
+| [Test coverage](docs/test-coverage.md) | Code coverage, mutation checks, functional coverage, known gaps |
+| [Test results](docs/test-results.md) | Results of the latest CI run on `main` (generated from the Allure report) |
+| [Test report](docs/test-report.md) | Summary, defects found and resolved, residual risks, recommendation |
+
+Regenerate the generated ones with `python scripts/generate_test_cases.py` and `python scripts/generate_test_results.py`.
+
 ## 🛠️ Technologies
 
 Python · pytest · ruff · mypy · pytest-cov · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · JMeter · Git · GitHub Actions · GitHub Pages
@@ -72,6 +85,9 @@ eds-python-api-test-automation/
 ├── performance/
 │   ├── eds_api_load_test.jmx   # JMeter plan (low-load baseline)
 │   └── endpoints.csv           # endpoints the plan iterates over
+│
+├── docs/                  # test documentation (strategy, plan, cases, coverage, results, report) + README images
+├── scripts/               # generators for docs/test-cases.md and docs/test-results.md
 │
 ├── Dockerfile
 ├── requirements.txt
