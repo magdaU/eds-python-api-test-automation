@@ -4,16 +4,16 @@
 > Regenerate after adding, renaming or removing tests. IDs are sequential and are **not stable** between
 > regenerations, so refer to a test by its module and name.
 
-97 test functions expand to 156 executed test cases (*Variants* counts parametrized runs). Each test name reads `given<precondition>_when<action>_then<expected result>`; the columns below are that name, split. Tests that call the public EDS API count as *System* level whichever module they live in. See the [test strategy](test-strategy.md) for how the levels are used.
+99 test functions expand to 160 executed test cases (*Variants* counts parametrized runs). Each test name reads `given<precondition>_when<action>_then<expected result>`; the columns below are that name, split. Tests that call the public EDS API count as *System* level whichever module they live in. See the [test strategy](test-strategy.md) for how the levels are used.
 
 ## Summary by test level
 
 | Test level | Offline | Live | Total |
 | --- | ---: | ---: | ---: |
-| Component | 126 | 0 | 126 |
+| Component | 130 | 0 | 130 |
 | Integration | 14 | 0 | 14 |
 | System | 0 | 16 | 16 |
-| **Total** | **140** | **16** | **156** |
+| **Total** | **144** | **16** | **160** |
 
 ## Test cases
 
@@ -260,3 +260,5 @@ Source: [`tests/test_url_building.py`](../tests/test_url_building.py) | Level: C
 | --- | --- | --- | --- | ---: | --- |
 | TC-096 | Base URL with or without trailing slash | Building dataset URL | No double slash | 2 | Offline |
 | TC-097 | News path | Building news URL | Slashes are normalized | 4 | Offline |
+| TC-098 | Dataset name with special characters | Building dataset URL | It stays one encoded path segment | 3 | Offline |
+| TC-099 | Dataset name with slash | Getting dataset | Request path keeps the encoded slash | 1 | Offline |
