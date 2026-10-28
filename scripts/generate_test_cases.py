@@ -21,6 +21,7 @@ MODULES = {
     "test_allure_categories": ("Component", "none", "Equivalence partitioning, configuration checks"),
     "test_allure_environment": ("Component", "none", "Equivalence partitioning"),
     "test_boundary_values": ("Component", "mocked HTTP", "Boundary value analysis"),
+    "test_dataset_queries": ("Component", "mocked HTTP", "Executable specification (Gherkin)"),
     "test_dataset_contract": ("Component", "mocked HTTP, local HTTP server", "Contract and request verification"),
     "test_eds_client": ("Component", "none", "Configuration checks"),
     "test_filter_encoding": ("Component", "mocked HTTP", "Equivalence partitioning"),
@@ -30,10 +31,12 @@ MODULES = {
     "test_logging": ("Integration", "local HTTP server", "Negative testing, log assertions"),
     "test_models": ("Component", "none", "Equivalence partitioning, negative testing"),
     "test_negative_scenarios": ("Component", "mocked HTTP, unused local port", "Negative testing"),
+    "test_news": ("Component", "mocked HTTP", "Executable specification (Gherkin)"),
     "test_news_api": ("Component", "mocked HTTP", "Request verification, schema validation"),
     "test_pagination": ("Component", "mocked HTTP", "Request verification"),
     "test_parameter_combinations": ("Component", "mocked HTTP", "Decision table"),
     "test_properties": ("Component", "mocked HTTP", "Property-based testing"),
+    "test_resilience": ("Integration", "local HTTP server", "Executable specification (Gherkin)"),
     "test_retry_behavior": ("Integration", "local HTTP server", "State-based, negative testing"),
     "test_retry_config": ("Component", "none", "Configuration checks"),
     "test_schema_validation": (
@@ -45,6 +48,10 @@ MODULES = {
     "test_url_building": ("Component", "none", "Equivalence partitioning"),
 }
 LEVELS = ["Component", "Integration", "System"]
+
+# BDD modules: test module -> Gherkin feature file in tests/bdd/features (their rows come from the scenarios)
+BDD_FEATURES = {"test_dataset_queries": "dataset_queries", "test_resilience": "resilience", "test_news": "news"}
+FEATURES_DIR = ROOT / "tests" / "bdd" / "features"
 
 WORDS = {
     "co2 emis": "CO2Emis",
@@ -65,7 +72,7 @@ def collect(*pytest_args: str) -> Counter[tuple[str, str]]:
     output = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=True).stdout
     counts: Counter[tuple[str, str]] = Counter()
     for line in output.splitlines():
-        match = re.match(r"tests/(test_\w+)\.py::(test_\w+)", line)
+        match = re.match(r"tests/(?:bdd/)?(test_\w+)\.py::(test_\w+)", line)
         if match:
             counts[match.groups()] += 1
     return counts
@@ -82,9 +89,13 @@ def label_calls(node: ast.AST) -> list[tuple[str, list[str]]]:
     return found
 
 
-def read_labels(module: str) -> dict[str, tuple[str, str]]:
-    """Allure (epic, feature) per test function: from the module's `pytestmark`, a function's own `allure.feature`."""
-    tree = ast.parse((ROOT / "tests" / f"{module}.py").read_text(encoding="utf-8"))
+def module_path(module: str) -> Path:
+    return ROOT / "tests" / ("bdd" if module in BDD_FEATURES else "") / f"{module}.py"
+
+
+def read_labels(module: str) -> tuple[dict[str, tuple[str, str]], tuple[str, str]]:
+    """Allure (epic, feature) per test function and the module default, from `pytestmark` and `allure.feature`."""
+    tree = ast.parse(module_path(module).read_text(encoding="utf-8"))
     epic = feature = ""
     for node in tree.body:
         if isinstance(node, ast.Assign) and any(getattr(target, "id", "") == "pytestmark" for target in node.targets):
@@ -98,7 +109,38 @@ def read_labels(module: str) -> dict[str, tuple[str, str]]:
         if isinstance(node, ast.FunctionDef) and node.name.startswith("test_"):
             own = [args[0] for decorator in node.decorator_list for name, args in label_calls(decorator) if name == "feature"]
             per_test[node.name] = (epic, own[0] if own else feature)
-    return per_test
+    return per_test, (epic, feature)
+
+
+def read_scenarios(feature: str) -> list[dict]:
+    """Scenarios of a `.feature` file: title, steps by Given/When/Then and the number of runs (example rows, or 1)."""
+    scenarios: list[dict] = []
+    current: dict | None = None
+    phase = ""
+    in_examples = header_seen = False
+    for raw in (FEATURES_DIR / f"{feature}.feature").read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if line.startswith(("Scenario Outline:", "Scenario:")):
+            current = {"title": line.split(":", 1)[1].strip(), "Given": [], "When": [], "Then": [], "runs": 1}
+            scenarios.append(current)
+            in_examples = header_seen = False
+            phase = ""
+        elif line.startswith("Examples:"):
+            in_examples, header_seen = True, False
+            current["runs"] = 0
+        elif in_examples and line.startswith("|"):
+            if header_seen:
+                current["runs"] += 1
+            header_seen = True
+        elif current is not None and line.split(" ", 1)[0] in {"Given", "When", "Then", "And", "But"}:
+            keyword, text = line.split(" ", 1)
+            phase = keyword if keyword in {"Given", "When", "Then"} else phase
+            current[phase].append(text)
+    return scenarios
+
+
+def cell(steps: list[str]) -> str:
+    return "; ".join(steps).replace("<", "&lt;").replace(">", "&gt;") or "-"
 
 
 def humanize(part: str) -> str:
@@ -128,24 +170,47 @@ def render() -> str:
     executed: Counter[tuple[str, str]] = Counter()  # (effective level, mode) -> executed test cases
     functions = 0
     for module in sorted(MODULES):
-        per_test = read_labels(module)
+        per_test, default_labels = read_labels(module)
         names = [name for (mod, name) in everything if mod == module]
         level, environment, technique = MODULES[module]
-        epic = per_test[names[0]][0]
-        features = {per_test[name][1] for name in names}
+        epic = default_labels[0] if module in BDD_FEATURES else per_test[names[0]][0]
+        features = {default_labels[1]} if module in BDD_FEATURES else {per_test[name][1] for name in names}
         feature_column = len(features) > 1
+        source = (
+            f"[`tests/bdd/features/{BDD_FEATURES[module]}.feature`](../tests/bdd/features/{BDD_FEATURES[module]}.feature)"
+            if module in BDD_FEATURES
+            else f"[`tests/{module}.py`](../tests/{module}.py)"
+        )
         lines = [
             f"### {epic} ({module})" if feature_column else f"### {epic}: {next(iter(features))}",
             "",
-            f"Source: [`tests/{module}.py`](../tests/{module}.py) | Level: {level} | Environment: {environment} "
-            f"| Technique: {technique}",
+            f"Source: {source} | Level: {level} | Environment: {environment} | Technique: {technique}",
             "",
-            "| ID |"
-            + (" Feature |" if feature_column else "")
-            + " Precondition (given) | Action (when) | Expected result (then) "
-            "| Variants | Mode |",
-            "| --- |" + (" --- |" if feature_column else "") + " --- | --- | --- | ---: | --- |",
+            *(
+                ["| ID | Scenario | Given | When | Then | Variants | Mode |", "| --- | --- | --- | --- | --- | ---: | --- |"]
+                if module in BDD_FEATURES
+                else [
+                    "| ID |"
+                    + (" Feature |" if feature_column else "")
+                    + " Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |",
+                    "| --- |" + (" --- |" if feature_column else "") + " --- | --- | --- | ---: | --- |",
+                ]
+            ),
         ]
+        if module in BDD_FEATURES:
+            scenarios = read_scenarios(BDD_FEATURES[module])
+            collected = sum(everything[(module, name)] for name in names)
+            if sum(scenario["runs"] for scenario in scenarios) != collected or any((module, n) in live for n in names):
+                raise SystemExit(f"{module}: the feature file and the collected tests disagree (or a scenario is live)")
+            for scenario in scenarios:
+                functions += 1
+                executed[level, "Offline"] += scenario["runs"]
+                lines.append(
+                    f"| TC-{functions:03d} | {scenario['title']} | {cell(scenario['Given'])} | {cell(scenario['When'])} "
+                    f"| {cell(scenario['Then'])} | {scenario['runs']} | Offline |"
+                )
+            sections.append("\n".join(lines))
+            continue
         for name in names:
             functions += 1
             given, when, then = split_name(name)
