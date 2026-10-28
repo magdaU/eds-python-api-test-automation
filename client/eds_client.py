@@ -114,7 +114,7 @@ class EDSApiClient:
         return self._get(self.news_url(path), params or {})
 
     def dataset_url(self, dataset: str) -> str:
-        return f"{self.base_url}/dataset/{quote(dataset, safe='')}"
+        return f"{self.base_url}/dataset/{_path_segment(dataset)}"
 
     def news_url(self, path: str = "") -> str:
         return "/".join(part for part in (f"{self.base_url}/News", path.strip("/")) if part)
@@ -146,3 +146,8 @@ class EDSApiClient:
 
 def _milliseconds_since(started: float) -> float:
     return (time.perf_counter() - started) * 1000
+
+
+def _path_segment(value: str) -> str:
+    """Encode `value` as one URL path segment, so a `/`, `?` or `#` in it cannot change what is requested."""
+    return quote(value, safe="")
