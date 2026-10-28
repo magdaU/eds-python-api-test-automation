@@ -1,6 +1,6 @@
 # Test coverage
 
-What the tests cover and what they do not. Measured on commit `1943f11` (2026-10-28), Python 3.12.2. Related:
+What the tests cover and what they do not. Measured on commit `3597f80` (2026-10-28), Python 3.12.2. Related:
 [test strategy](test-strategy.md) · [test cases](test-cases.md) · [test results](test-results.md) · [test report](test-report.md).
 
 ## 1. Code coverage
@@ -9,9 +9,9 @@ Command: `pytest -m "not live" --cov --cov-branch`
 
 | Package | Statements | Missed | Branches | Missed branches | Coverage |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `client/` | 128 | 0 | 18 | 0 | 100% |
+| `client/` | 146 | 0 | 20 | 0 | 100% |
 | `models/` | 11 | 0 | 0 | 0 | 100% |
-| **Total** | **139** | **0** | **18** | **0** | **100%** |
+| **Total** | **157** | **0** | **20** | **0** | **100%** |
 
 - Scope is `client/` and `models/` (the code under test). Test helpers and scripts are not measured.
 - Only offline tests are needed to reach 100%; live tests add confidence in the real API, not coverage.
@@ -33,9 +33,14 @@ checked by hand-made mutations: one line of the client is changed or removed and
 | Dataset URL path is wrong (`/datasets/...`) | 4 | yes |
 | `offset` is never sent | 9 | yes |
 | Dataset name is not URL-encoded | 4 | yes |
+| `Retry-After` limit check disabled | 5 | yes |
+| `Retry-After` limit lost between attempts | 5 | yes |
+| `Retry-After` limit exclusive (`>=`) | 1 | yes |
+| `Retry-After` limit not passed to `urllib3` | 5 | yes |
 
 The first six checks were run once on 2026-10-28 against the suite as of pull request #61, the `offset` check against
-the suite as of #66 and the URL-encoding check while developing #75 (it is the red step of that change); they are not part of CI.
+the suite as of #66, the URL-encoding check while developing #75 (it is the red step of that change) and the four
+`Retry-After` checks while developing #77; they are not part of CI.
 Seven mutations (`offset`, `sort`, `filter`, negative `limit`, News `category` case, retried 4xx, ignored `Retry-After`) also
 fail the BDD scenarios, which exercise the same code from a different angle. The live paging test also fails when `offset` is ignored. Before that
 pull request, the same mutations were detected only by the parameter-focused modules (boundary values, parameter
