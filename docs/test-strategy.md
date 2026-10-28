@@ -134,6 +134,7 @@ the Allure report shows no failed or broken test.
 | --- | --- | --- | --- |
 | EDS API changes a field, status or message | Medium | Live tests fail, schemas outdated | Nightly live run (its result is the Actions run, not an Allure report), JSON Schemas; on `main` runs the Allure *Contract drift* category |
 | Public API rate limiting (429) | Medium | Flaky live tests, blocked client | Few and small live requests, retry with backoff, rerun on network errors only, 429 is never triggered on purpose |
+| A throttled API makes a run wait minutes (full runs on `main` take either about 30 s or about 5 min; cause not confirmed, see the [test report](test-report.md#7-residual-risks-and-open-items)) | Medium | Slow feedback, job near its timeout | Job timeout of 30 minutes; investigate and bound the wait |
 | Retry logic is wrong but untested | Medium | Hammering the API, or silent failures | Retry behaviour tested against a real local server, not only mocks |
 | Tests pass although the client is broken | Medium | False confidence | Mutation checks, request-based assertions, coverage is not trusted alone (see [test coverage](test-coverage.md)) |
 | Report shows misleading history | Low | Wrong decisions | Publish guard in CI, Allure categories |
