@@ -152,6 +152,9 @@ by a pytest hook whenever `--alluredir` is used, locally and in CI.
 An ad hoc local `allure serve` run only shows that single run — it won't have the
 trend/executor/categories data unless you copy it in yourself.
 
+The **Categories** widget groups only failed, broken and skipped tests (see `allure/categories.json`), so
+an empty widget ("0 items total") means the run had no failures, not that categories are missing.
+
 ### Performance tests (JMeter)
 
 A low-load JMeter plan lives in `performance/` (requires JMeter 5.6+). Run it from that directory:
