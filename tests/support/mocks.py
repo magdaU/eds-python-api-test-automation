@@ -1,10 +1,12 @@
 import json
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
+
+MOCKS_DIR = Path(__file__).resolve().parents[1] / "mocks"
 
 
 def load_mock(filename):
-    with open(f"tests/mocks/{filename}") as f:
-        return json.load(f)
+    return json.loads((MOCKS_DIR / filename).read_text(encoding="utf-8"))
 
 
 def records_response(records):

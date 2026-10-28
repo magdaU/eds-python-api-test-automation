@@ -5,10 +5,26 @@ from client.eds_client import EDSApiClient
 from client.news_api import NewsApi
 from tests.support.allure_environment import environment_from_session
 from tests.support.datasets import ALL_DATASETS, CO2EMIS_DATASET, ELSPOTPRICES_DATASET
+from tests.support.scripted_server import ScriptedServer
 
 
 def pytest_sessionfinish(session):
     environment_from_session(session.config)
+
+
+@pytest.fixture
+def scripted_server():
+    """Factory for a local HTTP server that answers with the given statuses in order."""
+    servers = []
+
+    def start(*statuses):
+        server = ScriptedServer(list(statuses))
+        servers.append(server)
+        return server
+
+    yield start
+    for server in servers:
+        server.close()
 
 
 @pytest.fixture(scope="session")

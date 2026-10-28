@@ -9,8 +9,8 @@ pytestmark = labels("Client library", "Negative scenarios")
 # requests_mock replaces how the session dispatches requests entirely, so the
 # custom HTTPAdapter/Retry mounted on EDSApiClient's session never runs against
 # a mocked response (verified: any mocked status code yields call_count == 1,
-# retryable or not). Retry *configuration* is covered at the unit level in
-# test_eds_client.py instead of end-to-end here.
+# retryable or not). Only non-retryable statuses and exceptions are mocked here;
+# retry behavior runs against a real local server in test_retry_behavior.py.
 
 
 def test_givenInvalidDataset_whenGettingIt_thenBadRequestIsReturned(eds_client, requests_mock):

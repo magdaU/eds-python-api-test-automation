@@ -110,9 +110,10 @@ class EDSApiClient:
     def _get(self, url: str, params: dict[str, int | str]) -> requests.Response:
         logger.debug("GET %s params=%s", url, params)
 
-        response = self.session.get(url, params=params, timeout=self.timeout)
-
-        if response.status_code in RETRYABLE_STATUS_CODES:
-            logger.warning("Received retryable status %s from %s", response.status_code, url)
-
-        return response
+        try:
+            return self.session.get(url, params=params, timeout=self.timeout)
+        except requests.exceptions.RetryError as error:
+            # Retryable statuses never reach the caller as a response: urllib3 retries them and,
+            # once the budget is spent, raises. This is where that would otherwise go unnoticed.
+            logger.warning("Giving up on %s after retries: %s", url, error)
+            raise

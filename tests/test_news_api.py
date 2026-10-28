@@ -195,15 +195,3 @@ def test_givenInvalidDate_whenGettingArchivedNews_thenBadRequestNamesDateField(n
     # assert
     assert response.status_code == 400
     assert "date" in response.json()["errors"]
-
-
-@pytest.mark.parametrize("path", ["", "calendar"])
-def test_givenServerError_whenGettingNews_thenStatusIsPassedThrough(news_api, requests_mock, path):
-    # arrange
-    requests_mock.get(news_api.url(path), status_code=500)
-
-    # act
-    response = news_api.get(path)
-
-    # assert
-    assert response.status_code == 500
