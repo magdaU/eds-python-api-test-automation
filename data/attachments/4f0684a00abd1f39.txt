@@ -1,0 +1,1 @@
+INFO     client.eds_client:eds_client.py:144 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 1, 'filter': '{"NoSuchColumn":"x"}'} -> 400 in 84 ms body=Invalid column NoSuchColumn

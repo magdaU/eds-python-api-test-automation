@@ -1,1 +1,0 @@
-INFO     client.eds_client:eds_client.py:143 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 1, 'sort': 'NoSuchColumn'} -> 400 in 83 ms body=Invalid key in sort expression: [NoSuchColumn]
