@@ -102,7 +102,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-146 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
+150 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -121,7 +121,9 @@ with a handful of bounded live smoke tests against the real API:
 * Low-load live edge cases (one `limit=1` request each): negative offset, unknown sort/filter column,
   filter or offset matching nothing, unknown News category/path
 * Property-based tests (`hypothesis`): filter JSON round-trip, parameters surviving the URL, negative `limit`, URL building, record parsing
-* Client logging when retries are exhausted (against a real local server)
+* Client diagnostics (against a real local server): one log line per request with status, duration and the start of an
+  error body, the wait before each retry and why (`Retry-After` or backoff), and a warning when retries are exhausted;
+  Allure attaches this log to each test
 * Retry/backoff configuration, including per-dataset overrides and jitter
 * Automatic pytest-level rerun (`pytest-rerunfailures`) on the live smoke and edge-case tests
   (network errors only), feeding Allure's Retries trend

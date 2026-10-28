@@ -57,7 +57,7 @@ see the [test report](test-report.md).
 | | Pydantic parsing: valid, missing field, wrong type, null, extra field, empty | `models` | Component |
 | Client robustness | Retry on 429/503 then success; exhaustion; no retry on 400/404; zero retries; News endpoints | `retry_behavior` | Integration |
 | | Retry, backoff, jitter and per-dataset overrides configured; warning above 10 retries | `retry_config`, `eds_client` | Component |
-| | Warning logged when retries are exhausted | `logging` | Integration |
+| | Request line (status, duration), error body preview, wait before a retry and its reason, warning when retries are exhausted | `logging` | Integration |
 | | Connect timeout, refused connection, request timeout | `negative_scenarios`, `eds_client` | Component |
 | | Negative `limit` rejected before sending | `boundary_values`, `properties` | Component |
 | | Real JSON round-trip over HTTP | `dataset_contract` | Integration |
@@ -95,9 +95,10 @@ there is no formal requirements document, so features rather than requirement ID
 - Only `CO2Emis` and `Elspotprices` are tested; other datasets are not.
 - Data values are not compared with an authoritative source. Only shape, types, order and error messages are checked.
 - A live 429 is never provoked on purpose, so rate-limit handling is proven only against the local server. `Retry-After`
-  handling is `urllib3`'s and is not tested explicitly.
+  handling is `urllib3`'s; the wait and its logging are tested against the local server. The real API has answered 429 with
+  `Retry-After` of up to 300 s, and the client has no cap on that wait.
 - Performance covers a low-load baseline only; there is no stress, soak or spike test.
 - No security or TLS tests.
 - The CI publish guard is verified by simulating exit codes, not by an automated test.
-- Request and response bodies of failed live tests are not captured, so some failures cannot be diagnosed from the report alone.
+- Diagnostics log only the start (300 characters) of an error response body and never the body of a successful response.
 - Mutation checks are manual and not repeated in CI.

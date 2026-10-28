@@ -7,10 +7,11 @@ from client.eds_client import EDSApiClient, RetryConfig
 
 
 class ScriptedServer:
-    """Answers each request with the next scripted status; the last one repeats."""
+    """Answers each request with the next scripted status; the last one repeats. `headers` go on every response."""
 
-    def __init__(self, statuses):
+    def __init__(self, statuses, headers=None):
         self.statuses = statuses
+        self.headers = headers or {}
         self.request_count = 0
         outer = self
 
@@ -22,6 +23,8 @@ class ScriptedServer:
                 self.send_response(outer.statuses[index])
                 self.send_header("Content-Type", "application/json")
                 self.send_header("Content-Length", str(len(body)))
+                for name, value in outer.headers.items():
+                    self.send_header(name, value)
                 self.end_headers()
                 self.wfile.write(body)
 

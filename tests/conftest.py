@@ -17,8 +17,8 @@ def scripted_server():
     """Factory for a local HTTP server that answers with the given statuses in order."""
     servers = []
 
-    def start(*statuses):
-        server = ScriptedServer(list(statuses))
+    def start(*statuses, headers=None):
+        server = ScriptedServer(list(statuses), headers)
         servers.append(server)
         return server
 
