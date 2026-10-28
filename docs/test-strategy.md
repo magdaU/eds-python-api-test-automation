@@ -87,6 +87,12 @@ a scenario layer on every test would only add indirection.
   ones that depend on an external system.
 - **One reason to fail.** A test asserts one behaviour; mapping tests assert every attribute and use distinct values per
   attribute so that swapped fields are detected.
+- **Test first where it pays (TDD).** For client logic that runs offline and is cheap to specify, the test is written
+  first and must fail for the right reason before any production code changes: *red* (a failing test, committed on its own),
+  *green* (the smallest change that passes), *refactor* (tidy up with the tests untouched and green). The change that made
+  dataset names URL-encoded is the worked example: its history is the three commits `Red:`, `Green:` and `Refactor:`
+  (the `Red:` commit fails on purpose, so only the head of a pull request is expected to be green). TDD is not forced on live
+  tests, the Allure report script or documentation, where there is no way to write the failing test first.
 - **Diagnosable failures.** The client logs one line per request (URL, parameters, status, duration including retry waits,
   the start of an error body) and the wait before each retry with its reason. pytest captures these logs, including those of
   fixtures, and Allure attaches them to the test, so a failed or slow live test explains itself.
