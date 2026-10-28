@@ -1,0 +1,3 @@
+WARNING  client.retry:retry.py:22 Retrying in 0.0 s, backoff (status 429)
+WARNING  client.retry:retry.py:22 Retrying in 0.0 s, backoff (status 429)
+WARNING  client.eds_client:eds_client.py:128 Giving up on http://127.0.0.1:44693/dataset/CO2Emis after retries, 4 ms: HTTPConnectionPool(host='127.0.0.1', port=44693): Max retries exceeded with url: /dataset/CO2Emis (Caused by ResponseError('too many 429 error responses'))
