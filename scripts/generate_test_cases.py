@@ -22,6 +22,7 @@ MODULES = {
     "test_allure_environment": ("Component", "none", "Equivalence partitioning"),
     "test_boundary_values": ("Component", "mocked HTTP", "Boundary value analysis"),
     "test_dataset_queries": ("Component", "mocked HTTP", "Executable specification (Gherkin)"),
+    "test_demo_failure": ("System", "public EDS API", "Demonstration (fails on purpose)"),
     "test_dataset_contract": ("Component", "mocked HTTP, local HTTP server", "Contract and request verification"),
     "test_eds_client": ("Component", "none", "Configuration checks"),
     "test_filter_encoding": ("Component", "mocked HTTP", "Equivalence partitioning"),
