@@ -48,10 +48,20 @@
       });
     }
     if (facts.noCategoriesInHistory) {
-      document.querySelectorAll('.widget[data-id="categories-trend"] .widget__noitems').forEach(function (empty) {
-        if (!empty.hasAttribute(MARK)) {
+      document.querySelectorAll('.widget[data-id="categories-trend"]').forEach(function (widget) {
+        if (widget.querySelector("[" + MARK + "]")) return;
+        // with a single build Allure prints "There is nothing to show"; with several it draws an empty chart instead
+        var empty = widget.querySelector(".widget__noitems");
+        var chart = widget.querySelector(".categories-trend__chart");
+        if (empty) {
           empty.setAttribute(MARK, "");
           empty.textContent = TREND_NOTE;
+        } else if (chart) {
+          var note = document.createElement("div");
+          note.className = "widget__noitems";
+          note.setAttribute(MARK, "");
+          note.textContent = TREND_NOTE;
+          chart.insertAdjacentElement("afterend", note);
         }
       });
     }
