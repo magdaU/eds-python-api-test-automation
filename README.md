@@ -173,7 +173,7 @@ trend/executor/categories data unless you copy it in yourself.
 
 The **Categories** widget groups only failed, broken and skipped tests (see `allure/categories.json`), so
 an empty widget ("0 items total") means the run had no failures, not that categories are missing. In the published
-report the widget and **Categories trend** say so themselves (`allure/report-notes.js`, added after the report is
+report the widget, the **Categories** page and **Categories trend** say so themselves (`allure/report-notes.js`, added after the report is
 generated; it writes the note only when the report's own data confirms there is nothing to categorize), and the
 Environment widget repeats it in its `Categories` line.
 
