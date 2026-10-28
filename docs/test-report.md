@@ -1,18 +1,18 @@
 # Test report
 
-Test summary report for the state of `main` at commit `e65760c` (CI build #132), 2026-10-28.
+Test summary report for the state of `main` at commit `3a3309f` (CI build #144), 2026-10-28.
 Related: [test strategy](test-strategy.md) · [test plan](test-plan.md) · [test cases](test-cases.md) ·
 [test coverage](test-coverage.md) · [test results](test-results.md).
 
 ## 1. Summary and recommendation
 
-All 146 automated test cases passed: 130 offline and 16 against the live EDS API. Static analysis is clean and code
+All 156 automated test cases passed: 140 offline and 16 against the live EDS API. Static analysis is clean and code
 coverage of the client is 100% (statements and branches). The nightly live run has passed on each of its last five
 executions. **Every exit criterion in the [test strategy](test-strategy.md#9-entry-and-exit-criteria) is met, and the
 suite is fit for its purpose: gating changes to the client and detecting drift in the EDS API.**
 
-One open observation needs attention: the duration of a full run on `main` is either about 5 minutes or about 30
-seconds, for a reason that has not been confirmed (section 7).
+One open observation needs attention: the duration of a full run on `main` is either about 5.5 minutes or about 35
+seconds, depending on whether the public API throttles the live fixtures (section 7).
 
 ## 2. What was tested
 
@@ -24,13 +24,13 @@ categories) and a low-load performance baseline.
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| Offline tests (130) | 130 passed | [test results](test-results.md) |
+| Offline tests (140) | 140 passed | [test results](test-results.md) |
 | Live tests (16) | 16 passed | [test results](test-results.md) |
 | Failed, broken or skipped tests | 0 | [test results](test-results.md) |
 | `ruff` | no findings | `Quality` workflow |
 | `mypy` (strict) | no findings | `Quality` workflow |
 | Statement coverage of `client/` and `models/` | 100% (gate: 90%) | [test coverage](test-coverage.md#1-code-coverage) |
-| Branch coverage | 100% (14 of 14 branches) | [test coverage](test-coverage.md#1-code-coverage) |
+| Branch coverage | 100% (18 of 18 branches) | [test coverage](test-coverage.md#1-code-coverage) |
 | Nightly live run, 2026-10-24 to 2026-10-28 | 5 of 5 passed | `Live nightly` workflow history |
 | Performance plan (JMeter), latest run 2026-10-26 | passed (no failed sample) | `Performance` workflow, artifact `jmeter-report` |
 
@@ -40,12 +40,12 @@ Live Allure report with history: <https://magdau.github.io/eds-python-api-test-a
 
 | Level | Offline | Live | Total |
 | --- | ---: | ---: | ---: |
-| Component | 120 | 0 | 120 |
-| Integration | 10 | 0 | 10 |
+| Component | 126 | 0 | 126 |
+| Integration | 14 | 0 | 14 |
 | System | 0 | 16 | 16 |
-| **Total** | **130** | **16** | **146** |
+| **Total** | **140** | **16** | **156** |
 
-87 test functions; the difference is parametrized runs. Details in [test cases](test-cases.md).
+97 test functions; the difference is parametrized runs. Details in [test cases](test-cases.md).
 
 ## 5. Deviations from the plan
 
@@ -65,11 +65,12 @@ Found by reviewing CI results and by audits of the tests and documentation again
 | 6 | A misspelled per-dataset retry setting was silently ignored | A wrong configuration looked valid | PR #64: `RetryConfig` raises `TypeError` for unknown settings |
 | 7 | Live schema, sort and news tests passed on an empty result (an empty list satisfies the schema and the sort check) | A live API returning no data would have shown green | PR #66: the schema helper rejects an empty list and live tests assert status and record count |
 | 8 | Allure failure categories were wrong: any message containing "429" (a port number, `KeyError: 4290`) counted as an infrastructure problem, while a real `RetryError` counted as a test defect | Misleading failure triage in the report | PR #66: pattern fixed, verified with Allure 2.46.1, `test_allure_categories.py` guards the mapping |
+| 9 | Empty Categories views (Overview widget, Categories page, Categories trend) looked like missing data; the first version of the explanation did not show on the trend once the history had several builds (Allure then draws an empty chart instead of "There is nothing to show"), which was found by checking the published report | A reader could not tell an empty view from a broken report | PRs #69-#72: a `Categories` line in the Environment widget and `allure/report-notes.js` (notes in all three views, shown only while nothing failed, broke or was skipped); verified with real Allure reports in headless Chrome in five situations and on the published report |
 
 ## 7. Residual risks and open items
 
-- **Run duration is bimodal; the public API throttles.** In the Allure history, 14 of the last 19 builds took 323-326 s
-  and 5 took 16-33 s (build #132 took 33 s). The summed duration of the test bodies is about 17 s in both cases. Request
+- **Run duration is bimodal; the public API throttles.** In the Allure history, 14 of the last 20 builds took 323-326 s
+  and 6 took 16-36 s (build #144 took 36 s). The summed duration of the test bodies is about 17-19 s in both cases. Request
   diagnostics added afterwards showed the cause on a local run: the API answered `429` with `Retry-After` and the client
   waited it out (`Retrying in 217.0 s because the server sent Retry-After (status 429)`; an earlier attempt waited 300 s).
   The waits happen in fixtures that call the live API during setup (`co2_response`, `elspotprices_response`), which is why
@@ -84,8 +85,8 @@ Found by reviewing CI results and by audits of the tests and documentation again
 - **Diagnostics.** Since the diagnostics change, every request is logged (status, duration, start of an error body) together
   with the wait before each retry and its reason, and Allure attaches the log to the test. The nightly run produces no
   Allure report, but its workflow log contains the same lines.
-- **Process.** At least three pull requests (#61, #65, #66) were merged 20-35 seconds before their `Tests` run finished.
-  CI was green each time, but the merge did not wait for it. Requiring the `Tests` and `Quality` checks before merge
+- **Process.** At least eight pull requests (#61, #65, #66 and #68-#72) were merged 17-39 seconds before their `Tests` run
+  finished. CI was green each time, but the merge did not wait for it. Requiring the `Tests` and `Quality` checks before merge
   (branch protection) would make the gate automatic.
 - **Manual evidence.** Mutation checks and the CI publish-guard simulation are not repeated automatically.
 

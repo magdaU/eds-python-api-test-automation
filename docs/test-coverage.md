@@ -1,6 +1,6 @@
 # Test coverage
 
-What the tests cover and what they do not. Measured on commit `e65760c` (2026-10-28), Python 3.12.2. Related:
+What the tests cover and what they do not. Measured on commit `3a3309f` (2026-10-28), Python 3.12.2. Related:
 [test strategy](test-strategy.md) · [test cases](test-cases.md) · [test results](test-results.md) · [test report](test-report.md).
 
 ## 1. Code coverage
@@ -9,9 +9,9 @@ Command: `pytest -m "not live" --cov --cov-branch`
 
 | Package | Statements | Missed | Branches | Missed branches | Coverage |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `client/` | 101 | 0 | 14 | 0 | 100% |
+| `client/` | 125 | 0 | 18 | 0 | 100% |
 | `models/` | 11 | 0 | 0 | 0 | 100% |
-| **Total** | **112** | **0** | **14** | **0** | **100%** |
+| **Total** | **136** | **0** | **18** | **0** | **100%** |
 
 - Scope is `client/` and `models/` (the code under test). Test helpers and scripts are not measured.
 - Only offline tests are needed to reach 100%; live tests add confidence in the real API, not coverage.
