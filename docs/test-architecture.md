@@ -12,7 +12,7 @@ Related: [test strategy](test-strategy.md) · [test plan](test-plan.md) · [test
 | `client/eds_client.py`: `RetryConfig` | Retry settings as one immutable value | in the file above | Clear |
 | `client/retry.py`: `LoggingRetry` | Logs each wait and refuses a `Retry-After` above the limit | 49 lines | Clear |
 | `client/dataset_api.py`, `client/news_api.py` | API objects: know the path of one dataset or the News endpoints, hide the client | 29 and 30 lines | Thin by design |
-| `client/parsers.py`, `models/` | Raw JSON to typed Pydantic records | 7 to 8 lines each | **Not used by the client**: only tests call them (open decision, below) |
+| `client/parsers.py`, `models/` | Raw JSON to typed Pydantic records (timestamps as `datetime`, price areas as `Literal`) | 4 to 8 lines each | **Not used by the client**: only tests call them; the nightly data-quality check parses live records with them (open decision, below) |
 | `tests/support/` | Mock loading, schema checks, dataset configuration, scripted local server, Allure helpers | 8 to 56 lines each | Clear; shared by the tests, not by the client |
 
 **Verdict: no restructuring.** The whole production code (`client/` and `models/`) is about 300 lines, each class has one clear job, and the layers do not
@@ -23,7 +23,9 @@ that needs a third kind of endpoint.
 
 Open decision (not a code smell, a scope question): `parse_records` and the Pydantic models are not part of any request path.
 Either `DatasetApi` returns typed records, or they are treated as a separate helper whose tests are counted apart. Until that
-is decided they cost about 15 tests and protect nothing the user can call.
+is decided they cost about 25 tests. They are now stricter (a `Literal` for the price areas, `datetime` for the timestamps), and the nightly
+data-quality run parses the newest live records with them, so a new price area or a changed timestamp format shows up there.
+The `Literal` list is a choice: a new area in the data fails parsing on purpose, which a consumer of the library would feel as a break.
 
 ## 2. Decisions and why
 

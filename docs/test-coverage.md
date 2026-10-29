@@ -10,8 +10,8 @@ Command: `pytest -m "not live" --cov --cov-branch`
 | Package | Statements | Missed | Branches | Missed branches | Coverage |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `client/` | 150 | 0 | 20 | 0 | 100% |
-| `models/` | 11 | 0 | 0 | 0 | 100% |
-| **Total** | **161** | **0** | **20** | **0** | **100%** |
+| `models/` | 15 | 0 | 0 | 0 | 100% |
+| **Total** | **165** | **0** | **20** | **0** | **100%** |
 
 - Scope is `client/` and `models/` (the code under test). Test helpers and scripts are not measured.
 - Only offline tests are needed to reach 100%; live tests add confidence in the real API, not coverage.
@@ -73,7 +73,8 @@ see the [test report](test-report.md).
 | Data quality | Newest records of `CO2Emis` and `DayAheadPrices` are fresh, without gaps, for DK1 and DK2, with Danish time matching UTC and values in a plausible range | `live_data_quality` | System |
 | Contract | JSON Schema of samples (both datasets, news); datasets require the response envelope `records`, `total`, `limit`, `dataset` | `schema_validation`, `dataset_contract`, `news_api` | Component |
 | | JSON Schema of live responses | `schema_validation`, `live_smoke` | System |
-| | Pydantic parsing: valid, missing field, wrong type, null, extra field, empty | `models` | Component |
+| | Pydantic parsing: timestamps become `datetime`, price area is a `Literal`; valid, missing field, wrong type, null, bad time, unknown area, extra field, empty | `models` | Component |
+| | The 100 newest live records of both datasets fit the models (types, timestamps, known price areas) | `live_data_quality` | System |
 | Client robustness | Retry on 429/503 then success; exhaustion; no retry on 400/404; zero retries; News endpoints | `retry_behavior` | Integration |
 | | A `Retry-After` above the limit (60 s) ends the request at once; at the limit it is waited; no limit waits any time; the limit survives retries | `retry_after_cap`, BDD `resilience` | Integration |
 | | Retry, backoff, jitter and per-dataset overrides configured; warning above 10 retries | `retry_config`, `eds_client` | Component |
