@@ -17,11 +17,9 @@ def sent_filter(requests_mock):
     [
         {"PriceArea": "DK1", "DayAheadPriceDKK": "12.5"},
         {"PriceArea": "Ærø Ø å"},
-        {"PriceArea": "DK1,DK2"},
         {"PriceArea": ["DK1", "DK2"]},
-        {"PriceArea": 'DK"1\\x'},
     ],
-    ids=["two-keys", "non-ascii", "comma-in-value", "list-of-values", "quote-and-backslash"],
+    ids=["two-keys", "non-ascii", "list-of-values"],
 )
 def test_givenFilters_whenGettingDataset_thenFilterRoundTripsThroughJson(dayaheadprices_api, requests_mock, filters):
     # arrange

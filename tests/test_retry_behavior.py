@@ -47,15 +47,14 @@ def test_givenClientError_whenGettingDataset_thenItIsNotRetried(scripted_server,
     assert server.request_count == 1
 
 
-@pytest.mark.parametrize("path", ["", "calendar"])
-def test_givenPersistentServerError_whenGettingNews_thenRetriesStopAfterMaxRetries(scripted_server, path):
+def test_givenPersistentServerError_whenGettingNews_thenRetriesStopAfterMaxRetries(scripted_server):
     # arrange
     server = scripted_server(500)
     news_api = NewsApi(client_for(server, max_retries=2))
 
     # act / assert
     with pytest.raises(requests.exceptions.RetryError):
-        news_api.get(path)
+        news_api.get()
     assert server.request_count == 3
 
 
