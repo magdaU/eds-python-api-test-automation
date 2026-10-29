@@ -1,1 +1,0 @@
-INFO     client.eds_client:eds_client.py:149 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 1, 'offset': 100000000} -> 200 in 1181 ms
