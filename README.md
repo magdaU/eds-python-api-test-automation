@@ -71,6 +71,7 @@ eds-python-api-test-automation/
 │   ├── test_properties.py            # property-based tests (hypothesis)
 │   ├── test_retry_behavior.py        # real retry behavior against a local scripted server
 │   ├── test_live_edge_cases.py       # low-load live edge cases
+│   ├── test_live_data_quality.py     # nightly data quality: freshness, gaps, DK1/DK2, Danish time, value range
 │   ├── test_allure_environment.py    # Allure environment.properties
 │   ├── test_negative_scenarios.py    # connection refused
 │   ├── test_schema_validation.py     # JSON Schema validation
@@ -107,7 +108,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-189 tests across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
+199 tests across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -118,6 +119,8 @@ with a handful of bounded live smoke tests against the real API:
   sent with their exact case, samples vs. schema; live checks of required/invalid parameters (400),
   empty results (204), unknown path (404), and calendar vs. archive consistency
 * Dataset status from the metadata endpoint (still published and updated; it caught that the earlier `Elspotprices` had been discontinued)
+* Data quality of the newest `CO2Emis` and `DayAheadPrices` records (nightly): freshness, gaps in the series, DK1/DK2, Danish time
+  against UTC including daylight saving, plausible values
 * JSON Schema validation of API responses
 * Pydantic model parsing (valid + invalid data)
 * Boundary values (`limit`/`offset`: 0, 1, large, negative), parameter combinations (decision table),
@@ -153,7 +156,8 @@ pytest -v -m "not live"
 ```
 
 On GitHub, pull requests run only the offline tests; the full suite (including live) runs on `main`.
-A nightly workflow (`live-nightly.yml`, also runnable manually) runs only the live tests to catch API drift.
+A nightly workflow (`live-nightly.yml`, also runnable manually) runs only the live tests to catch API drift. It also runs the data-quality
+checks (`-m data_quality`: freshness, gaps, DK1/DK2, Danish time, value range), which the run on `main` skips so a data problem does not turn the build red.
 
 > **Rate limit.** The public API throttles by dataset (the discontinued `Elspotprices` answered one query per ~300 s window).
 > A full run sends exactly one query to `DayAheadPrices`, whose limit is not measured; if a repeated run is throttled it fails fast

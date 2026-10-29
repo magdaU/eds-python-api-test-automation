@@ -49,7 +49,7 @@ jobs:
         id: pytest
         run: |
           rc=0
-          pytest -v --alluredir=allure-results ${{ github.event_name == 'pull_request' && '-m "not live"' || '' }} || rc=$?
+          pytest -v --alluredir=allure-results ${{ github.event_name == 'pull_request' && '-m "not live"' || '-m "not data_quality"' }} || rc=$?
           echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
 
       # Only exit codes 0 (all passed) and 1 (some failed) produce a report worth publishing.

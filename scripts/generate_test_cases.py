@@ -26,6 +26,7 @@ MODULES = {
     "test_eds_client": ("Component", "none", "Configuration checks"),
     "test_filter_encoding": ("Component", "mocked HTTP", "Equivalence partitioning"),
     "test_inject_report_notes": ("Component", "temporary directory", "Equivalence partitioning"),
+    "test_live_data_quality": ("System", "public EDS API", "Data quality checks"),
     "test_live_edge_cases": ("System", "public EDS API", "Error guessing, negative testing"),
     "test_live_smoke": ("System", "public EDS API", "Smoke testing"),
     "test_logging": ("Integration", "local HTTP server", "Negative testing, log assertions"),

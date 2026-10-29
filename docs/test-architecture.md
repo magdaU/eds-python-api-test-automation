@@ -46,6 +46,7 @@ is decided they cost about 15 tests and protect nothing the user can call.
 | The API throttles (429) or fails (5xx) and the client hangs or hammers it | Slow or red CI, possible IP block | `test_retry_behavior`, `test_retry_after_cap`, `test_logging`, BDD `resilience` | Integration |
 | A request parameter is dropped or changed before it reaches the API | Wrong data without an error | `test_boundary_values`, `test_parameter_combinations`, `test_filter_encoding`, `test_properties`, BDD `dataset_queries` | Component |
 | A dangerous input leaves the client (negative `limit`, a dataset name that changes the path) | Millions of records, a different endpoint requested | `test_boundary_values`, `test_url_building`, `test_properties` | Component |
+| Data stops arriving, has holes, is out of range or mislabels time (a dataset silently frozen) | Stale or wrong figures reach users without any error | `test_live_data_quality` (nightly), metadata test in `test_live_smoke` | System |
 | The API changes its response (fields, statuses, messages) | Clients break silently | `test_schema_validation` (live), `test_live_edge_cases`, `test_live_smoke`, nightly run | System |
 | A dataset is discontinued while its tests keep passing | Green tests about frozen data | `test_live_smoke` (metadata test) | System |
 | The client waits forever on a silent server | Hanging CI | `test_eds_client` (timeout), `test_negative_scenarios` (refused connection) | Component |
