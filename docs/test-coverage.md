@@ -1,6 +1,6 @@
 # Test coverage
 
-What the tests cover and what they do not. Measured on commit `3597f80` (2026-10-28), Python 3.12.2. Related:
+What the tests cover and what they do not. Measured on commit `091ca81` (2026-10-29), Python 3.12. Related:
 [test strategy](test-strategy.md) · [test cases](test-cases.md) · [test results](test-results.md) · [test report](test-report.md).
 
 ## 1. Code coverage
@@ -9,9 +9,9 @@ Command: `pytest -m "not live" --cov --cov-branch`
 
 | Package | Statements | Missed | Branches | Missed branches | Coverage |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `client/` | 146 | 0 | 20 | 0 | 100% |
+| `client/` | 150 | 0 | 20 | 0 | 100% |
 | `models/` | 11 | 0 | 0 | 0 | 100% |
-| **Total** | **157** | **0** | **20** | **0** | **100%** |
+| **Total** | **161** | **0** | **20** | **0** | **100%** |
 
 - Scope is `client/` and `models/` (the code under test). Test helpers and scripts are not measured.
 - Only offline tests are needed to reach 100%; live tests add confidence in the real API, not coverage.
@@ -37,7 +37,13 @@ checked by hand-made mutations: one line of the client is changed or removed and
 | `Retry-After` limit lost between attempts | 5 | yes |
 | `Retry-After` limit exclusive (`>=`) | 1 | yes |
 | `Retry-After` limit not passed to `urllib3` | 5 | yes |
+| `429` is not retried | 2 | yes |
+| `timeout` is not passed to the request | 2 | yes |
+| Negative `limit` check disabled | 4 | yes |
+| Filter JSON with spaces after `:` and `,` | 5 | yes |
 
+The last four checks were run on 2026-10-29 against the suite as of pull request #86; the `offset` and `sort` checks were repeated
+then (9 and 10 failing tests), and one more change (all methods retried instead of GET only) survived because the client sends only GET.
 The first six checks were run once on 2026-10-28 against the suite as of pull request #61, the `offset` check against
 the suite as of #66, the URL-encoding check while developing #75 (it is the red step of that change) and the four
 `Retry-After` checks while developing #77; they are not part of CI.
