@@ -33,7 +33,6 @@ MODULES = {
     "test_negative_scenarios": ("Component", "mocked HTTP, unused local port", "Negative testing"),
     "test_news": ("Component", "mocked HTTP", "Executable specification (Gherkin)"),
     "test_news_api": ("Component", "mocked HTTP", "Request verification, schema validation"),
-    "test_pagination": ("Component", "mocked HTTP", "Request verification"),
     "test_parameter_combinations": ("Component", "mocked HTTP", "Decision table"),
     "test_properties": ("Component", "mocked HTTP", "Property-based testing"),
     "test_resilience": ("Integration", "local HTTP server", "Executable specification (Gherkin)"),

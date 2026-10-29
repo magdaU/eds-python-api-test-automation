@@ -3,6 +3,7 @@ import pytest
 
 from tests.support.allure_labels import labels
 from tests.support.datasets import CO2EMIS_DATASET, ELSPOTPRICES_DATASET
+from tests.support.live import TRANSIENT_NETWORK_ERRORS
 from tests.support.mocks import load_mock
 from tests.support.schema import assert_all_match_schema, assert_matches_schema
 
@@ -10,6 +11,7 @@ pytestmark = labels("Dataset API", "Schema validation")
 
 
 @pytest.mark.live
+@pytest.mark.flaky(reruns=1, reruns_delay=5, only_rerun=TRANSIENT_NETWORK_ERRORS)
 def test_whenGettingCo2Emis_thenResponseMatchesSchema(co2_response):
     # act
     body = co2_response.json()
@@ -21,6 +23,7 @@ def test_whenGettingCo2Emis_thenResponseMatchesSchema(co2_response):
 
 
 @pytest.mark.live
+@pytest.mark.flaky(reruns=1, reruns_delay=5, only_rerun=TRANSIENT_NETWORK_ERRORS)
 def test_whenGettingElspotprices_thenResponseMatchesSchema(elspotprices_latest):
     # act
     body = elspotprices_latest.json()
