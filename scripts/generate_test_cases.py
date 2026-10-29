@@ -31,6 +31,7 @@ MODULES = {
     "test_live_smoke": ("System", "public EDS API", "Smoke testing"),
     "test_logging": ("Integration", "local HTTP server", "Negative testing, log assertions"),
     "test_models": ("Component", "none", "Equivalence partitioning, negative testing"),
+    "test_mutation_catalogue": ("Component", "none", "Regression test"),
     "test_negative_scenarios": ("Component", "mocked HTTP, unused local port", "Negative testing"),
     "test_news": ("Component", "mocked HTTP", "Executable specification (Gherkin)"),
     "test_news_api": ("Component", "mocked HTTP", "Request verification, schema validation"),
