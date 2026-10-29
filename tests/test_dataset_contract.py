@@ -38,6 +38,18 @@ def test_givenLimitAndFilter_whenGettingDataset_thenRequestTargetsTheDatasetWith
     assert sent_query(requests_mock) == {"limit": ["3"], "filter": ['{"PriceArea":"DK2"}']}
 
 
+def test_givenDataset_whenGettingMetadata_thenRequestGoesToItsMetaPathWithoutParameters(dataset, dataset_api, requests_mock):
+    # arrange
+    requests_mock.get(f"{dataset_api.client.base_url}/meta/dataset/{dataset.name}", json={})
+
+    # act
+    dataset_api.metadata()
+
+    # assert
+    assert urlparse(requests_mock.last_request.url).path == f"/meta/dataset/{dataset.name}"
+    assert sent_query(requests_mock) == {}
+
+
 def test_givenSuccessfulResponse_whenGettingDataset_thenStatusJsonContentTypeAndBodyArriveUnchanged(scripted_server):
     # arrange
     server = scripted_server(200)

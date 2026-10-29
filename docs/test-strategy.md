@@ -158,7 +158,7 @@ so an empty or broken run cannot reset the Trend history.
 - `ruff` and `mypy --strict` report no findings.
 - Line coverage of `client/` and `models/` is at least 90% (currently 100% line and branch).
 
-By convention, not enforced: no test is skipped or marked as an expected failure to make a run pass (none is today).
+By convention, not enforced: no test is skipped or marked as an expected failure to make a run pass. The one exception is deliberate: the metadata test for the discontinued `Elspotprices` dataset is a strict `xfail` (it must fail while EDS publishes no new data, and flags itself as soon as that changes).
 
 **Exit (a state of `main` is healthy):** the full run on `main` including live tests passes, the nightly live run passes, and
 the Allure report shows no failed or broken test.

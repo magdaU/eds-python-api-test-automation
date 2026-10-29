@@ -106,7 +106,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-185 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
+189 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -116,6 +116,7 @@ with a handful of bounded live smoke tests against the real API:
 * News API (`/News`, `/News/actual`, `/News/calendar`, `/News/archived`): endpoint paths, parameters
   sent with their exact case, samples vs. schema; live checks of required/invalid parameters (400),
   empty results (204), unknown path (404), and calendar vs. archive consistency
+* Dataset status from the metadata endpoint (still published and updated; `Elspotprices` is a known, deliberate expected failure)
 * JSON Schema validation of API responses
 * Pydantic model parsing (valid + invalid data)
 * Boundary values (`limit`/`offset`: 0, 1, large, negative), parameter combinations (decision table),

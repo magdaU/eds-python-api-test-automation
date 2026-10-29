@@ -16,6 +16,9 @@ class DatasetApi:
     def url(self) -> str:
         return self.client.dataset_url(self.dataset)
 
+    def metadata(self) -> requests.Response:
+        return self.client.get_dataset_metadata(self.dataset)
+
     def get(
         self,
         limit: int | None = None,
