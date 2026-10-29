@@ -69,8 +69,8 @@ Source: [`tests/bdd/features/dataset_queries.feature`](../tests/bdd/features/dat
 | ID | Scenario | Given | When | Then | Variants | Mode |
 | --- | --- | --- | --- | --- | ---: | --- |
 | TC-018 | Asking for a page of records | the CO2Emis dataset answers with an empty result | I get the dataset with limit 5 and offset 10 | the request carries limit "5" and offset "10" | 1 | Offline |
-| TC-019 | A sort expression is sent unchanged | the Elspotprices dataset answers with an empty result | I get the dataset sorted by "&lt;sort&gt;" | the request carries sort "&lt;sort&gt;" | 3 | Offline |
-| TC-020 | Filtering by price area | the Elspotprices dataset answers with an empty result | I get the dataset filtered by price area "DK1" | the request carries the filter '{"PriceArea":"DK1"}' | 1 | Offline |
+| TC-019 | A sort expression is sent unchanged | the DayAheadPrices dataset answers with an empty result | I get the dataset sorted by "&lt;sort&gt;" | the request carries sort "&lt;sort&gt;" | 3 | Offline |
+| TC-020 | Filtering by price area | the DayAheadPrices dataset answers with an empty result | I get the dataset filtered by price area "DK1" | the request carries the filter '{"PriceArea":"DK1"}' | 1 | Offline |
 | TC-021 | A negative limit is refused before anything is sent | the CO2Emis dataset answers with an empty result | I get the dataset with limit -1 | the client refuses the request and names the limit; no request was sent | 1 | Offline |
 
 ### Client library: Client configuration
@@ -128,7 +128,7 @@ Source: [`tests/test_live_smoke.py`](../tests/test_live_smoke.py) | Level: Syste
 | TC-040 | CO2Emis | Oldest first sort | Getting consecutive pages | Together they equal one larger page | 1 | Live |
 | TC-041 | CO2Emis | Unknown dataset | Getting it | Not found names the dataset | 1 | Live |
 | TC-042 | CO2Emis | Price area filter | Getting CO2Emis | Only the requested areas are returned | 2 | Live |
-| TC-043 | Elspotprices | Descending sort | Getting Elspotprices | Prices are descending | 1 | Live |
+| TC-043 | DayAheadPrices | Descending sort | Getting day ahead prices | Prices are descending | 1 | Live |
 | TC-044 | News | - | Getting live news | Every item matches schema | 1 | Live |
 | TC-045 | News | - | Getting live calendar | Every entry matches schema and archive agrees | 1 | Live |
 
@@ -157,9 +157,9 @@ Source: [`tests/test_models.py`](../tests/test_models.py) | Level: Component | E
 | TC-055 | Empty records | Parsing records | Empty list is returned | 1 | Offline |
 | TC-056 | Unknown extra field | Parsing records | It is ignored | 1 | Offline |
 | TC-057 | Response without records key | Parsing records | Key error is raised | 1 | Offline |
-| TC-058 | Valid Elspotprices JSON | Parsing records | Every field is mapped | 1 | Offline |
-| TC-059 | Invalid Elspotprices record | Parsing records | Validation error is raised | 4 | Offline |
-| TC-060 | Elspotprices without hour | Parsing records | Hour is none | 1 | Offline |
+| TC-058 | Valid day ahead prices JSON | Parsing records | Every field is mapped | 1 | Offline |
+| TC-059 | Invalid day ahead prices record | Parsing records | Validation error is raised | 4 | Offline |
+| TC-060 | Day ahead prices without time | Parsing records | Time is none | 1 | Offline |
 
 ### Client library: Negative scenarios
 
@@ -270,7 +270,7 @@ Source: [`tests/test_schema_validation.py`](../tests/test_schema_validation.py) 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
 | TC-100 | - | Getting CO2Emis | Response matches schema | 1 | Live |
-| TC-101 | - | Getting Elspotprices | Response matches schema | 1 | Live |
+| TC-101 | - | Getting day ahead prices | Response matches schema | 1 | Live |
 | TC-102 | No items | Validating all against schema | It fails instead of passing vacuously | 1 | Offline |
 | TC-103 | Empty records list | Validating | Schema is satisfied | 2 | Offline |
 | TC-104 | Record without optional field | Validating | Schema is satisfied | 2 | Offline |

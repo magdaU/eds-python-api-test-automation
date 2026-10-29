@@ -17,7 +17,7 @@ Terminology follows ISTQB.
 
 | In scope | Out of scope |
 | --- | --- |
-| Dataset endpoints `CO2Emis` and `Elspotprices`: `limit`, `offset`, `sort`, `filter` | Other EDS datasets and query parameters the client does not expose (for example `start`, `end`, `columns`, `timezone`) |
+| Dataset endpoints `CO2Emis` and `DayAheadPrices`: `limit`, `offset`, `sort`, `filter` | Other EDS datasets and query parameters the client does not expose (for example `start`, `end`, `columns`, `timezone`) |
 | News endpoints `/News`, `/News/actual`, `/News/calendar`, `/News/archived` | Correctness of the energy data values against an authoritative source |
 | Client behaviour: URL building, retry with backoff, timeout, logging, error handling | Security testing (the API is public and unauthenticated), TLS testing |
 | Response contract: JSON Schema and Pydantic models | Stress, soak and spike testing |
@@ -158,7 +158,7 @@ so an empty or broken run cannot reset the Trend history.
 - `ruff` and `mypy --strict` report no findings.
 - Line coverage of `client/` and `models/` is at least 90% (currently 100% line and branch).
 
-By convention, not enforced: no test is skipped or marked as an expected failure to make a run pass. The one exception is deliberate: the metadata test for the discontinued `Elspotprices` dataset is a strict `xfail` (it must fail while EDS publishes no new data, and flags itself as soon as that changes).
+By convention, not enforced: no test is skipped or marked as an expected failure to make a run pass. None is skipped or marked as an expected failure today.
 
 **Exit (a state of `main` is healthy):** the full run on `main` including live tests passes, the nightly live run passes, and
 the Allure report shows no failed or broken test.
@@ -169,7 +169,7 @@ the Allure report shows no failed or broken test.
 | --- | --- | --- | --- |
 | EDS API changes a field, status or message | Medium | Live tests fail, schemas outdated | Nightly live run (its result is the Actions run, not an Allure report), JSON Schemas; on `main` runs the Allure *Contract drift* category |
 | Public API rate limiting (429) | Medium | Flaky live tests, blocked client | Few and small live requests, retry with backoff, rerun on network errors only, 429 is never triggered on purpose |
-| The public API answers 429 with a long `Retry-After` (up to 300 s observed). Before the limit existed the client waited it out, so a full run took about 5 minutes instead of 30 seconds (see the [test report](test-report.md#7-residual-risks-and-open-items)) | High | Slow feedback, job near its timeout; since the limit, a throttled live fixture fails fast instead | The client refuses a `Retry-After` above 60 s (`RetryConfig.max_retry_after`) with `RetryAfterTooLongError`, which Allure files under *Infrastructure problems*; the wait and its reason are logged; job timeout of 30 minutes. Measured: `Elspotprices` answers one query per ~300 s window, so a test run sends exactly one query to it, shared by the live tests; a second run within five minutes can still be throttled and fails fast |
+| The public API answers 429 with a long `Retry-After` (up to 300 s observed). Before the limit existed the client waited it out, so a full run took about 5 minutes instead of 30 seconds (see the [test report](test-report.md#7-residual-risks-and-open-items)) | High | Slow feedback, job near its timeout; since the limit, a throttled live fixture fails fast instead | The client refuses a `Retry-After` above 60 s (`RetryConfig.max_retry_after`) with `RetryAfterTooLongError`, which Allure files under *Infrastructure problems*; the wait and its reason are logged; job timeout of 30 minutes. Measured for the now discontinued `Elspotprices`: one query per ~300 s window. The limit of `DayAheadPrices` is not measured (two runs a few seconds apart both passed), so a test run still sends exactly one query to it, shared by the live tests; a second run within five minutes could be throttled and then fails fast |
 | Retry logic is wrong but untested | Medium | Hammering the API, or silent failures | Retry behaviour tested against a real local server, not only mocks |
 | Tests pass although the client is broken | Medium | False confidence | Mutation checks, request-based assertions, coverage is not trusted alone (see [test coverage](test-coverage.md)) |
 | Report shows misleading history | Low | Wrong decisions | Publish guard in CI, Allure categories |

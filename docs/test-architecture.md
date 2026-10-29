@@ -31,9 +31,9 @@ is decided they cost about 15 tests and protect nothing the user can call.
 | --- | --- | --- |
 | Retry behaviour is tested against a local scripted HTTP server, not with `requests-mock` | `requests-mock` replaces the transport, so the retry adapter never runs against a mocked response | `tests/support/scripted_server.py`, `test_retry_behavior.py` |
 | A `Retry-After` above 60 s ends the request at once (`RetryAfterTooLongError`) | The real API asked for up to 300 s; waiting it out made a full run last about 5.5 minutes | Test report, defects 11 and 12 |
-| One shared live query to `Elspotprices` per run | The API answers one query per window of about 300 s; a second query got 429 | `tests/support/live.py` |
+| One shared live query to `DayAheadPrices` per run | Kept from `Elspotprices`, which answered one query per window of about 300 s (a second query got 429); the limit of `DayAheadPrices` is not measured | `tests/support/live.py` |
 | Live tests are few, small and rerun only on network errors | The API is public and rate limited; a rerun on an assertion failure would hide a real defect | `test-strategy.md` section 5 |
-| The `Elspotprices` metadata test is a strict `xfail` | EDS stopped updating the dataset after 2025-09-30, but its `active` flag is still true; the test fails for the right reason and flags itself once the dataset is replaced | `test_live_smoke.py` |
+| The metadata test checks the title and update interval, not only `active` | EDS discontinued `Elspotprices` after 2025-09-30 but its `active` flag stayed true; the tests were then moved to `DayAheadPrices` | `test_live_smoke.py` |
 | Test names are `given/when/then` and every body has `# arrange`, `# act`, `# assert` | A test name reads as a test case, so `test-cases.md` can be generated from them | `scripts/generate_test_cases.py` |
 | BDD only for a small set of behaviours | They read well as a specification; a scenario layer on every test would add indirection | `test-strategy.md` section 4 |
 | Mutation checks are done by hand, not in CI | A one-line change to the client must make a test fail; automating it is not worth the maintenance yet | `test-coverage.md` section 2 |

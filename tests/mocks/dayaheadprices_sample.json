@@ -1,0 +1,17 @@
+{
+  "records": [
+    {"TimeUTC": "2024-06-01T00:00:00", "TimeDK": "2024-06-01T02:00:00", "PriceArea": "DK1", "DayAheadPriceEUR": 40.5, "DayAheadPriceDKK": 302.25},
+    {"TimeUTC": "2024-06-01T00:15:00", "TimeDK": "2024-06-01T02:15:00", "PriceArea": "DK1", "DayAheadPriceEUR": 41.75, "DayAheadPriceDKK": 311.5},
+    {"TimeUTC": "2024-06-01T00:30:00", "TimeDK": "2024-06-01T02:30:00", "PriceArea": "DK1", "DayAheadPriceEUR": 0.0, "DayAheadPriceDKK": 0.0},
+    {"TimeUTC": "2024-06-01T00:45:00", "TimeDK": "2024-06-01T02:45:00", "PriceArea": "DK1", "DayAheadPriceEUR": -2.5, "DayAheadPriceDKK": -18.65},
+    {"TimeUTC": "2024-06-01T01:00:00", "TimeDK": "2024-06-01T03:00:00", "PriceArea": "DK1", "DayAheadPriceEUR": 45.2, "DayAheadPriceDKK": 337.1},
+    {"TimeUTC": "2024-06-01T00:00:00", "TimeDK": "2024-06-01T02:00:00", "PriceArea": "DK2", "DayAheadPriceEUR": 52.3, "DayAheadPriceDKK": 390.05},
+    {"TimeUTC": "2024-06-01T00:15:00", "TimeDK": "2024-06-01T02:15:00", "PriceArea": "DK2", "DayAheadPriceEUR": 53.9, "DayAheadPriceDKK": 402.0},
+    {"TimeUTC": "2024-06-01T00:30:00", "TimeDK": "2024-06-01T02:30:00", "PriceArea": "DE", "DayAheadPriceEUR": 61.4, "DayAheadPriceDKK": 457.95},
+    {"TimeUTC": "2024-06-01T00:45:00", "TimeDK": "2024-06-01T02:45:00", "PriceArea": "DE", "DayAheadPriceEUR": 63.1, "DayAheadPriceDKK": 470.7},
+    {"TimeUTC": "2024-06-01T01:00:00", "TimeDK": "2024-06-01T03:00:00", "PriceArea": "DE", "DayAheadPriceEUR": 64.8, "DayAheadPriceDKK": 483.35}
+  ],
+  "total": 10,
+  "limit": 100,
+  "dataset": "DayAheadPrices"
+}

@@ -15,17 +15,13 @@ pytestmark = [
 ]
 
 
-# ISO 8601 duration such as PT5M or P1D; EDS writes "N/A" for a dataset that is no longer updated
+# ISO 8601 duration such as PT5M or P1D; EDS writes "N/A" for a dataset that is no longer updated (as for Elspotprices)
 UPDATE_INTERVAL = re.compile(r"P(?=\d|T\d)(\d+[YMWD])*(T(\d+[HMS])+)?")
-# Datasets EDS has stopped updating: the test must fail for them, and strict xfail flags it once they are replaced or removed
-DISCONTINUED_DATASETS = {"Elspotprices": "EDS stopped updating it after 2025-09-30; DayAheadPrices replaces it"}
 
 
-def test_whenGettingDatasetMetadata_thenTheDatasetIsStillPublishedAndUpdated(request, dataset, dataset_api):
+def test_whenGettingDatasetMetadata_thenTheDatasetIsStillPublishedAndUpdated(dataset, dataset_api):
     # arrange
     allure.dynamic.feature(dataset.name)
-    if dataset.name in DISCONTINUED_DATASETS:
-        request.applymarker(pytest.mark.xfail(raises=AssertionError, strict=True, reason=DISCONTINUED_DATASETS[dataset.name]))
 
     # act
     response = dataset_api.metadata()
@@ -85,13 +81,13 @@ def test_givenPriceAreaFilter_whenGettingCo2Emis_thenOnlyTheRequestedAreasAreRet
     assert areas == expected_areas
 
 
-@allure.feature("Elspotprices")
-def test_givenDescendingSort_whenGettingElspotprices_thenPricesAreDescending(elspotprices_latest):
+@allure.feature("DayAheadPrices")
+def test_givenDescendingSort_whenGettingDayAheadPrices_thenPricesAreDescending(dayaheadprices_latest):
     # act
-    response = elspotprices_latest
+    response = dayaheadprices_latest
 
     # assert
-    prices = [record["SpotPriceDKK"] for record in response.json()["records"]]
+    prices = [record["DayAheadPriceDKK"] for record in response.json()["records"]]
     assert response.status_code == 200
     assert len(prices) == 5
     assert prices == sorted(prices, reverse=True)

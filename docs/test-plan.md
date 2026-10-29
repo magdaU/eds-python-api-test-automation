@@ -8,7 +8,7 @@ document says what is tested, when, by what, and when testing is done.
 | Item | Version |
 | --- | --- |
 | API client: `client/` (`EDSApiClient`, `DatasetApi`, `NewsApi`, parsers) and `models/` | `main` |
-| EDS API as consumed by the client: datasets `CO2Emis`, `Elspotprices`, endpoints `/News*` | live, observed behaviour |
+| EDS API as consumed by the client: datasets `CO2Emis`, `DayAheadPrices`, endpoints `/News*` | live, observed behaviour |
 | Test framework: fixtures, helpers, CI workflows, Allure reporting | `main` |
 
 ## 2. Features to be tested

@@ -4,8 +4,8 @@ from client.dataset_api import DatasetApi
 from client.eds_client import EDSApiClient
 from client.news_api import NewsApi
 from tests.support.allure_environment import environment_from_session
-from tests.support.datasets import ALL_DATASETS, CO2EMIS_DATASET, ELSPOTPRICES_DATASET
-from tests.support.live import ELSPOTPRICES_LIVE_QUERY
+from tests.support.datasets import ALL_DATASETS, CO2EMIS_DATASET, DAYAHEADPRICES_DATASET
+from tests.support.live import DAYAHEADPRICES_LIVE_QUERY
 from tests.support.scripted_server import ScriptedServer
 
 
@@ -39,8 +39,8 @@ def co2_api(eds_client):
 
 
 @pytest.fixture
-def elspotprices_api(eds_client):
-    return DatasetApi(eds_client, ELSPOTPRICES_DATASET.name)
+def dayaheadprices_api(eds_client):
+    return DatasetApi(eds_client, DAYAHEADPRICES_DATASET.name)
 
 
 @pytest.fixture
@@ -64,6 +64,6 @@ def co2_response(co2_api):
 
 
 @pytest.fixture(scope="session")
-def elspotprices_latest(eds_client):
-    """The only live query a test run sends to Elspotprices, shared by every live test that needs its data."""
-    return DatasetApi(eds_client, ELSPOTPRICES_DATASET.name).get(**ELSPOTPRICES_LIVE_QUERY)
+def dayaheadprices_latest(eds_client):
+    """The only live query a test run sends to DayAheadPrices, shared by every live test that needs its data."""
+    return DatasetApi(eds_client, DAYAHEADPRICES_DATASET.name).get(**DAYAHEADPRICES_LIVE_QUERY)

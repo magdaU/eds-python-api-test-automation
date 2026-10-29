@@ -9,18 +9,18 @@ Feature: Querying a dataset
     Then the request carries limit "5" and offset "10"
 
   Scenario Outline: A sort expression is sent unchanged
-    Given the Elspotprices dataset answers with an empty result
+    Given the DayAheadPrices dataset answers with an empty result
     When I get the dataset sorted by "<sort>"
     Then the request carries sort "<sort>"
 
     Examples:
       | sort                             |
-      | SpotPriceDKK                     |
-      | SpotPriceDKK desc                |
-      | PriceArea asc, SpotPriceDKK desc |
+      | DayAheadPriceDKK                     |
+      | DayAheadPriceDKK desc                |
+      | PriceArea asc, DayAheadPriceDKK desc |
 
   Scenario: Filtering by price area
-    Given the Elspotprices dataset answers with an empty result
+    Given the DayAheadPrices dataset answers with an empty result
     When I get the dataset filtered by price area "DK1"
     Then the request carries the filter '{"PriceArea":"DK1"}'
 

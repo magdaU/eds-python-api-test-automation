@@ -36,18 +36,18 @@ def test_givenParameterCombination_whenGettingDataset_thenExactlyThoseParameters
 @pytest.mark.parametrize(
     "sort",
     [
-        "SpotPriceDKK",
-        "SpotPriceDKK asc",
-        "SpotPriceDKK desc",
-        "PriceArea asc, SpotPriceDKK desc",
+        "DayAheadPriceDKK",
+        "DayAheadPriceDKK asc",
+        "DayAheadPriceDKK desc",
+        "PriceArea asc, DayAheadPriceDKK desc",
     ],
 )
-def test_givenSortExpression_whenGettingDataset_thenItIsSentVerbatim(elspotprices_api, requests_mock, sort):
+def test_givenSortExpression_whenGettingDataset_thenItIsSentVerbatim(dayaheadprices_api, requests_mock, sort):
     # arrange
-    requests_mock.get(elspotprices_api.url, json=records_response([]))
+    requests_mock.get(dayaheadprices_api.url, json=records_response([]))
 
     # act
-    elspotprices_api.get(sort=sort)
+    dayaheadprices_api.get(sort=sort)
 
     # assert
     assert sent_query(requests_mock)["sort"] == [sort]

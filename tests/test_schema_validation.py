@@ -2,7 +2,7 @@ import jsonschema
 import pytest
 
 from tests.support.allure_labels import labels
-from tests.support.datasets import CO2EMIS_DATASET, ELSPOTPRICES_DATASET
+from tests.support.datasets import CO2EMIS_DATASET, DAYAHEADPRICES_DATASET
 from tests.support.live import TRANSIENT_NETWORK_ERRORS
 from tests.support.mocks import load_mock
 from tests.support.schema import assert_all_match_schema, assert_matches_schema
@@ -24,14 +24,14 @@ def test_whenGettingCo2Emis_thenResponseMatchesSchema(co2_response):
 
 @pytest.mark.live
 @pytest.mark.flaky(reruns=1, reruns_delay=5, only_rerun=TRANSIENT_NETWORK_ERRORS)
-def test_whenGettingElspotprices_thenResponseMatchesSchema(elspotprices_latest):
+def test_whenGettingDayAheadPrices_thenResponseMatchesSchema(dayaheadprices_latest):
     # act
-    body = elspotprices_latest.json()
+    body = dayaheadprices_latest.json()
 
     # assert
-    assert elspotprices_latest.status_code == 200
+    assert dayaheadprices_latest.status_code == 200
     assert body["records"], "no records returned, so the schema was not exercised on any record"
-    assert_matches_schema(body, ELSPOTPRICES_DATASET.schema_file)
+    assert_matches_schema(body, DAYAHEADPRICES_DATASET.schema_file)
 
 
 def test_givenNoItems_whenValidatingAllAgainstSchema_thenItFailsInsteadOfPassingVacuously():
