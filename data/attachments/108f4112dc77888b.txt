@@ -1,0 +1,1 @@
+INFO     client.eds_client:eds_client.py:153 GET https://api.energidataservice.dk/meta/dataset/Elspotprices params={} -> 200 in 106 ms

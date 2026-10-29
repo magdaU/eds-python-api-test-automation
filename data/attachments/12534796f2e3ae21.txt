@@ -1,0 +1,1 @@
+INFO     client.eds_client:eds_client.py:153 GET https://api.energidataservice.dk/dataset/Elspotprices params={'sort': 'SpotPriceDKK desc'} -> 200 in 0 ms
