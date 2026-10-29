@@ -79,6 +79,7 @@ eds-python-api-test-automation/
 │   ├── test_logging.py               # warning logged when retries are exhausted
 │   ├── test_support_paths.py         # fixtures load regardless of the working directory
 │   ├── test_retry_after_cap.py       # Retry-After above the limit ends the request at once
+│   ├── test_mutation_catalogue.py    # every mutation of the mutation checks still matches the client source
 │   ├── test_allure_categories.py     # Allure failure categories map typical failures correctly
 │   ├── test_inject_report_notes.py   # empty-Categories note is added to a generated report once
 │   └── test_retry_config.py          # per-dataset retry/backoff/jitter tuning
@@ -87,13 +88,14 @@ eds-python-api-test-automation/
 │   ├── tests.yml         # CI: tests, Allure report, GitHub Pages publish
 │   ├── quality.yml       # CI: ruff, mypy, offline tests with coverage gate
 │   ├── live-nightly.yml  # CI: nightly live tests to catch API drift (also manual)
-│   └── performance.yml   # CI: JMeter run (manual / weekly)
+│   ├── performance.yml   # CI: JMeter run (manual / weekly)
+│   └── mutation.yml      # CI: weekly mutation checks (scripts/mutation_check.py)
 ├── performance/
 │   ├── eds_api_load_test.jmx   # JMeter plan (low-load baseline)
 │   └── endpoints.csv           # endpoints the plan iterates over
 │
 ├── docs/                  # test documentation (strategy, plan, cases, coverage, results, report) + README images
-├── scripts/               # generators for docs/test-cases.md and docs/test-results.md, report note injector
+├── scripts/               # generators for docs/test-cases.md and docs/test-results.md, report note injector, mutation checks
 │
 ├── Dockerfile
 ├── requirements.txt
@@ -108,7 +110,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-199 tests across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
+200 tests across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -168,6 +170,12 @@ report only when pytest exits with `0` (all passed) or `1` (some failed) and `al
 outcome (collection error, no tests collected) it skips the report and the `gh-pages` publish, annotates the run with
 `::error::` and fails the job. It exists because a missing dependency once made collection fail, and the resulting
 0-test report dropped the Allure Trend history to zero.
+
+Mutation checks (do the tests notice a deliberately broken client? takes about 4 minutes, offline; run on a clean tree):
+
+```bash
+python scripts/mutation_check.py
+```
 
 Code quality (same checks as the `Quality` workflow; install dev tools with `pip install -r requirements-dev.txt`):
 

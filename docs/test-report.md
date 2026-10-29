@@ -109,8 +109,9 @@ Found by reviewing CI results and by audits of the tests and documentation again
   `Quality` checks before merge (branch protection) would make the gate automatic.
 - **Performance.** The JMeter plan now queries `DayAheadPrices` and prints p50, p95 and p99 in the job summary, but has not run since
   the change and has no percentile limits yet (see [test architecture](test-architecture.md#4-performance-acceptance)).
-- **Manual evidence.** Mutation checks (last repeated on 2026-10-29: 7 of 7 detectable changes caught) and the CI publish-guard
-  simulation are not repeated automatically.
+- **Manual evidence.** The CI publish-guard simulation is not repeated automatically. Mutation checks now run weekly
+  (`Mutation checks` workflow, catalogue of 22 changes; first local run on 2026-10-29: 21 caught, 1 equivalent change survived as expected);
+  the first run in Actions is still to be checked.
 
 ## 8. How this report is kept current
 

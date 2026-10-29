@@ -145,6 +145,7 @@ a scenario layer on every test would only add indirection.
 | `Quality` | pull request, push to `main` | `ruff`, `mypy`, offline tests with the coverage gate |
 | `Live nightly` | daily 02:00 UTC, manual | Live tests only, including the data-quality checks, to catch API drift and stale or broken data. No Allure report: the result is the workflow run itself |
 | `Performance` | Monday 03:00 UTC, manual | JMeter plan, fails on any failed sample |
+| `Mutation checks` | Monday 04:00 UTC, manual | Catalogue of 22 deliberate client breakages; fails when the offline tests miss one (offline, about 4 minutes) |
 
 A guard in the `Tests` workflow publishes the Allure report only when pytest exits with code 0 or 1 and results exist,
 so an empty or broken run cannot reset the Trend history.
@@ -198,5 +199,6 @@ is the defect record.
 - Regenerate [test-cases.md](test-cases.md) (`python scripts/generate_test_cases.py`) after changing tests, and
   [test-results.md](test-results.md) (`python scripts/generate_test_results.py`) when a new report is needed.
 - Guard against the *pesticide paradox*: when client behaviour changes, check by a quick mutation (remove or change one
-  line of the client) that at least one test fails.
+  line of the client) that at least one test fails. The catalogue in `scripts/mutation_check.py` does this for 22 known changes
+  every week (`Mutation checks` workflow); add a mutation there when a new client behaviour is protected by a test.
 - Coverage numbers are an indicator, never a goal: 100% coverage does not show that assertions are strong enough.

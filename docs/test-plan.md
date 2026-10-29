@@ -39,6 +39,7 @@ catalogued in [test-cases.md](test-cases.md).
 | Every push to `main` | Full suite incl. live tests, `ruff`, `mypy`, coverage gate, Allure report published |
 | Daily 02:00 UTC | Live tests only |
 | Monday 03:00 UTC | JMeter performance plan |
+| Monday 04:00 UTC | Mutation checks (22 deliberate client breakages, offline) |
 | After a defect fix | Regression test added in the fix, then the normal triggers |
 
 ## 5. Pass and fail criteria

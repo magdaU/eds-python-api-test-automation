@@ -21,7 +21,9 @@ Command: `pytest -m "not live" --cov --cov-branch`
 
 Coverage shows which lines ran, not whether a test would fail if the line were wrong. An earlier version of the suite
 had 100% coverage and still contained tests that only repeated what the mock returned. Therefore the suite is also
-checked by hand-made mutations: one line of the client is changed or removed and the offline suite is run.
+checked by mutations: one line of the client is changed or removed and the offline suite is run. Since 2026-10-29 a catalogue of
+22 such mutations runs automatically (`scripts/mutation_check.py`, weekly in the `Mutation checks` workflow); the table below is
+the history of the first checks, done by hand.
 
 | Mutation of the client | Failing tests | Detected |
 | --- | ---: | :---: |
@@ -127,4 +129,4 @@ there is no formal requirements document, so features rather than requirement ID
 - The CI publish guard is verified by simulating exit codes, not by an automated test.
 - The JavaScript that explains empty Categories widgets has no automated test; it was verified against real Allure reports in headless Chrome for five situations (green first build, green with history, a failing run, green after a failing run, only a skipped test) in the three places it writes a note (Overview widget, Categories page, Categories trend): the note appears when nothing failed, broke or was skipped and disappears as soon as a run has failures; the trend note stays hidden while a failure is in the recorded history.
 - Diagnostics log only the start (300 characters) of an error response body and never the body of a successful response.
-- Mutation checks are manual and not repeated in CI.
+- The mutation catalogue is curated, not generated: it covers the behaviours listed in `scripts/mutation_check.py`, not every line of the client.
