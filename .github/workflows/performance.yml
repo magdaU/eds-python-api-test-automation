@@ -63,6 +63,30 @@ jobs:
             -Jduration="$DURATION" \
             -Jmax_response_ms="$MAX_RESPONSE_MS"
 
+      # Report only: shows the percentiles in the job summary so thresholds can be set from real weekly runs
+      # (see docs/test-architecture.md); the pass/fail rules are still the assertions in the plan.
+      - name: Summarize response-time percentiles
+        if: always()
+        working-directory: performance
+        env:
+          THREADS: ${{ inputs.threads || '2' }}
+        run: |
+          [ -s results.jtl ] || { echo "No results.jtl to summarize"; exit 0; }
+          # results.jtl columns: 2nd is "elapsed" (ms), 8th is "success"
+          tail -n +2 results.jtl | awk -F, '$8 == "true" {print $2}' | sort -n > elapsed.txt
+          samples=$(wc -l < elapsed.txt)
+          [ "$samples" -gt 0 ] || { echo "No successful samples to summarize"; exit 0; }
+          percentile() { awk -v p="$1" -v n="$samples" 'BEGIN { x = p * n / 100; i = (x == int(x)) ? x : int(x) + 1; if (i < 1) i = 1 } NR == i { print; exit }' elapsed.txt; }
+          {
+            echo "### Response times of successful samples"
+            echo
+            echo "| Users | Samples | p50 | p95 | p99 | max |"
+            echo "| ---: | ---: | ---: | ---: | ---: | ---: |"
+            echo "| $THREADS | $samples | $(percentile 50) ms | $(percentile 95) ms | $(percentile 99) ms | $(tail -n 1 elapsed.txt) ms |"
+            echo
+            echo "With few samples p99 is close to the maximum; do not set a p99 limit before there are hundreds."
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Fail on assertion errors
         working-directory: performance
         run: |

@@ -24,6 +24,7 @@ Python-based API test automation framework for the [Energi Data Service (EDS)](h
 
 | Document | Content |
 | --- | --- |
+| [Test architecture](docs/test-architecture.md) | Responsibilities of the code, the reasons behind the main decisions, risk to test map, performance acceptance |
 | [Test strategy](docs/test-strategy.md) | Objectives, scope, test levels, techniques, environments, entry/exit criteria, risks |
 | [Test plan](docs/test-plan.md) | What is tested, when, by what, and when testing is done |
 | [Test cases](docs/test-cases.md) | Catalogue of all test cases (generated from the tests) |

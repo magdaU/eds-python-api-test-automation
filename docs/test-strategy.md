@@ -2,7 +2,7 @@
 
 How this project tests the [Energi Data Service (EDS)](https://www.energidataservice.dk/) API and its own client library.
 Related documents: [test plan](test-plan.md) · [test cases](test-cases.md) · [test coverage](test-coverage.md) ·
-[test results](test-results.md) · [test report](test-report.md).
+[test results](test-results.md) · [test report](test-report.md) · [test architecture](test-architecture.md).
 
 Terminology follows ISTQB.
 
@@ -61,7 +61,7 @@ The number of test cases per level is in [test-cases.md](test-cases.md).
 | Smoke testing | One bounded call per area against the live API | `test_live_smoke` |
 | Structural (white-box) | Statement coverage of `client/` and `models/` (gate at 90%), branch coverage measured on demand | `pytest --cov` |
 | Static analysis | `ruff` (style, bugs, complexity) and `mypy` in strict mode | `quality.yml` |
-| Performance | Low-load baseline with a response-time assertion | `performance/`, `performance.yml` |
+| Performance | Low-load baseline: 2 users, every sample 200 and within 2000 ms; p50/p95/p99 reported, not yet enforced (see [test architecture](test-architecture.md#4-performance-acceptance)) | `performance/`, `performance.yml` |
 
 ### Executable specifications (BDD)
 
