@@ -34,6 +34,26 @@ def test_givenUnknownDataset_whenGettingIt_thenNotFoundNamesTheDataset(eds_clien
     assert "NotARealDataset" in response.text
 
 
+@allure.feature("CO2Emis")
+@pytest.mark.parametrize(
+    ("filters", "expected_areas"),
+    [
+        ({"PriceArea": "DK1"}, {"DK1"}),
+        ({"PriceArea": ["DK1", "DK2"]}, {"DK1", "DK2"}),
+    ],
+    ids=["one-value", "two-values-are-or"],
+)
+def test_givenPriceAreaFilter_whenGettingCo2Emis_thenOnlyTheRequestedAreasAreReturned(co2_api, filters, expected_areas):
+    # act
+    response = co2_api.get(limit=10, filters=filters)
+
+    # assert
+    areas = {record["PriceArea"] for record in response.json()["records"]}
+    assert response.status_code == 200
+    # the newest records hold one entry per area, so a filter on two areas must return both
+    assert areas == expected_areas
+
+
 @allure.feature("Elspotprices")
 def test_givenDescendingSort_whenGettingElspotprices_thenPricesAreDescending(elspotprices_latest):
     # act

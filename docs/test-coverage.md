@@ -55,12 +55,13 @@ see the [test report](test-report.md).
 | | `offset` incl. 0, 1, 100000, negative; paging | `boundary_values`, `pagination`, `live_edge_cases` | Component, System |
 | | `sort` expressions, case preserved | `parameter_combinations`, `properties`, `live_smoke`, `live_edge_cases` | Component, System |
 | | `filter` encoding (non-ASCII, quotes, lists, empty, numbers) | `filter_encoding`, `parameter_combinations`, `properties`, `live_edge_cases` | Component, System |
+| | `filter` returns only the requested values (one value; two values combined with OR) | `live_smoke` | System |
 | | Combinations of the four parameters | `parameter_combinations` | Component |
 | | Request target and parameters per dataset | `dataset_contract`, `url_building` | Component |
 | News | Endpoint paths, parameters sent with exact case | `news_api` | Component |
 | | 400 for missing `category` and invalid `date`, 204 for unknown category, 404 for unknown path | `live_edge_cases` | System |
 | | Calendar agrees with archive, schema of live items | `live_smoke` | System |
-| Contract | JSON Schema of samples (both datasets, news) | `schema_validation`, `dataset_contract`, `news_api` | Component |
+| Contract | JSON Schema of samples (both datasets, news); datasets require the response envelope `records`, `total`, `limit`, `dataset` | `schema_validation`, `dataset_contract`, `news_api` | Component |
 | | JSON Schema of live responses | `schema_validation`, `live_smoke` | System |
 | | Pydantic parsing: valid, missing field, wrong type, null, extra field, empty | `models` | Component |
 | Client robustness | Retry on 429/503 then success; exhaustion; no retry on 400/404; zero retries; News endpoints | `retry_behavior` | Integration |
@@ -105,6 +106,7 @@ there is no formal requirements document, so features rather than requirement ID
 - Client does not expose other EDS query parameters (for example `start`, `end`, `columns`, `timezone`), so they are untested.
 - Only `CO2Emis` and `Elspotprices` are tested; other datasets are not.
 - Data values are not compared with an authoritative source. Only shape, types, order and error messages are checked.
+- The EDS guide documents a 429 only by its message in the body, not a `Retry-After` header; the client relies on the header the API has been observed to send (see the [test strategy](test-strategy.md#2-scope)).
 - A live 429 is never provoked on purpose, so rate-limit handling is proven only against the local server. `Retry-After`
   handling is `urllib3`'s; the wait and its logging are tested against the local server. The real API has answered 429 with
   `Retry-After` of up to 300 s; the client refuses waits above 60 s by default (`RetryConfig.max_retry_after`, tested against the
