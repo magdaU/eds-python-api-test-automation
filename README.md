@@ -35,7 +35,7 @@ Regenerate the generated ones with `python scripts/generate_test_cases.py` and `
 
 ## 🛠️ Technologies
 
-Python · pytest · pytest-bdd (Gherkin) · ruff · mypy · pytest-cov · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · JMeter · Git · GitHub Actions · GitHub Pages
+Python · pytest · pytest-bdd (Gherkin) · hypothesis · pytest-rerunfailures · ruff · mypy · pytest-cov · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · JMeter · Git · GitHub Actions · GitHub Pages
 
 ## 📁 Project Structure
 
@@ -77,6 +77,9 @@ eds-python-api-test-automation/
 │   ├── test_models.py                # Pydantic parsing
 │   ├── test_logging.py               # warning logged when retries are exhausted
 │   ├── test_support_paths.py         # fixtures load regardless of the working directory
+│   ├── test_retry_after_cap.py       # Retry-After above the limit ends the request at once
+│   ├── test_allure_categories.py     # Allure failure categories map typical failures correctly
+│   ├── test_inject_report_notes.py   # empty-Categories note is added to a generated report once
 │   └── test_retry_config.py          # per-dataset retry/backoff/jitter tuning
 │
 ├── .github/workflows/
@@ -129,7 +132,7 @@ with a handful of bounded live smoke tests against the real API:
   error body, the wait before each retry and why (`Retry-After` or backoff), and a warning when retries are exhausted;
   Allure attaches this log to each test. A `Retry-After` longer than a limit (60 s by default) ends the request at once
 * Retry/backoff configuration, including per-dataset overrides and jitter
-* Automatic pytest-level rerun (`pytest-rerunfailures`) on the live smoke and edge-case tests
+* Automatic pytest-level rerun (`pytest-rerunfailures`) on the live edge-case tests
   (network errors only), feeding Allure's Retries trend
 
 ## 🚀 Getting Started
@@ -150,6 +153,16 @@ pytest -v -m "not live"
 
 On GitHub, pull requests run only the offline tests; the full suite (including live) runs on `main`.
 A nightly workflow (`live-nightly.yml`, also runnable manually) runs only the live tests to catch API drift.
+
+> **Rate limit.** The public API answers only one `Elspotprices` query per ~300 s window, and a full run sends exactly one.
+> A second full run within five minutes can fail fast with `RetryAfterTooLongError`. For repeated local runs use
+> `pytest -m "not live"`.
+
+**CI guard against empty reports.** The `Tests` workflow runs `pytest --collect-only` first and publishes the Allure
+report only when pytest exits with `0` (all passed) or `1` (some failed) and `allure-results` is not empty. On any other
+outcome (collection error, no tests collected) it skips the report and the `gh-pages` publish, annotates the run with
+`::error::` and fails the job. It exists because a missing dependency once made collection fail, and the resulting
+0-test report dropped the Allure Trend history to zero.
 
 Code quality (same checks as the `Quality` workflow; install dev tools with `pip install -r requirements-dev.txt`):
 
@@ -202,12 +215,6 @@ It hits the public EDS API, so keep the load low. In CI it runs only manually or
 docker build -t eds-api-tests .
 docker run --rm eds-api-tests
 ```
-
-**CI guard against empty reports.** The `Tests` workflow runs `pytest --collect-only` first and publishes the Allure
-report only when pytest exits with `0` (all passed) or `1` (some failed) and `allure-results` is not empty. On any other
-outcome (collection error, no tests collected) it skips the report and the `gh-pages` publish, annotates the run with
-`::error::` and fails the job. It exists because a missing dependency once made collection fail, and the resulting
-0-test report dropped the Allure Trend history to zero.
 
 <details>
 <summary>One-time GitHub Pages setup (only needed once, when forking/recreating this repo)</summary>

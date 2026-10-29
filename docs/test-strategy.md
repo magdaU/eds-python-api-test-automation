@@ -103,7 +103,7 @@ a scenario layer on every test would only add indirection.
 - **Mock-first, live-bounded.** Edge cases and error paths are proven offline. Live tests are limited to smoke checks
   and a few edge cases. Edge-case tests send one `limit=1` request each, with a pause between requests. `limit=-1` is never sent live:
   the API treats it as "no limit" and returns millions of records.
-- **Tolerate only transient failures.** The live tests marked flaky (all live edge-case tests and the live sort smoke test)
+- **Tolerate only transient failures.** The live tests marked flaky (all live edge-case tests in `test_live_edge_cases.py`)
   rerun (`pytest-rerunfailures`) only on network errors (`ConnectionError`, `Timeout`, `RetryError`), never on assertion
   failures, so a real defect is not hidden by a rerun. Other live tests do not rerun.
 - **Fixtures are path-independent.** Mocks and schemas are located relative to the code, so tests run from any directory.
