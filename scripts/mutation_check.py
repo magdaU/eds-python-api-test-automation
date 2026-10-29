@@ -15,7 +15,21 @@ from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PYTEST = [sys.executable, "-m", "pytest", "-x", "-q", "-p", "no:cacheprovider", "-o", "log_cli=false", "-m", "not live"]
+# The catalogue test reads the client source, so it fails for every mutant; it must not count as a detection.
+PYTEST = [
+    sys.executable,
+    "-m",
+    "pytest",
+    "-x",
+    "-q",
+    "-p",
+    "no:cacheprovider",
+    "-o",
+    "log_cli=false",
+    "-m",
+    "not live",
+    "--ignore=tests/test_mutation_catalogue.py",
+]
 EDS_CLIENT = "client/eds_client.py"
 RETRY = "client/retry.py"
 NEWS_API = "client/news_api.py"
