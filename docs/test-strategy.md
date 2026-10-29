@@ -27,6 +27,12 @@ Terminology follows ISTQB.
 the live API and recorded in JSON Schemas ([`schemas/`](../schemas)) and in the [ROADMAP](../ROADMAP.md) (item 12).
 The **test oracle** is that observed contract plus the documented behaviour of the client.
 
+Where observation goes beyond the [EDS API guide](https://www.energidataservice.dk/guides/api-guides), the tests rest on an
+assumption that EDS could change without notice. The main one: the guide documents only HTTP 429 with the message
+"Rate limit is exceeded. Try again in X seconds" in the body, and does not mention a `Retry-After` header. The client and the
+retry tests rely on that header, because the real API has been observed to send it. If EDS stops sending it, the client falls
+back to its own backoff and the live runs show it as slower or throttled, not as a failed assertion.
+
 ## 3. Test levels
 
 | Level | What it checks | Environment / test double | Runs |

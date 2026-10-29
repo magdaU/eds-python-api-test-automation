@@ -13,7 +13,9 @@
         "required": ["PriceArea", "SpotPriceDKK"]
       }
     },
-    "total": {"type": "integer"}
+    "total": {"type": "integer"},
+    "limit": {"type": "integer"},
+    "dataset": {"type": "string"}
   },
-  "required": ["records", "total"]
+  "required": ["records", "total", "limit", "dataset"]
 }

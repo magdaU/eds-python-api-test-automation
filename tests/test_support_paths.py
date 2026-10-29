@@ -19,7 +19,7 @@ def test_givenOtherWorkingDirectory_whenLoadingMock_thenFileIsFound(tmp_path, mo
 def test_givenOtherWorkingDirectory_whenValidatingAgainstSchema_thenSchemaIsFound(tmp_path, monkeypatch):
     # arrange
     monkeypatch.chdir(tmp_path)
-    body = {"records": [], "total": 0}
+    body = {"records": [], "total": 0, "limit": 5, "dataset": "CO2Emis"}
 
     # act / assert
     assert_matches_schema(body, "co2emis_schema.json")

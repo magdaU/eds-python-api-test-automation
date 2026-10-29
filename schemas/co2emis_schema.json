@@ -14,7 +14,9 @@
         "required": ["Minutes5UTC", "PriceArea", "CO2Emission"]
       }
     },
-    "total": {"type": "integer"}
+    "total": {"type": "integer"},
+    "limit": {"type": "integer"},
+    "dataset": {"type": "string"}
   },
-  "required": ["records", "total"]
+  "required": ["records", "total", "limit", "dataset"]
 }

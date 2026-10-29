@@ -39,7 +39,7 @@ def test_givenNoItems_whenValidatingAllAgainstSchema_thenItFailsInsteadOfPassing
 
 def test_givenEmptyRecordsList_whenValidating_thenSchemaIsSatisfied(dataset):
     # arrange
-    body = {"records": [], "total": 0}
+    body = {"records": [], "total": 0, "limit": 5, "dataset": dataset.name}
 
     # act / assert
     assert_matches_schema(body, dataset.schema_file)
@@ -72,8 +72,22 @@ def test_givenRecordWithoutRequiredField_whenValidating_thenValidationFails(data
         lambda body: body.update(records={"not": "a list"}),
         lambda body: body.update(total="three"),
         lambda body: body["records"].__setitem__(0, "not an object"),
+        lambda body: body.pop("limit"),
+        lambda body: body.pop("dataset"),
+        lambda body: body.update(limit="many"),
+        lambda body: body.update(dataset=7),
     ],
-    ids=["missing-total", "missing-records", "records-not-array", "total-not-integer", "record-not-object"],
+    ids=[
+        "missing-total",
+        "missing-records",
+        "records-not-array",
+        "total-not-integer",
+        "record-not-object",
+        "missing-limit",
+        "missing-dataset",
+        "limit-not-integer",
+        "dataset-not-string",
+    ],
 )
 def test_givenMalformedBody_whenValidating_thenValidationFails(dataset, break_body):
     # arrange
