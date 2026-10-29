@@ -1,1 +1,0 @@
-INFO     client.eds_client:eds_client.py:153 GET https://api.energidataservice.dk/News/actual params={'category': 'NOT_A_CATEGORY'} -> 204 in 79 ms

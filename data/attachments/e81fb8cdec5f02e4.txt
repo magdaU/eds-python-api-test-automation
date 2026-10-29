@@ -1,3 +1,0 @@
-WARNING  client.retry:retry.py:48 Retrying in 0.0 s, backoff (status 500)
-WARNING  client.retry:retry.py:48 Retrying in 0.0 s, backoff (status 500)
-WARNING  client.eds_client:eds_client.py:140 Giving up on http://127.0.0.1:46289/News after retries, 3 ms: HTTPConnectionPool(host='127.0.0.1', port=46289): Max retries exceeded with url: /News (Caused by ResponseError('too many 500 error responses'))
