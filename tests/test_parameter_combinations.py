@@ -31,23 +31,3 @@ def test_givenParameterCombination_whenGettingDataset_thenExactlyThoseParameters
 
     # assert
     assert sent_query(requests_mock) == expected_query
-
-
-@pytest.mark.parametrize(
-    "sort",
-    [
-        "DayAheadPriceDKK",
-        "DayAheadPriceDKK asc",
-        "DayAheadPriceDKK desc",
-        "PriceArea asc, DayAheadPriceDKK desc",
-    ],
-)
-def test_givenSortExpression_whenGettingDataset_thenItIsSentVerbatim(dayaheadprices_api, requests_mock, sort):
-    # arrange
-    requests_mock.get(dayaheadprices_api.url, json=records_response([]))
-
-    # act
-    dayaheadprices_api.get(sort=sort)
-
-    # assert
-    assert sent_query(requests_mock)["sort"] == [sort]

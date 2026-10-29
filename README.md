@@ -110,7 +110,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-213 tests across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
+203 tests across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -171,7 +171,7 @@ outcome (collection error, no tests collected) it skips the report and the `gh-p
 `::error::` and fails the job. It exists because a missing dependency once made collection fail, and the resulting
 0-test report dropped the Allure Trend history to zero.
 
-Mutation checks (do the tests notice a deliberately broken client? takes about 4 minutes, offline; run on a clean tree):
+Mutation checks (do the tests notice a deliberately broken client? takes about 6 minutes, offline; run on a clean tree):
 
 ```bash
 python scripts/mutation_check.py

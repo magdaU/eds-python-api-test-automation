@@ -91,6 +91,38 @@ MUTATIONS = [
         "class RetryAfterTooLongError(Exception):",
     ),
     Mutation("news-category-lowercased", NEWS_API, '{"category": category}', '{"category": category.lower()}'),
+    Mutation("news-path-lowercase", EDS_CLIENT, 'f"{self.base_url}/News"', 'f"{self.base_url}/news"'),
+    Mutation("news-path-slashes-kept", EDS_CLIENT, 'path.strip("/")', "path"),
+    Mutation("archived-date-not-sent", NEWS_API, '{"date": date} if date is not None else None', "None"),
+    Mutation("category-not-sent", NEWS_API, '{"category": category} if category is not None else None', "None"),
+    Mutation("base-url-slash-kept", EDS_CLIENT, 'self.base_url = base_url.rstrip("/")', "self.base_url = base_url"),
+    Mutation(
+        "dataset-override-applies-to-all",
+        EDS_CLIENT,
+        "self._mount_retry(self.dataset_url(dataset), override)",
+        'self._mount_retry("https://", override)',
+    ),
+    Mutation("backoff-jitter-ignored", EDS_CLIENT, "backoff_jitter=config.backoff_jitter,", "backoff_jitter=0.0,"),
+    Mutation("max-retries-ignored", EDS_CLIENT, "total=config.max_retries,", "total=3,"),
+    Mutation("model-co2-area-any-text", "models/co2emis.py", 'PriceArea: Literal["DK1", "DK2"]', "PriceArea: str"),
+    Mutation("model-co2-time-as-text", "models/co2emis.py", "Minutes5UTC: datetime", "Minutes5UTC: str"),
+    Mutation(
+        "model-price-optional", "models/dayaheadprices.py", "DayAheadPriceDKK: float", "DayAheadPriceDKK: float | None = None"
+    ),
+    Mutation("model-time-required", "models/dayaheadprices.py", "TimeUTC: datetime | None = None", "TimeUTC: datetime"),
+    Mutation(
+        "schema-co2-envelope-optional",
+        "schemas/co2emis_schema.json",
+        '"required": ["records", "total", "limit", "dataset"]',
+        '"required": ["records", "total"]',
+    ),
+    Mutation(
+        "schema-price-optional",
+        "schemas/dayaheadprices_schema.json",
+        '"required": ["PriceArea", "DayAheadPriceDKK"]',
+        '"required": ["PriceArea"]',
+    ),
+    Mutation("schema-emission-any-type", "schemas/co2emis_schema.json", '"CO2Emission": {"type": "number"}', '"CO2Emission": {}'),
     # the client only ever sends GET, so retrying every method cannot be seen from outside
     Mutation("all-methods-retried", EDS_CLIENT, 'allowed_methods=["GET"],', "allowed_methods=None,", equivalent=True),
 ]

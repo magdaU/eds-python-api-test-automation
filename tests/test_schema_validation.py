@@ -57,6 +57,16 @@ def test_givenRecordWithoutOptionalField_whenValidating_thenSchemaIsSatisfied(da
     assert_matches_schema(body, dataset.schema_file)
 
 
+def test_givenRecordWithTextAsValue_whenValidating_thenValidationFails(dataset):
+    # arrange
+    body = load_mock(dataset.sample_response_file)
+    body["records"][0][dataset.value_field] = "not-a-number"
+
+    # act / assert
+    with pytest.raises(jsonschema.exceptions.ValidationError):
+        assert_matches_schema(body, dataset.schema_file)
+
+
 def test_givenRecordWithoutRequiredField_whenValidating_thenValidationFails(dataset):
     # arrange
     body = load_mock(dataset.sample_response_file)

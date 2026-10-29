@@ -1,7 +1,5 @@
 from urllib.parse import urlparse
 
-import pytest
-
 import allure
 from tests.support.allure_labels import labels
 from tests.support.mocks import load_mock, records_response, sent_query
@@ -11,13 +9,9 @@ from tests.support.scripted_server import api_for
 pytestmark = labels("Dataset API", "Response contract")
 
 
-@pytest.fixture(autouse=True)
-def allure_feature_for_dataset(dataset):
-    allure.dynamic.feature(dataset.name)
-
-
 def test_givenSampleResponse_whenValidatingAgainstSchema_thenSchemaIsSatisfied(dataset):
     # arrange
+    allure.dynamic.feature(dataset.name)
     sample = load_mock(dataset.sample_response_file)
 
     # act / assert
@@ -28,6 +22,7 @@ def test_givenLimitAndFilter_whenGettingDataset_thenRequestTargetsTheDatasetWith
     dataset, dataset_api, requests_mock
 ):
     # arrange
+    allure.dynamic.feature(dataset.name)
     requests_mock.get(dataset_api.url, json=records_response([]))
 
     # act
@@ -40,6 +35,7 @@ def test_givenLimitAndFilter_whenGettingDataset_thenRequestTargetsTheDatasetWith
 
 def test_givenDataset_whenGettingMetadata_thenRequestGoesToItsMetaPathWithoutParameters(dataset, dataset_api, requests_mock):
     # arrange
+    allure.dynamic.feature(dataset.name)
     requests_mock.get(f"{dataset_api.client.base_url}/meta/dataset/{dataset.name}", json={})
 
     # act
