@@ -12,9 +12,13 @@ from itertools import pairwise
 from zoneinfo import ZoneInfo
 
 import pytest
+from pydantic import BaseModel
 
 import allure
 from client.dataset_api import DatasetApi
+from client.parsers import parse_records
+from models.co2emis import CO2EmisRecord
+from models.dayaheadprices import DayAheadPricesRecord
 from tests.support.live import TRANSIENT_NETWORK_ERRORS
 
 pytestmark = [
@@ -38,14 +42,31 @@ class Series:
     max_lag: dt.timedelta  # how far behind the present the newest record may be
     value_field: str
     value_range: tuple[float, float]
+    model: type[BaseModel]
 
 
 # Emissions in g/kWh: 0 to 1000 is far wider than anything observed (39 to 139), so only corrupt values fall outside it.
-CO2EMIS = Series("CO2Emis", "Minutes5UTC", "Minutes5DK", dt.timedelta(minutes=5), dt.timedelta(hours=2), "CO2Emission", (0, 1000))
+CO2EMIS = Series(
+    "CO2Emis",
+    "Minutes5UTC",
+    "Minutes5DK",
+    dt.timedelta(minutes=5),
+    dt.timedelta(hours=2),
+    "CO2Emission",
+    (0, 1000),
+    CO2EmisRecord,
+)
 # Day-ahead prices are published for the next day, so the newest record lies in the future (lag 0). The market limits are
 # about -500 to 4000 EUR/MWh; the bounds are wider on purpose, to catch corrupt values and not market events.
 DAYAHEADPRICES = Series(
-    "DayAheadPrices", "TimeUTC", "TimeDK", dt.timedelta(minutes=15), dt.timedelta(0), "DayAheadPriceEUR", (-1000, 10000)
+    "DayAheadPrices",
+    "TimeUTC",
+    "TimeDK",
+    dt.timedelta(minutes=15),
+    dt.timedelta(0),
+    "DayAheadPriceEUR",
+    (-1000, 10000),
+    DayAheadPricesRecord,
 )
 
 
@@ -137,3 +158,14 @@ def test_whenCheckingValues_thenTheyAreFiniteNumbersWithinThePlausibleRange(seri
 
     # assert
     assert implausible == []
+
+
+def test_whenParsingRecords_thenEveryRecordFitsTheTypedModel(series_records):
+    # arrange
+    series, records = series_records
+
+    # act
+    parsed = parse_records({"records": records}, series.model)
+
+    # assert
+    assert len(parsed) == len(records)

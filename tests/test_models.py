@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 from pydantic import ValidationError
 
@@ -13,8 +15,8 @@ def test_givenValidJson_whenParsingRecords_thenTypedModelsAreReturned():
     # arrange
     response_json = {
         "records": [
-            {"Minutes5UTC": "2024-01-01T00:00:00", "Minutes5DK": "2024-01-01T01:00:00", "PriceArea": "DK1", "CO2Emission": 123.4},
-            {"Minutes5UTC": "2024-01-01T00:05:00", "Minutes5DK": "2024-01-01T01:05:00", "PriceArea": "DK2", "CO2Emission": 234.5},
+            {"Minutes5UTC": "2024-01-01T00:00:00", "Minutes5DK": "2024-01-01T01:05:00", "PriceArea": "DK1", "CO2Emission": 123.4},
+            {"Minutes5UTC": "2024-01-02T03:10:00", "Minutes5DK": "2024-01-02T04:15:00", "PriceArea": "DK2", "CO2Emission": 234.5},
         ],
         "total": 2,
     }
@@ -24,12 +26,12 @@ def test_givenValidJson_whenParsingRecords_thenTypedModelsAreReturned():
 
     # assert
     assert len(records) == 2
-    assert records[0].Minutes5UTC == "2024-01-01T00:00:00"
-    assert records[0].Minutes5DK == "2024-01-01T01:00:00"
+    assert records[0].Minutes5UTC == datetime(2024, 1, 1, 0, 0)
+    assert records[0].Minutes5DK == datetime(2024, 1, 1, 1, 5)
     assert records[0].PriceArea == "DK1"
     assert records[0].CO2Emission == 123.4
-    assert records[1].Minutes5UTC == "2024-01-01T00:05:00"
-    assert records[1].Minutes5DK == "2024-01-01T01:05:00"
+    assert records[1].Minutes5UTC == datetime(2024, 1, 2, 3, 10)
+    assert records[1].Minutes5DK == datetime(2024, 1, 2, 4, 15)
     assert records[1].PriceArea == "DK2"
     assert records[1].CO2Emission == 234.5
 
@@ -49,8 +51,11 @@ def test_givenRecordWithoutRequiredField_whenParsingRecords_thenValidationErrorI
         {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK1", "CO2Emission": "not-a-number"},
         {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": None, "CO2Emission": 123.4},
         {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK1", "CO2Emission": None},
+        {"Minutes5UTC": "yesterday", "PriceArea": "DK1", "CO2Emission": 123.4},
+        {"Minutes5UTC": "2024-01-01T00:00:00", "Minutes5DK": "not-a-time", "PriceArea": "DK1", "CO2Emission": 123.4},
+        {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK3", "CO2Emission": 123.4},
     ],
-    ids=["wrong-type", "null-string", "null-number"],
+    ids=["wrong-type", "null-string", "null-number", "bad-utc-time", "bad-local-time", "unknown-area"],
 )
 def test_givenInvalidFieldValue_whenParsingRecords_thenValidationErrorIsRaised(record):
     # arrange
@@ -99,7 +104,7 @@ def test_givenResponseWithoutRecordsKey_whenParsingRecords_thenKeyErrorIsRaised(
 def test_givenValidDayAheadPricesJson_whenParsingRecords_thenEveryFieldIsMapped():
     # arrange
     response_json = {
-        "records": [{"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "DK2", "DayAheadPriceDKK": 567.8}],
+        "records": [{"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "SE3", "DayAheadPriceDKK": 567.8}],
         "total": 1,
     }
 
@@ -108,9 +113,21 @@ def test_givenValidDayAheadPricesJson_whenParsingRecords_thenEveryFieldIsMapped(
 
     # assert
     assert len(records) == 1
-    assert records[0].TimeUTC == "2024-02-03T04:15:00"
-    assert records[0].PriceArea == "DK2"
+    assert records[0].TimeUTC == datetime(2024, 2, 3, 4, 15)
+    assert records[0].PriceArea == "SE3"
     assert records[0].DayAheadPriceDKK == 567.8
+
+
+@pytest.mark.parametrize("area", ["DK1", "DK2", "DE", "NO2", "SE3", "SE4"])
+def test_givenKnownPriceArea_whenParsingDayAheadPrices_thenItIsAccepted(area):
+    # arrange
+    response_json = {"records": [{"PriceArea": area, "DayAheadPriceDKK": 1.5}], "total": 1}
+
+    # act
+    records = parse_records(response_json, DayAheadPricesRecord)
+
+    # assert
+    assert records[0].PriceArea == area
 
 
 @pytest.mark.parametrize(
@@ -120,8 +137,10 @@ def test_givenValidDayAheadPricesJson_whenParsingRecords_thenEveryFieldIsMapped(
         {"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "DK2"},
         {"TimeUTC": "2024-02-03T04:15:00", "PriceArea": None, "DayAheadPriceDKK": 567.8},
         {"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "DK2", "DayAheadPriceDKK": None},
+        {"TimeUTC": "2024-13-45T04:15:00", "PriceArea": "DK2", "DayAheadPriceDKK": 567.8},
+        {"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "DK3", "DayAheadPriceDKK": 567.8},
     ],
-    ids=["wrong-type", "missing-price", "null-string", "null-number"],
+    ids=["wrong-type", "missing-price", "null-string", "null-number", "bad-time", "unknown-area"],
 )
 def test_givenInvalidDayAheadPricesRecord_whenParsingRecords_thenValidationErrorIsRaised(record):
     # arrange

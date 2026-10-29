@@ -110,7 +110,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-200 tests across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
+213 tests across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -124,7 +124,7 @@ with a handful of bounded live smoke tests against the real API:
 * Data quality of the newest `CO2Emis` and `DayAheadPrices` records (nightly): freshness, gaps in the series, DK1/DK2, Danish time
   against UTC including daylight saving, plausible values
 * JSON Schema validation of API responses
-* Pydantic model parsing (valid + invalid data)
+* Pydantic model parsing (valid + invalid data; `datetime` timestamps, price areas as `Literal`), also checked on live records in the nightly run
 * Boundary values (`limit`/`offset`: 0, 1, large, negative), parameter combinations (decision table),
   filter encoding (non-ASCII, quotes, lists) and URL building
 * Real retry behavior against a local scripted HTTP server (503/429 then 200, retry exhaustion,
