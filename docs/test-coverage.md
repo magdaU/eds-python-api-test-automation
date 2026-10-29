@@ -61,6 +61,7 @@ see the [test report](test-report.md).
 | News | Endpoint paths, parameters sent with exact case | `news_api` | Component |
 | | 400 for missing `category` and invalid `date`, 204 for unknown category, 404 for unknown path | `live_edge_cases` | System |
 | | Calendar agrees with archive, schema of live items | `live_smoke` | System |
+| Dataset status | The dataset is still published and updated (metadata: `active`, title, update interval); fails for the discontinued `Elspotprices` (expected failure) | `live_smoke`, `dataset_contract` | System, Component |
 | Contract | JSON Schema of samples (both datasets, news); datasets require the response envelope `records`, `total`, `limit`, `dataset` | `schema_validation`, `dataset_contract`, `news_api` | Component |
 | | JSON Schema of live responses | `schema_validation`, `live_smoke` | System |
 | | Pydantic parsing: valid, missing field, wrong type, null, extra field, empty | `models` | Component |

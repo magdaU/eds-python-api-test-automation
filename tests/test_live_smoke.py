@@ -1,5 +1,7 @@
 """Bounded smoke tests against the real EDS API; everything else is mocked."""
 
+import re
+
 import pytest
 
 import allure
@@ -11,6 +13,30 @@ pytestmark = [
     allure.epic("Live API"),
     pytest.mark.flaky(reruns=1, reruns_delay=5, only_rerun=TRANSIENT_NETWORK_ERRORS),
 ]
+
+
+# ISO 8601 duration such as PT5M or P1D; EDS writes "N/A" for a dataset that is no longer updated
+UPDATE_INTERVAL = re.compile(r"P(?=\d|T\d)(\d+[YMWD])*(T(\d+[HMS])+)?")
+# Datasets EDS has stopped updating: the test must fail for them, and strict xfail flags it once they are replaced or removed
+DISCONTINUED_DATASETS = {"Elspotprices": "EDS stopped updating it after 2025-09-30; DayAheadPrices replaces it"}
+
+
+def test_whenGettingDatasetMetadata_thenTheDatasetIsStillPublishedAndUpdated(request, dataset, dataset_api):
+    # arrange
+    allure.dynamic.feature(dataset.name)
+    if dataset.name in DISCONTINUED_DATASETS:
+        request.applymarker(pytest.mark.xfail(raises=AssertionError, strict=True, reason=DISCONTINUED_DATASETS[dataset.name]))
+
+    # act
+    response = dataset_api.metadata()
+
+    # assert
+    metadata = response.json()
+    assert response.status_code == 200
+    assert metadata["datasetName"] == dataset.name
+    assert metadata["active"] is True
+    assert "discontinued" not in metadata["title"].lower(), metadata["title"]
+    assert UPDATE_INTERVAL.fullmatch(metadata["updateFrequency"]), f"update frequency is {metadata['updateFrequency']!r}"
 
 
 @allure.feature("CO2Emis")

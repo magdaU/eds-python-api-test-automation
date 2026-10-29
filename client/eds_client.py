@@ -113,6 +113,10 @@ class EDSApiClient:
             params["filter"] = self._encode_filters(filters)
         return self._get(self.dataset_url(dataset), params)
 
+    def get_dataset_metadata(self, dataset: str) -> requests.Response:
+        """GET /meta/dataset/<name>: title, update frequency and whether EDS still publishes the dataset."""
+        return self._get(f"{self.base_url}/meta/dataset/{_path_segment(dataset)}", {})
+
     def get_news(self, path: str = "", params: dict[str, Any] | None = None) -> requests.Response:
         """GET /News, or a sub-resource: "actual", "calendar" or "archived"."""
         return self._get(self.news_url(path), params or {})
