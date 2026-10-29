@@ -1,0 +1,2 @@
+INFO     client.eds_client:eds_client.py:153 GET https://api.energidataservice.dk/News/calendar params={} -> 200 in 102 ms
+INFO     client.eds_client:eds_client.py:153 GET https://api.energidataservice.dk/News/archived params={'date': '2026-01-01'} -> 200 in 195 ms

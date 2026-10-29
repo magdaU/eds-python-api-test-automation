@@ -1,1 +1,0 @@
-INFO     client.eds_client:eds_client.py:155 GET https://api.energidataservice.dk/dataset/NotARealDataset params={} -> 404 in 97 ms body=dataset not found NotARealDataset
