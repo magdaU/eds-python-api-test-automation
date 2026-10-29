@@ -1,0 +1,1 @@
+WARNING  client.eds_client:eds_client.py:135 Giving up on http://127.0.0.1:39263/dataset/CO2Emis: The server asked to wait 61 s (Retry-After, status 429), more than the 60 s allowed; not waiting
