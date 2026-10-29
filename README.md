@@ -63,7 +63,6 @@ eds-python-api-test-automation/
 │   ├── test_news_api.py              # News API: endpoint paths, parameters, sample vs schema (mocked)
 │   ├── test_live_smoke.py            # bounded live smoke tests against the real API
 │   ├── test_eds_client.py            # default/custom retry and timeout configuration
-│   ├── test_pagination.py            # consecutive pages advance the offset by the limit
 │   ├── test_boundary_values.py       # limit/offset boundary values
 │   ├── test_parameter_combinations.py # decision table of parameter combinations
 │   ├── test_filter_encoding.py       # filter encoding (non-ASCII, quotes, lists)
@@ -72,7 +71,7 @@ eds-python-api-test-automation/
 │   ├── test_retry_behavior.py        # real retry behavior against a local scripted server
 │   ├── test_live_edge_cases.py       # low-load live edge cases
 │   ├── test_allure_environment.py    # Allure environment.properties
-│   ├── test_negative_scenarios.py    # connection timeout, connection refused
+│   ├── test_negative_scenarios.py    # connection refused
 │   ├── test_schema_validation.py     # JSON Schema validation
 │   ├── test_models.py                # Pydantic parsing
 │   ├── test_logging.py               # warning logged when retries are exhausted
@@ -107,12 +106,12 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-193 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
+185 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
 * `limit`, `filter`, `offset` (pagination), `sort` parameters
-* Negative scenarios: connection timeout and refused connection; 4xx not retried (real local server);
+* Negative scenarios: refused connection; 4xx not retried (real local server);
   invalid dataset and unknown path against the live API
 * News API (`/News`, `/News/actual`, `/News/calendar`, `/News/archived`): endpoint paths, parameters
   sent with their exact case, samples vs. schema; live checks of required/invalid parameters (400),
@@ -127,12 +126,12 @@ with a handful of bounded live smoke tests against the real API:
   filter or offset matching nothing, unknown News category/path
 * BDD scenarios (`pytest-bdd`, Gherkin in `tests/bdd/features/`): query parameters, retry behaviour against a local
   server, and News parameters, written as Given/When/Then and run through the same API objects as the other tests
-* Property-based tests (`hypothesis`): filter JSON round-trip, parameters surviving the URL, negative `limit`, URL building, record parsing
+* Property-based tests (`hypothesis`): filter JSON round-trip, parameters surviving the URL, negative `limit`, URL building
 * Client diagnostics (against a real local server): one log line per request with status, duration and the start of an
   error body, the wait before each retry and why (`Retry-After` or backoff), and a warning when retries are exhausted;
   Allure attaches this log to each test. A `Retry-After` longer than a limit (60 s by default) ends the request at once
 * Retry/backoff configuration, including per-dataset overrides and jitter
-* Automatic pytest-level rerun (`pytest-rerunfailures`) on the live edge-case tests
+* Automatic pytest-level rerun (`pytest-rerunfailures`) on all live tests
   (network errors only), feeding Allure's Retries trend
 
 ## 🚀 Getting Started

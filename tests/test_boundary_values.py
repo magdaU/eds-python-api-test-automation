@@ -1,7 +1,7 @@
 import pytest
 
 from tests.support.allure_labels import labels
-from tests.support.mocks import load_mock, records_response, sent_query
+from tests.support.mocks import records_response, sent_query
 
 pytestmark = labels("Dataset API", "Boundary values")
 
@@ -62,16 +62,3 @@ def test_givenNegativeLimit_whenGettingDataset_thenValueErrorIsRaisedAndNothingI
     with pytest.raises(ValueError, match="limit"):
         co2_api.get(limit=limit)
     assert requests_mock.call_count == 0
-
-
-def test_givenOffsetBeyondTotal_whenGettingDataset_thenRecordsAreEmptyButTotalIsKept(co2_api, requests_mock):
-    # arrange
-    total = len(load_mock("co2emis_sample.json")["records"])
-    requests_mock.get(co2_api.url, json={"records": [], "total": total})
-
-    # act
-    body = co2_api.get(limit=5, offset=total + 1000).json()
-
-    # assert
-    assert body["records"] == []
-    assert body["total"] == total

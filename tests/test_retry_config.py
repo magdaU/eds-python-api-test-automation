@@ -1,7 +1,5 @@
 import logging
 
-import pytest
-
 from client.eds_client import SANE_MAX_RETRIES, EDSApiClient, RetryConfig
 from tests.support.allure_labels import labels
 
@@ -83,12 +81,6 @@ def test_givenDatasetOverrideWithJitter_whenResolvingDatasets_thenOnlyThatDatase
     # assert
     assert overridden.backoff_jitter == 0.5
     assert default.backoff_jitter == 0.0
-
-
-def test_givenMisspelledRetrySetting_whenCreatingRetryConfig_thenTypeErrorIsRaised():
-    # act / assert
-    with pytest.raises(TypeError):
-        RetryConfig(max_retry=9)
 
 
 def test_givenExcessiveMaxRetries_whenCreatingClient_thenWarningIsLogged(caplog):

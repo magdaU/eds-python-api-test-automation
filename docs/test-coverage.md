@@ -52,7 +52,7 @@ see the [test report](test-report.md).
 | Area | Behaviour | Covered by (module `tests/test_*.py`) | Level |
 | --- | --- | --- | --- |
 | Dataset query | `limit` incl. 0, 1, 2, 100000 and negative | `boundary_values`, `parameter_combinations`, `properties` | Component |
-| | `offset` incl. 0, 1, 100000, negative; paging | `boundary_values`, `pagination`, `live_edge_cases` | Component, System |
+| | `offset` incl. 0, 1, 100000, negative; paging | `boundary_values`, `live_smoke`, `live_edge_cases` | Component, System |
 | | `sort` expressions, case preserved | `parameter_combinations`, `properties`, `live_smoke`, `live_edge_cases` | Component, System |
 | | `filter` encoding (non-ASCII, quotes, lists, empty, numbers) | `filter_encoding`, `parameter_combinations`, `properties`, `live_edge_cases` | Component, System |
 | | `filter` returns only the requested values (one value; two values combined with OR) | `live_smoke` | System |
@@ -68,7 +68,7 @@ see the [test report](test-report.md).
 | | A `Retry-After` above the limit (60 s) ends the request at once; at the limit it is waited; no limit waits any time; the limit survives retries | `retry_after_cap`, BDD `resilience` | Integration |
 | | Retry, backoff, jitter and per-dataset overrides configured; warning above 10 retries | `retry_config`, `eds_client` | Component |
 | | Request line (status, duration), error body preview, wait before a retry and its reason, warning when retries are exhausted | `logging` | Integration |
-| | Connect timeout, refused connection, request timeout | `negative_scenarios`, `eds_client` | Component |
+| | Refused connection, request timeout | `negative_scenarios`, `eds_client` | Component |
 | | Negative `limit` rejected before sending | `boundary_values`, `properties` | Component |
 | | Real JSON round-trip over HTTP | `dataset_contract` | Integration |
 | Test infrastructure | Allure environment properties, including the note that explains empty Categories widgets | `allure_environment` | Component |
@@ -88,7 +88,7 @@ there is no formal requirements document, so features rather than requirement ID
 | Equivalence partitioning | filter values, record validity, URL variants |
 | Boundary value analysis | `limit`, `offset` |
 | Decision table | the four optional dataset parameters |
-| Property-based testing | filters, parameters in the URL, negative `limit`, news URLs, record parsing |
+| Property-based testing | filters, parameters in the URL, negative `limit`, news URLs |
 | Executable specification (Gherkin) | query parameters, retry and give-up behaviour, News parameters (`tests/bdd/features/`) |
 | Error guessing | unknown column/path/category, invalid date, offset far beyond data |
 | State-based | retry sequences against the scripted server (failures, then success) |

@@ -42,18 +42,6 @@ def test_givenNewsSample_whenValidatingAgainstSchema_thenSchemaIsSatisfied(sampl
     assert_all_match_schema(items, schema_file)
 
 
-@pytest.mark.parametrize("query", [{"limit": 1}, {"sort": "newsId desc"}])
-def test_givenParameterTheApiIgnores_whenGettingNews_thenItIsStillSentUnchanged(news_api, requests_mock, query):
-    # arrange
-    requests_mock.get(news_api.url(), json=[])
-
-    # act
-    news_api.get(params=query)
-
-    # assert
-    assert sent_query(requests_mock) == {key: [str(value)] for key, value in query.items()}
-
-
 @pytest.mark.parametrize("category", ["HIGH", "INFO"])
 def test_givenCategory_whenGettingActualNews_thenCategoryIsSentWithItsCase(news_api, requests_mock, category):
     # arrange

@@ -3,25 +3,30 @@
 import pytest
 
 import allure
+from tests.support.live import TRANSIENT_NETWORK_ERRORS
 from tests.support.schema import assert_all_match_schema, assert_matches_schema
 
-pytestmark = [pytest.mark.live, allure.epic("Live API")]
+pytestmark = [
+    pytest.mark.live,
+    allure.epic("Live API"),
+    pytest.mark.flaky(reruns=1, reruns_delay=5, only_rerun=TRANSIENT_NETWORK_ERRORS),
+]
 
 
 @allure.feature("CO2Emis")
-def test_whenGettingConsecutivePages_thenPagesAreDifferent(co2_api):
+def test_givenOldestFirstSort_whenGettingConsecutivePages_thenTogetherTheyEqualOneLargerPage(co2_api):
+    # arrange
+    # the oldest records never change, so unlike the newest ones the pages cannot shift between the calls
+    oldest_first = {"sort": "Minutes5UTC asc, PriceArea asc"}
+
     # act
-    first_page = co2_api.get(limit=5, offset=0).json()
-    second_page = co2_api.get(limit=5, offset=5).json()
+    first_page = co2_api.get(limit=5, offset=0, **oldest_first).json()["records"]
+    second_page = co2_api.get(limit=5, offset=5, **oldest_first).json()["records"]
+    one_page = co2_api.get(limit=10, offset=0, **oldest_first).json()["records"]
 
     # assert
-    # a record is one timestamp per price area, so the timestamp alone is not unique
-    first_records = {(record["Minutes5UTC"], record["PriceArea"]) for record in first_page["records"]}
-    second_records = {(record["Minutes5UTC"], record["PriceArea"]) for record in second_page["records"]}
-    assert len(first_page["records"]) == 5
-    assert len(second_page["records"]) == 5
-    # live data keeps arriving, so a few records may shift between the two calls; identical pages mean offset was ignored
-    assert len(first_records | second_records) > 5
+    assert len(one_page) == 10
+    assert first_page + second_page == one_page
 
 
 @allure.feature("CO2Emis")
@@ -45,12 +50,12 @@ def test_givenUnknownDataset_whenGettingIt_thenNotFoundNamesTheDataset(eds_clien
 )
 def test_givenPriceAreaFilter_whenGettingCo2Emis_thenOnlyTheRequestedAreasAreReturned(co2_api, filters, expected_areas):
     # act
-    response = co2_api.get(limit=10, filters=filters)
+    response = co2_api.get(limit=50, filters=filters)
 
     # assert
     areas = {record["PriceArea"] for record in response.json()["records"]}
     assert response.status_code == 200
-    # the newest records hold one entry per area, so a filter on two areas must return both
+    # 50 records span many timestamps, so a late-publishing area still appears; a filter on two areas must return both
     assert areas == expected_areas
 
 

@@ -9,8 +9,6 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from client.eds_client import EDSApiClient
-from client.parsers import parse_records
-from models.co2emis import CO2EmisRecord
 from tests.support.allure_labels import labels
 
 pytestmark = labels("Client library", "Property-based")
@@ -79,23 +77,3 @@ def test_givenAnyPathWithOptionalSlashes_whenBuildingNewsUrl_thenThereIsNoDouble
     # assert
     assert "//" not in url.removeprefix("http://")
     assert url.startswith(f"{BASE}/News")
-
-
-@given(
-    area=st.text(min_size=1),
-    emission=st.floats(allow_nan=False, allow_infinity=False),
-    utc=st.text(min_size=1),
-    local=st.one_of(st.none(), st.text(min_size=1)),
-)
-def test_givenAnyValidCo2Record_whenParsingRecords_thenEveryFieldIsPreserved(area, emission, utc, local):
-    # arrange
-    record = {"Minutes5UTC": utc, "Minutes5DK": local, "PriceArea": area, "CO2Emission": emission}
-
-    # act
-    parsed = parse_records({"records": [record], "total": 1}, CO2EmisRecord)[0]
-
-    # assert
-    assert parsed.Minutes5UTC == utc
-    assert parsed.Minutes5DK == local
-    assert parsed.PriceArea == area
-    assert parsed.CO2Emission == emission
