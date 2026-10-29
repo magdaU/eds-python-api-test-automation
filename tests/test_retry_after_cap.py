@@ -27,7 +27,7 @@ def test_whenCreatingRetryConfig_thenTheDefaultLimitIsSixtySeconds():
     assert config.max_retry_after == DEFAULT_MAX_RETRY_AFTER == 60
 
 
-def test_whenGivingUpOnALongRetryAfter_thenTheErrorIsARetryError():
+def test_whenCheckingTheErrorType_thenItIsASubclassOfRetryError():
     # act / assert
     assert issubclass(RetryAfterTooLongError, requests.exceptions.RetryError)
 

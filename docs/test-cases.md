@@ -240,7 +240,7 @@ Source: [`tests/test_retry_after_cap.py`](../tests/test_retry_after_cap.py) | Le
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
 | TC-084 | - | Creating retry config | The default limit is sixty seconds | 1 | Offline |
-| TC-085 | - | Giving up on a long retry after | The error is a retry error | 1 | Offline |
+| TC-085 | - | Checking the error type | It is a subclass of retry error | 1 | Offline |
 | TC-086 | Retry after above the limit | Server throttles | Client fails fast without waiting | 1 | Offline |
 | TC-087 | Retry after around the limit | Server throttles | Only above the limit is refused | 2 | Offline |
 | TC-088 | No limit | Server asks for a long wait | Client still waits | 1 | Offline |
