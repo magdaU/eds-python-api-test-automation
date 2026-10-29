@@ -6,11 +6,13 @@
       "items": {
         "type": "object",
         "properties": {
-          "HourUTC": {"type": "string"},
+          "TimeUTC": {"type": "string"},
+          "TimeDK": {"type": "string"},
           "PriceArea": {"type": "string"},
-          "SpotPriceDKK": {"type": "number"}
+          "DayAheadPriceEUR": {"type": "number"},
+          "DayAheadPriceDKK": {"type": "number"}
         },
-        "required": ["PriceArea", "SpotPriceDKK"]
+        "required": ["PriceArea", "DayAheadPriceDKK"]
       }
     },
     "total": {"type": "integer"},

@@ -1,5 +1,5 @@
 name,path
 CO2Emis limit 5,/dataset/CO2Emis?limit=5
 CO2Emis page 2,/dataset/CO2Emis?limit=5&offset=5
-Elspotprices sorted,/dataset/Elspotprices?limit=5&sort=SpotPriceDKK%20desc
+DayAheadPrices sorted,/dataset/DayAheadPrices?limit=5&sort=DayAheadPriceDKK%20desc
 News,/News

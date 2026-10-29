@@ -3,7 +3,7 @@ from pydantic import ValidationError
 
 from client.parsers import parse_records
 from models.co2emis import CO2EmisRecord
-from models.elspotprices import ElspotpricesRecord
+from models.dayaheadprices import DayAheadPricesRecord
 from tests.support.allure_labels import labels
 
 pytestmark = labels("Dataset API", "Pydantic models")
@@ -96,48 +96,48 @@ def test_givenResponseWithoutRecordsKey_whenParsingRecords_thenKeyErrorIsRaised(
         parse_records(response_json, CO2EmisRecord)
 
 
-def test_givenValidElspotpricesJson_whenParsingRecords_thenEveryFieldIsMapped():
+def test_givenValidDayAheadPricesJson_whenParsingRecords_thenEveryFieldIsMapped():
     # arrange
     response_json = {
-        "records": [{"HourUTC": "2024-02-03T04:00:00", "PriceArea": "DK2", "SpotPriceDKK": 567.8}],
+        "records": [{"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "DK2", "DayAheadPriceDKK": 567.8}],
         "total": 1,
     }
 
     # act
-    records = parse_records(response_json, ElspotpricesRecord)
+    records = parse_records(response_json, DayAheadPricesRecord)
 
     # assert
     assert len(records) == 1
-    assert records[0].HourUTC == "2024-02-03T04:00:00"
+    assert records[0].TimeUTC == "2024-02-03T04:15:00"
     assert records[0].PriceArea == "DK2"
-    assert records[0].SpotPriceDKK == 567.8
+    assert records[0].DayAheadPriceDKK == 567.8
 
 
 @pytest.mark.parametrize(
     "record",
     [
-        {"HourUTC": "2024-02-03T04:00:00", "PriceArea": "DK2", "SpotPriceDKK": "not-a-number"},
-        {"HourUTC": "2024-02-03T04:00:00", "PriceArea": "DK2"},
-        {"HourUTC": "2024-02-03T04:00:00", "PriceArea": None, "SpotPriceDKK": 567.8},
-        {"HourUTC": "2024-02-03T04:00:00", "PriceArea": "DK2", "SpotPriceDKK": None},
+        {"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "DK2", "DayAheadPriceDKK": "not-a-number"},
+        {"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "DK2"},
+        {"TimeUTC": "2024-02-03T04:15:00", "PriceArea": None, "DayAheadPriceDKK": 567.8},
+        {"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "DK2", "DayAheadPriceDKK": None},
     ],
     ids=["wrong-type", "missing-price", "null-string", "null-number"],
 )
-def test_givenInvalidElspotpricesRecord_whenParsingRecords_thenValidationErrorIsRaised(record):
+def test_givenInvalidDayAheadPricesRecord_whenParsingRecords_thenValidationErrorIsRaised(record):
     # arrange
     response_json = {"records": [record], "total": 1}
 
     # act / assert
     with pytest.raises(ValidationError):
-        parse_records(response_json, ElspotpricesRecord)
+        parse_records(response_json, DayAheadPricesRecord)
 
 
-def test_givenElspotpricesWithoutHour_whenParsingRecords_thenHourIsNone():
+def test_givenDayAheadPricesWithoutTime_whenParsingRecords_thenTimeIsNone():
     # arrange
-    response_json = {"records": [{"PriceArea": "DK1", "SpotPriceDKK": 12.3}], "total": 1}
+    response_json = {"records": [{"PriceArea": "DK1", "DayAheadPriceDKK": 12.3}], "total": 1}
 
     # act
-    records = parse_records(response_json, ElspotpricesRecord)
+    records = parse_records(response_json, DayAheadPricesRecord)
 
     # assert
-    assert records[0].HourUTC is None
+    assert records[0].TimeUTC is None

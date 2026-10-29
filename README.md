@@ -49,7 +49,7 @@ eds-python-api-test-automation/
 │   ├── news_api.py      # NewsApi: API object for /News endpoints
 │   └── parsers.py       # raw JSON -> typed Pydantic models
 │
-├── models/               # Pydantic models (CO2EmisRecord, ElspotpricesRecord)
+├── models/               # Pydantic models (CO2EmisRecord, DayAheadPricesRecord)
 ├── schemas/               # JSON Schema per dataset / News item, for response validation
 ├── allure/
 │   ├── categories.json   # Allure report failure categories
@@ -60,7 +60,7 @@ eds-python-api-test-automation/
 │   ├── support/                      # shared test helpers: mock loading, schema asserts, dataset configs, scripted local server
 │   ├── mocks/                        # requests-mock fixture data
 │   ├── bdd/                          # BDD: Gherkin scenarios (features/*.feature) and their step definitions
-│   ├── test_dataset_contract.py      # CO2Emis + Elspotprices: sample vs schema, request URL/parameters, real HTTP round-trip
+│   ├── test_dataset_contract.py      # CO2Emis + DayAheadPrices: sample vs schema, request URL/parameters, real HTTP round-trip
 │   ├── test_news_api.py              # News API: endpoint paths, parameters, sample vs schema (mocked)
 │   ├── test_live_smoke.py            # bounded live smoke tests against the real API
 │   ├── test_eds_client.py            # default/custom retry and timeout configuration
@@ -107,7 +107,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-189 tests across the `CO2Emis` and `Elspotprices` datasets and the `News` API, mostly mocked (`requests-mock`)
+189 tests across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -117,7 +117,7 @@ with a handful of bounded live smoke tests against the real API:
 * News API (`/News`, `/News/actual`, `/News/calendar`, `/News/archived`): endpoint paths, parameters
   sent with their exact case, samples vs. schema; live checks of required/invalid parameters (400),
   empty results (204), unknown path (404), and calendar vs. archive consistency
-* Dataset status from the metadata endpoint (still published and updated; `Elspotprices` is a known, deliberate expected failure)
+* Dataset status from the metadata endpoint (still published and updated; it caught that the earlier `Elspotprices` had been discontinued)
 * JSON Schema validation of API responses
 * Pydantic model parsing (valid + invalid data)
 * Boundary values (`limit`/`offset`: 0, 1, large, negative), parameter combinations (decision table),
@@ -155,9 +155,9 @@ pytest -v -m "not live"
 On GitHub, pull requests run only the offline tests; the full suite (including live) runs on `main`.
 A nightly workflow (`live-nightly.yml`, also runnable manually) runs only the live tests to catch API drift.
 
-> **Rate limit.** The public API answers only one `Elspotprices` query per ~300 s window, and a full run sends exactly one.
-> A second full run within five minutes can fail fast with `RetryAfterTooLongError`. For repeated local runs use
-> `pytest -m "not live"`.
+> **Rate limit.** The public API throttles by dataset (the discontinued `Elspotprices` answered one query per ~300 s window).
+> A full run sends exactly one query to `DayAheadPrices`, whose limit is not measured; if a repeated run is throttled it fails fast
+> with `RetryAfterTooLongError`. For repeated local runs use `pytest -m "not live"`.
 
 **CI guard against empty reports.** The `Tests` workflow runs `pytest --collect-only` first and publishes the Allure
 report only when pytest exits with `0` (all passed) or `1` (some failed) and `allure-results` is not empty. On any other

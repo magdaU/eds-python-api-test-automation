@@ -11,7 +11,7 @@ class DatasetUnderTest:
 
 
 CO2EMIS_DATASET = DatasetUnderTest("CO2Emis", "co2emis_sample.json", "co2emis_schema.json", "Minutes5DK", "Minutes5UTC")
-ELSPOTPRICES_DATASET = DatasetUnderTest(
-    "Elspotprices", "elspotprices_sample.json", "elspotprices_schema.json", "HourUTC", "SpotPriceDKK"
+DAYAHEADPRICES_DATASET = DatasetUnderTest(
+    "DayAheadPrices", "dayaheadprices_sample.json", "dayaheadprices_schema.json", "TimeUTC", "DayAheadPriceDKK"
 )
-ALL_DATASETS = [CO2EMIS_DATASET, ELSPOTPRICES_DATASET]
+ALL_DATASETS = [CO2EMIS_DATASET, DAYAHEADPRICES_DATASET]

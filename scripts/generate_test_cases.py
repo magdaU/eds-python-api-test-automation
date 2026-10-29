@@ -55,7 +55,7 @@ FEATURES_DIR = ROOT / "tests" / "bdd" / "features"
 
 WORDS = {
     "co2 emis": "CO2Emis",
-    "elspotprices": "Elspotprices",
+    "dayaheadprices": "DayAheadPrices",
     "json": "JSON",
     "url": "URL",
     "http": "HTTP",

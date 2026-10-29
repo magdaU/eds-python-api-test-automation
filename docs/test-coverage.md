@@ -61,7 +61,7 @@ see the [test report](test-report.md).
 | News | Endpoint paths, parameters sent with exact case | `news_api` | Component |
 | | 400 for missing `category` and invalid `date`, 204 for unknown category, 404 for unknown path | `live_edge_cases` | System |
 | | Calendar agrees with archive, schema of live items | `live_smoke` | System |
-| Dataset status | The dataset is still published and updated (metadata: `active`, title, update interval); fails for the discontinued `Elspotprices` (expected failure) | `live_smoke`, `dataset_contract` | System, Component |
+| Dataset status | The dataset is still published and updated (metadata: `active`, title, update interval); this is the check that would have caught the discontinued `Elspotprices` | `live_smoke`, `dataset_contract` | System, Component |
 | Contract | JSON Schema of samples (both datasets, news); datasets require the response envelope `records`, `total`, `limit`, `dataset` | `schema_validation`, `dataset_contract`, `news_api` | Component |
 | | JSON Schema of live responses | `schema_validation`, `live_smoke` | System |
 | | Pydantic parsing: valid, missing field, wrong type, null, extra field, empty | `models` | Component |
@@ -105,15 +105,16 @@ there is no formal requirements document, so features rather than requirement ID
 ## 6. Known gaps
 
 - Client does not expose other EDS query parameters (for example `start`, `end`, `columns`, `timezone`), so they are untested.
-- Only `CO2Emis` and `Elspotprices` are tested; other datasets are not.
+- Only `CO2Emis` and `DayAheadPrices` are tested; other datasets are not.
 - Data values are not compared with an authoritative source. Only shape, types, order and error messages are checked.
 - The EDS guide documents a 429 only by its message in the body, not a `Retry-After` header; the client relies on the header the API has been observed to send (see the [test strategy](test-strategy.md#2-scope)).
 - A live 429 is never provoked on purpose, so rate-limit handling is proven only against the local server. `Retry-After`
   handling is `urllib3`'s; the wait and its logging are tested against the local server. The real API has answered 429 with
   `Retry-After` of up to 300 s; the client refuses waits above 60 s by default (`RetryConfig.max_retry_after`, tested against the
   local server) and fails with `RetryAfterTooLongError`.
-- Live `Elspotprices` checks use a single shared query per run because the API answers one query per ~300 s window. They cannot
-  verify more than that one request (sort order and schema are checked on it), and two runs less than five minutes apart can collide.
+- Live `DayAheadPrices` checks use a single shared query per run, a precaution kept from the discontinued `Elspotprices`, which answered
+  one query per ~300 s window. `DayAheadPrices` has no measured limit (two runs seconds apart both passed). They verify only that one
+  request (sort order and schema), and if a limit exists two runs less than five minutes apart could collide.
 - Performance covers a low-load baseline only; there is no stress, soak or spike test.
 - No security or TLS tests.
 - The CI publish guard is verified by simulating exit codes, not by an automated test.
