@@ -1,6 +1,6 @@
 name: Live nightly
 
-# Pull requests skip live tests (they hit the public EDS API). This job runs them once a day
+# Pull requests skip live tests (they hit the public EDS API). This job runs them once a day, with the data-quality checks,
 # to catch API contract drift; GitHub emails the repository admins when a scheduled run fails.
 on:
   schedule:

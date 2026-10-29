@@ -59,6 +59,7 @@ The number of test cases per level is in [test-cases.md](test-cases.md).
 | Negative testing, error guessing | Invalid input, unknown paths and columns, timeouts, refused connections, persistent 5xx | `test_negative_scenarios`, `test_retry_behavior`, `test_live_edge_cases` |
 | Contract testing | JSON Schema validation of samples and live responses | `test_schema_validation`, `test_dataset_contract`, `test_news_api` |
 | Smoke testing | One bounded call per area against the live API | `test_live_smoke` |
+| Data-quality monitoring | The 100 newest records of `CO2Emis` and `DayAheadPrices`: freshness, gaps in the series, areas DK1/DK2, Danish time against UTC (daylight saving), plausible value range. One query per series | `test_live_data_quality` (marker `data_quality`, nightly only) |
 | Structural (white-box) | Statement coverage of `client/` and `models/` (gate at 90%), branch coverage measured on demand | `pytest --cov` |
 | Static analysis | `ruff` (style, bugs, complexity) and `mypy` in strict mode | `quality.yml` |
 | Performance | Low-load baseline: 2 users, every sample 200 and within 2000 ms; p50/p95/p99 reported, not yet enforced (see [test architecture](test-architecture.md#4-performance-acceptance)) | `performance/`, `performance.yml` |
@@ -140,9 +141,9 @@ a scenario layer on every test would only add indirection.
 | Workflow | Trigger | Content |
 | --- | --- | --- |
 | `Tests` | pull request to `main` | Offline tests only (`-m "not live"`), Allure results as artifact |
-| `Tests` | push to `main` | All tests including live, Allure report published to GitHub Pages |
+| `Tests` | push to `main` | All tests including live, except the data-quality checks (`-m "not data_quality"`), Allure report published to GitHub Pages |
 | `Quality` | pull request, push to `main` | `ruff`, `mypy`, offline tests with the coverage gate |
-| `Live nightly` | daily 02:00 UTC, manual | Live tests only, to catch API drift. No Allure report: the result is the workflow run itself |
+| `Live nightly` | daily 02:00 UTC, manual | Live tests only, including the data-quality checks, to catch API drift and stale or broken data. No Allure report: the result is the workflow run itself |
 | `Performance` | Monday 03:00 UTC, manual | JMeter plan, fails on any failed sample |
 
 A guard in the `Tests` workflow publishes the Allure report only when pytest exits with code 0 or 1 and results exist,

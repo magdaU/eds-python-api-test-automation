@@ -62,6 +62,7 @@ see the [test report](test-report.md).
 | | 400 for missing `category` and invalid `date`, 204 for unknown category, 404 for unknown path | `live_edge_cases` | System |
 | | Calendar agrees with archive, schema of live items | `live_smoke` | System |
 | Dataset status | The dataset is still published and updated (metadata: `active`, title, update interval); this is the check that would have caught the discontinued `Elspotprices` | `live_smoke`, `dataset_contract` | System, Component |
+| Data quality | Newest records of `CO2Emis` and `DayAheadPrices` are fresh, without gaps, for DK1 and DK2, with Danish time matching UTC and values in a plausible range | `live_data_quality` | System |
 | Contract | JSON Schema of samples (both datasets, news); datasets require the response envelope `records`, `total`, `limit`, `dataset` | `schema_validation`, `dataset_contract`, `news_api` | Component |
 | | JSON Schema of live responses | `schema_validation`, `live_smoke` | System |
 | | Pydantic parsing: valid, missing field, wrong type, null, extra field, empty | `models` | Component |
