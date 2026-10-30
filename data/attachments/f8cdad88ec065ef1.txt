@@ -1,1 +1,0 @@
-INFO     client.eds_client:eds_client.py:185 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 3, 'offset': 6, 'sort': 'Minutes5UTC desc', 'filter': '{"PriceArea":"DK1"}'} -> 200 in 0 ms
