@@ -1,3 +1,6 @@
+import time
+from email.utils import formatdate
+
 import pytest
 import requests
 
@@ -63,6 +66,36 @@ def test_givenRetryAfterAroundTheLimit_whenServerThrottles_thenOnlyAboveTheLimit
     # assert
     assert waits == ([] if gives_up else [seconds])
     assert gives_up or response.status_code == 200
+
+
+def http_date(seconds_from_now):
+    return formatdate(time.time() + seconds_from_now, usegmt=True)
+
+
+def test_givenRetryAfterAsHttpDateAboveTheLimit_whenServerThrottles_thenClientFailsFastWithoutWaiting(scripted_server, waits):
+    # arrange
+    server = scripted_server(429, 200, headers={"Retry-After": http_date(300)})
+
+    # act
+    with pytest.raises(RetryAfterTooLongError):
+        api_for(server).get()
+
+    # assert
+    assert waits == []
+    assert server.request_count == 1
+
+
+def test_givenRetryAfterAsHttpDateBelowTheLimit_whenServerThrottles_thenClientWaitsUntilThatTime(scripted_server, waits):
+    # arrange
+    server = scripted_server(429, 200, headers={"Retry-After": http_date(30)})
+
+    # act
+    response = api_for(server).get()
+
+    # assert
+    assert response.status_code == 200
+    assert len(waits) == 1
+    assert 25 <= waits[0] <= 30
 
 
 def test_givenNoLimit_whenServerAsksForALongWait_thenClientStillWaits(scripted_server, waits):

@@ -109,12 +109,12 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-156 tests (122 offline, 34 live) across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
+161 tests (127 offline, 34 live) across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API. The [Allure report](https://magdau.github.io/eds-python-api-test-automation/)
-shows 144 of them: the 12 data-quality checks run only in the nightly `Live nightly` job, not on a push to `main`. They cover:
+shows 149 of them: the 12 data-quality checks run only in the nightly `Live nightly` job, not on a push to `main`. They cover:
 
 * HTTP status code, JSON content-type, response structure
-* `limit`, `filter`, `offset` (pagination), `sort` parameters
+* `limit`, `filter`, `offset` (pagination), `sort` parameters; `limit=0` returns every record, and the client rejects a negative `limit`
 * Negative scenarios: refused connection; 4xx not retried (real local server);
   invalid dataset and unknown path against the live API
 * News API (`/News`, `/News/actual`, `/News/calendar`, `/News/archived`): endpoint paths, parameters
@@ -127,7 +127,7 @@ shows 144 of them: the 12 data-quality checks run only in the nightly `Live nigh
   against UTC including daylight saving, plausible values
 * JSON Schema validation of API responses
 * Pydantic model parsing (valid + invalid data; `datetime` timestamps, price areas as `Literal`), also checked on live records in the nightly run
-* Boundary values (`limit`/`offset`: 0, 1, large, negative), parameter combinations (decision table),
+* Boundary values (`limit`/`offset`: 0, 1, negative), parameter combinations (decision table),
   filter encoding (non-ASCII, quotes, lists) and URL building
 * Real retry behavior against a local scripted HTTP server (503/429 then 200, retry exhaustion,
   no retry on 4xx), plus a request timeout on every call

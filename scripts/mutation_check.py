@@ -96,6 +96,7 @@ MUTATIONS = [
     Mutation("news-category-lowercased", NEWS_API, '{"category": category}', '{"category": category.lower()}'),
     Mutation("news-path-lowercase", EDS_CLIENT, 'f"{self.base_url}/News"', 'f"{self.base_url}/news"'),
     Mutation("news-path-slashes-kept", EDS_CLIENT, 'path.strip("/")', "path"),
+    Mutation("news-path-not-encoded", EDS_CLIENT, '_path_segment(path.strip("/"))', 'path.strip("/")'),
     Mutation("archived-date-not-sent", NEWS_API, '{"date": date} if date is not None else None', "None"),
     Mutation("category-not-sent", NEWS_API, '{"category": category} if category is not None else None', "None"),
     Mutation("base-url-slash-kept", EDS_CLIENT, 'self.base_url = base_url.rstrip("/")', "self.base_url = base_url"),
