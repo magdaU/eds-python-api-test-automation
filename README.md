@@ -108,7 +108,8 @@ eds-python-api-test-automation/
 ## 🧪 Current Test Coverage
 
 153 tests (119 offline, 34 live) across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
-with a handful of bounded live smoke tests against the real API:
+with a handful of bounded live smoke tests against the real API. The [Allure report](https://magdau.github.io/eds-python-api-test-automation/)
+shows 141 of them: the 12 data-quality checks run only in the nightly `Live nightly` job, not on a push to `main`. They cover:
 
 * HTTP status code, JSON content-type, response structure
 * `limit`, `filter`, `offset` (pagination), `sort` parameters
