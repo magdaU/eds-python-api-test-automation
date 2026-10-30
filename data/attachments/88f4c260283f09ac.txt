@@ -1,0 +1,1 @@
+INFO     client.eds_client:eds_client.py:165 GET https://api.energidataservice.dk/dataset/DayAheadPrices params={'limit': 5, 'sort': 'DayAheadPriceDKK desc'} -> 200 in 228 ms
