@@ -1,21 +1,22 @@
 # Test coverage
 
-What the tests cover and what they do not. Measured on commit `091ca81` (2026-10-29), Python 3.12. Related:
+What the tests cover and what they do not. Measured on commit `2acf689` (2026-10-30), Python 3.12. Related:
 [test strategy](test-strategy.md) · [test cases](test-cases.md) · [test results](test-results.md) · [test report](test-report.md).
 
 ## 1. Code coverage
 
-Command: `pytest -m "not live" --cov --cov-branch`
+Command: `pytest -m "not live" --cov` (branch measurement is switched on in `pyproject.toml`)
 
 | Package | Statements | Missed | Branches | Missed branches | Coverage |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `client/` | 150 | 0 | 20 | 0 | 100% |
+| `client/` | 172 | 0 | 24 | 0 | 100% |
 | `models/` | 15 | 0 | 0 | 0 | 100% |
-| **Total** | **165** | **0** | **20** | **0** | **100%** |
+| **Total** | **187** | **0** | **24** | **0** | **100%** |
 
 - Scope is `client/` and `models/` (the code under test). Test helpers and scripts are not measured.
 - Only offline tests are needed to reach 100%; live tests add confidence in the real API, not coverage.
-- CI enforces statement coverage of at least 90% (`fail_under` in `pyproject.toml`). Branch coverage is not part of the gate.
+- CI enforces coverage of at least 90% (`fail_under` in `pyproject.toml`). Branch measurement is on, so the gate applies to the
+  combined figure of statements and branches.
 
 ## 2. Why coverage alone is not trusted
 
@@ -23,7 +24,8 @@ Coverage shows which lines ran, not whether a test would fail if the line were w
 had 100% coverage and still contained tests that only repeated what the mock returned. Therefore the suite is also
 checked by mutations: one line of the client is changed or removed and the offline suite is run. Since 2026-10-29 a catalogue of
 43 such mutations (client, models and schemas) runs automatically (`scripts/mutation_check.py`, weekly in the `Mutation checks` workflow); the table below is
-the history of the first checks, done by hand.
+the history of the first checks, done by hand. On 2026-10-30 the catalogue was run against the suite as of `main` after three
+changes (typed records, a closable session, invalid responses): all 43 mutations were killed.
 
 | Mutation of the client | Failing tests | Detected |
 | --- | ---: | :---: |
@@ -45,7 +47,8 @@ the history of the first checks, done by hand.
 | Filter JSON with spaces after `:` and `,` | 5 | yes |
 
 The last four checks were run on 2026-10-29 against the suite as of pull request #86; the `offset` and `sort` checks were repeated
-then (9 and 10 failing tests), and one more change (all methods retried instead of GET only) survived because the client sends only GET.
+then (9 and 10 failing tests), and one more change (all methods retried instead of GET only) survived because the client sends only GET. That change cannot be
+seen from outside, so it was removed from the catalogue on 2026-10-30 and every mutation that survives is now a failure.
 The first six checks were run once on 2026-10-28 against the suite as of pull request #61, the `offset` check against
 the suite as of #66, the URL-encoding check while developing #75 (it is the red step of that change) and the four
 `Retry-After` checks while developing #77; they are not part of CI.
@@ -54,6 +57,14 @@ fail the BDD scenarios, which exercise the same code from a different angle. The
 pull request, the same mutations were detected only by the parameter-focused modules (boundary values, parameter
 combinations, filter encoding, properties) and by none of the dataset contract, pagination or negative-scenario tests;
 see the [test report](test-report.md).
+
+**Which test kills which mutation.** On 2026-10-30 each of the 40 mutations of that day was run against the whole offline suite
+without stopping at the first failure. Ten mutations were killed by exactly one test (for example `metadata-path-wrong`,
+`retry-after-limit-exclusive`, `backoff-jitter-ignored`, `model-price-optional`), so those tests are the only guard of their
+behaviour. Five mutations were killed by seven to nine tests (`filter-not-sent`, `limit-not-sent`, `offset-not-sent`,
+`dataset-path-wrong`, `news-path-lowercase`), which is where duplicates were. 51 of 121 tests killed no mutation. Ten were
+removed as duplicates or trivial negatives; the rest protect behaviour the catalogue does not mention (log lines, the Allure
+tooling, mocks against schemas, edge cases of the models) and stay until a mutation for them is added.
 
 ## 3. Functional coverage
 
@@ -66,6 +77,8 @@ see the [test report](test-report.md).
 | | `filter` returns only the requested values (one value; two values combined with OR) | `live_smoke` | System |
 | | Combinations of the four parameters | `parameter_combinations` | Component |
 | | Request target and parameters per dataset | `dataset_contract`, `url_building` | Component |
+| | Query arguments are keyword-only and in one order in `EDSApiClient.get_dataset`, `DatasetApi.get` and `records` | `eds_client` | Component |
+| | Typed records: `records()` returns model objects, passes the query on, raises `HTTPError`, `ValidationError` and a `TypeError` when the API has no model | `typed_records` | Component |
 | News | Endpoint paths, parameters sent with exact case | `news_api` | Component |
 | | 400 for missing `category` and invalid `date`, 204 for unknown category, 404 for unknown path | `live_edge_cases` | System |
 | | Calendar agrees with archive, schema of live items | `live_smoke` | System |
@@ -73,21 +86,24 @@ see the [test report](test-report.md).
 | Data quality | Newest records of `CO2Emis` and `DayAheadPrices` are fresh, without gaps, for DK1 and DK2, with Danish time matching UTC and values in a plausible range | `live_data_quality` | System |
 | Contract | JSON Schema of samples (both datasets, news); datasets require the response envelope `records`, `total`, `limit`, `dataset` | `schema_validation`, `dataset_contract`, `news_api` | Component |
 | | JSON Schema of live responses | `schema_validation`, `live_smoke` | System |
-| | Pydantic parsing: timestamps become `datetime`, price area is a `Literal`; valid, missing field, wrong type, null, bad time, unknown area, extra field, empty | `models` | Component |
+| | Pydantic parsing: timestamps become `datetime`, price area is a `Literal`; valid, missing field, bad time, unknown area, extra field, empty | `models` | Component |
+| | A body that is not the expected JSON (not JSON, not an object, no list under `records`) raises `InvalidResponseError` | `models`, `typed_records` | Component |
+| | The operations and parameters the client uses are still documented in the published OpenAPI specification; the detector reports a missing path, a missing parameter and a wrong type | `openapi_drift` | System, Component |
 | | The 100 newest live records of both datasets fit the models (types, timestamps, known price areas) | `live_data_quality` | System |
-| Client robustness | Retry on 429/503 then success; exhaustion; no retry on 400/404; zero retries; News endpoints | `retry_behavior` | Integration |
+| Client robustness | Retry on 429 then success; exhaustion (503, News endpoints); zero retries; refused connection | `retry_behavior` | Integration |
+| | No retry on 400, 401 and 404 | BDD `resilience` | Integration |
 | | A `Retry-After` above the limit (60 s) ends the request at once; at the limit it is waited; no limit waits any time; the limit survives retries | `retry_after_cap`, BDD `resilience` | Integration |
 | | Retry, backoff, jitter and per-dataset overrides configured; warning above 10 retries | `retry_config`, `eds_client` | Component |
 | | Request line (status, duration), error body preview, wait before a retry and its reason, warning when retries are exhausted | `logging` | Integration |
-| | Refused connection, request timeout | `negative_scenarios`, `eds_client` | Component |
+| | Request timeout passed on, read timeout surfaces as `ConnectionError` ("Read timed out"), session closed by `close()` and by `with` | `eds_client` | Component, Integration |
 | | Negative `limit` rejected before sending | `boundary_values`, `properties` | Component |
 | | Real JSON round-trip over HTTP | `dataset_contract` | Integration |
 | Test infrastructure | Allure environment properties, including the note that explains empty Categories widgets | `allure_environment` | Component |
-| | Fixtures load from any working directory | `support_paths` | Component |
 | | Allure failure categories assign the expected category to typical failure messages | `allure_categories` | Component |
-| | The empty-widget note is added to a generated report once (the script's browser behaviour was checked by hand, not by a test) | `inject_report_notes` | Component |
+| | Not tested on purpose: loading of mocks from another working directory, the injection of the empty-widget note into a report (checked by hand; the tests of these helpers were removed on 2026-10-30 as low value) | none | none |
 | Non-functional | Latency and error rate, 4 endpoints, 2 users, 30 s | `performance/` (JMeter, not pytest) | Non-functional |
-| | Style, bugs, types | `ruff`, `mypy --strict` | Static |
+| | Style, bugs, pytest style, types | `ruff` (with the `PT` rules), `mypy --strict` | Static |
+| Security | Known vulnerabilities in the pinned dependencies and secrets in tracked files | `pip-audit`, `detect-secrets` (`Security` workflow) | Static |
 
 The Allure report groups tests by the same areas (epic and feature labels), which is the project's form of traceability:
 there is no formal requirements document, so features rather than requirement IDs are traced.
@@ -101,7 +117,9 @@ there is no formal requirements document, so features rather than requirement ID
 | Decision table | the four optional dataset parameters |
 | Property-based testing | filters, parameters in the URL, negative `limit`, news URLs |
 | Executable specification (Gherkin) | query parameters, retry and give-up behaviour, News parameters (`tests/bdd/features/`) |
-| Error guessing | unknown column/path/category, invalid date, offset far beyond data |
+| Error guessing | unknown column/path/category, invalid date, offset far beyond data, a body that is not JSON |
+| Contract testing | JSON Schemas of the responses; drift of the published OpenAPI specification |
+| Random order | the whole offline suite runs in a different order on every run (`pytest-randomly`) |
 | State-based | retry sequences against the scripted server (failures, then success) |
 
 ## 5. Coverage of environments
@@ -111,10 +129,17 @@ there is no formal requirements document, so features rather than requirement ID
 | Python | 3.12 | other versions (no matrix) |
 | Operating system | Linux (CI), Windows (local) | macOS |
 | `urllib3` | 2.0.2 (verified minimum), 2.8.0 (CI) | versions below 2.0 (unsupported: no `backoff_jitter`) |
+| `requests`, `pytest` | 2.33.0 and 9.0.3 (pinned; the earlier 2.32.3 and 8.3.3 had known vulnerabilities) | other versions |
 
 ## 6. Known gaps
 
 - Client does not expose other EDS query parameters (for example `start`, `end`, `columns`, `timezone`), so they are untested.
+  The same goes for the operations of the published specification that it does not call: `/dataset/{name}/download`,
+  `/meta/Dataset` (list and search), `/meta/Group`, `/meta/Organization`, `/meta/Tag` and `/meta/TagGroup`.
+- The published OpenAPI specification declares only status 200 and has no response schema for `/dataset/{datasetName}`, so it
+  cannot serve as an oracle for error statuses or for the main response (the JSON Schemas of this repository do that), and
+  fuzzing it (Schemathesis) is not done: it would also send unbounded `limit` and `offset` values to a public API.
+  The drift test only checks that what the client uses is still documented.
 - Only `CO2Emis` and `DayAheadPrices` are tested; other datasets are not.
 - Data values are not compared with an authoritative source. Only shape, types, order and error messages are checked.
 - The EDS guide documents a 429 only by its message in the body, not a `Retry-After` header; the client relies on the header the API has been observed to send (see the [test strategy](test-strategy.md#2-scope)).
@@ -131,3 +156,7 @@ there is no formal requirements document, so features rather than requirement ID
 - The JavaScript that explains empty Categories widgets has no automated test; it was verified against real Allure reports in headless Chrome for five situations (green first build, green with history, a failing run, green after a failing run, only a skipped test) in the three places it writes a note (Overview widget, Categories page, Categories trend): the note appears when nothing failed, broke or was skipped and disappears as soon as a run has failures; the trend note stays hidden while a failure is in the recorded history.
 - Diagnostics log only the start (300 characters) of an error response body and never the body of a successful response.
 - The mutation catalogue is curated, not generated: it covers the behaviours listed in `scripts/mutation_check.py`, not every line of the client.
+  About 40 offline tests kill none of its mutations. They protect log lines, the Allure tooling, the agreement of mocks with
+  schemas and edge cases of the models; mutations for the behaviours worth protecting are still to be added.
+- The `Mutation checks` workflow has not run in Actions yet (first scheduled run: Monday 2026-11-02 04:00 UTC); the catalogue
+  was run locally.
