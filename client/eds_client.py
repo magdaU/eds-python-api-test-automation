@@ -6,7 +6,7 @@ from typing import Any, Self
 from urllib.parse import quote
 
 import requests
-from requests.adapters import HTTPAdapter
+from requests.adapters import BaseAdapter, HTTPAdapter
 
 from client.retry import LoggingRetry, RetryAfterTooLong, RetryAfterTooLongError
 
@@ -36,6 +36,26 @@ class RetryConfig:
 DEFAULT_RETRY = RetryConfig()
 
 
+class _Session(requests.Session):
+    """A `Session` that gives a dataset its own retry adapter, and only that dataset.
+
+    `Session.mount` matches a URL by prefix, so an adapter mounted for `/dataset/CO2Emis` would also serve
+    `/dataset/CO2EmisProg`. Here the URL has to be the dataset's own, with or without a query string.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.dataset_adapters: dict[str, HTTPAdapter] = {}
+
+    def get_adapter(self, url: str) -> BaseAdapter:
+        return self.dataset_adapters.get(url.split("?", 1)[0]) or super().get_adapter(url)
+
+    def close(self) -> None:
+        super().close()
+        for adapter in self.dataset_adapters.values():
+            adapter.close()
+
+
 class EDSApiClient:
     """Thin wrapper around the Energi Data Service dataset API.
 
@@ -56,12 +76,12 @@ class EDSApiClient:
     ):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
-        self.session = requests.Session()
+        self.session = _Session()
 
         self._mount_retry("https://", retry)
         self._mount_retry("http://", retry)
         for dataset, override in (dataset_overrides or {}).items():
-            self._mount_retry(self.dataset_url(dataset), override)
+            self.session.dataset_adapters[self.dataset_url(dataset)] = self._build_adapter(override)
 
     def _mount_retry(self, url_prefix: str, config: RetryConfig) -> None:
         self.session.mount(url_prefix, self._build_adapter(config))

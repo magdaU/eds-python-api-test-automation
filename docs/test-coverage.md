@@ -1,6 +1,6 @@
 # Test coverage
 
-What the tests cover and what they do not. Measured on commit `2acf689` (2026-10-30), Python 3.12. Related:
+What the tests cover and what they do not. Measured on `main` plus the per-dataset retry override fix (2026-10-30), Python 3.12. Related:
 [test strategy](test-strategy.md) · [test cases](test-cases.md) · [test results](test-results.md) · [test report](test-report.md).
 
 ## 1. Code coverage
@@ -9,9 +9,9 @@ Command: `pytest -m "not live" --cov` (branch measurement is switched on in `pyp
 
 | Package | Statements | Missed | Branches | Missed branches | Coverage |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `client/` | 172 | 0 | 24 | 0 | 100% |
+| `client/` | 182 | 0 | 26 | 0 | 100% |
 | `models/` | 15 | 0 | 0 | 0 | 100% |
-| **Total** | **187** | **0** | **24** | **0** | **100%** |
+| **Total** | **197** | **0** | **26** | **0** | **100%** |
 
 - Scope is `client/` and `models/` (the code under test). Test helpers and scripts are not measured.
 - Only offline tests are needed to reach 100%; live tests add confidence in the real API, not coverage.
@@ -23,9 +23,9 @@ Command: `pytest -m "not live" --cov` (branch measurement is switched on in `pyp
 Coverage shows which lines ran, not whether a test would fail if the line were wrong. An earlier version of the suite
 had 100% coverage and still contained tests that only repeated what the mock returned. Therefore the suite is also
 checked by mutations: one line of the client is changed or removed and the offline suite is run. Since 2026-10-29 a catalogue of
-43 such mutations (client, models and schemas) runs automatically (`scripts/mutation_check.py`, weekly in the `Mutation checks` workflow); the table below is
+45 such mutations (client, models and schemas) runs automatically (`scripts/mutation_check.py`, weekly in the `Mutation checks` workflow); the table below is
 the history of the first checks, done by hand. On 2026-10-30 the catalogue was run against the suite as of `main` after three
-changes (typed records, a closable session, invalid responses): all 43 mutations were killed.
+changes (typed records, a closable session, invalid responses): all 43 mutations were killed (45 after the per-dataset override fix, which added two and replaced one).
 
 | Mutation of the client | Failing tests | Detected |
 | --- | ---: | :---: |
@@ -70,8 +70,8 @@ tooling, mocks against schemas, edge cases of the models) and stay until a mutat
 
 | Area | Behaviour | Covered by (module `tests/test_*.py`) | Level |
 | --- | --- | --- | --- |
-| Dataset query | `limit` incl. 0, 1, 2, 100000 and negative | `boundary_values`, `parameter_combinations`, `properties` | Component |
-| | `offset` incl. 0, 1, 100000, negative; paging | `boundary_values`, `live_smoke`, `live_edge_cases` | Component, System |
+| Dataset query | `limit`: negative (rejected before sending), 0 and 1 | `boundary_values`, `parameter_combinations`, `properties` | Component |
+| | `offset`: negative (the server's 400 is passed through), 0; paging | `boundary_values`, `live_smoke`, `live_edge_cases` | Component, System |
 | | `sort` expressions, case preserved | `parameter_combinations`, `properties`, `live_smoke`, `live_edge_cases` | Component, System |
 | | `filter` encoding (non-ASCII, quotes, lists, empty, numbers) | `filter_encoding`, `parameter_combinations`, `properties`, `live_edge_cases` | Component, System |
 | | `filter` returns only the requested values (one value; two values combined with OR) | `live_smoke` | System |
@@ -93,7 +93,7 @@ tooling, mocks against schemas, edge cases of the models) and stay until a mutat
 | Client robustness | Retry on 429 then success; exhaustion (503, News endpoints); zero retries; refused connection | `retry_behavior` | Integration |
 | | No retry on 400, 401 and 404 | BDD `resilience` | Integration |
 | | A `Retry-After` above the limit (60 s) ends the request at once; at the limit it is waited; no limit waits any time; the limit survives retries | `retry_after_cap`, BDD `resilience` | Integration |
-| | Retry, backoff, jitter and per-dataset overrides configured; warning above 10 retries | `retry_config`, `eds_client` | Component |
+| | Retry, backoff, jitter and per-dataset overrides configured (an override serves its dataset only, also with a query string, and its adapter is closed with the client); warning above 10 retries | `retry_config`, `eds_client` | Component |
 | | Request line (status, duration), error body preview, wait before a retry and its reason, warning when retries are exhausted | `logging` | Integration |
 | | Request timeout passed on, read timeout surfaces as `ConnectionError` ("Read timed out"), session closed by `close()` and by `with` | `eds_client` | Component, Integration |
 | | Negative `limit` rejected before sending | `boundary_values`, `properties` | Component |
@@ -141,6 +141,8 @@ there is no formal requirements document, so features rather than requirement ID
   fuzzing it (Schemathesis) is not done: it would also send unbounded `limit` and `offset` values to a public API.
   The drift test only checks that what the client uses is still documented.
 - Only `CO2Emis` and `DayAheadPrices` are tested; other datasets are not.
+- Boundary values are tested at the lower bound only (`limit` 0 and 1, `offset` 0, and a negative value of each). There is no case for
+  the upper bound (`int32` in the specification) and none for `offset=1`.
 - Data values are not compared with an authoritative source. Only shape, types, order and error messages are checked.
 - The EDS guide documents a 429 only by its message in the body, not a `Retry-After` header; the client relies on the header the API has been observed to send (see the [test strategy](test-strategy.md#2-scope)).
 - A live 429 is never provoked on purpose, so rate-limit handling is proven only against the local server. `Retry-After`

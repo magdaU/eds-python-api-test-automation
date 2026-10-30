@@ -102,9 +102,11 @@ MUTATIONS = [
     Mutation(
         "dataset-override-applies-to-all",
         EDS_CLIENT,
-        "self._mount_retry(self.dataset_url(dataset), override)",
-        'self._mount_retry("https://", override)',
+        'return self.dataset_adapters.get(url.split("?", 1)[0]) or super().get_adapter(url)',
+        "return next(iter(self.dataset_adapters.values()), None) or super().get_adapter(url)",
     ),
+    Mutation("dataset-override-ignores-query", EDS_CLIENT, 'url.split("?", 1)[0]', "url"),
+    Mutation("dataset-override-adapter-not-closed", EDS_CLIENT, "adapter.close()", "pass"),
     Mutation("backoff-jitter-ignored", EDS_CLIENT, "backoff_jitter=config.backoff_jitter,", "backoff_jitter=0.0,"),
     Mutation("max-retries-ignored", EDS_CLIENT, "total=config.max_retries,", "total=3,"),
     Mutation("model-co2-area-any-text", "models/co2emis.py", 'PriceArea: Literal["DK1", "DK2"]', "PriceArea: str"),

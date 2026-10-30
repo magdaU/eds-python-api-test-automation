@@ -75,3 +75,47 @@ def test_givenDatasetOverrideWithExcessiveMaxRetries_whenCreatingClient_thenWarn
 
     # assert
     assert any(record.levelname == "WARNING" for record in caplog.records)
+
+
+def test_givenDatasetOverride_whenResolvingDatasetWithLongerName_thenOverrideDoesNotApply():
+    # arrange
+    client = EDSApiClient(
+        retry=RetryConfig(max_retries=3),
+        dataset_overrides={"CO2Emis": RetryConfig(max_retries=5)},
+    )
+
+    # act
+    overridden = _retry_of(client, "CO2Emis")
+    longer_name = _retry_of(client, "CO2EmisProg")
+
+    # assert
+    assert overridden.total == 5
+    assert longer_name.total == 3
+
+
+def test_givenDatasetOverride_whenRequestHasQueryString_thenOverrideStillApplies():
+    # arrange
+    client = EDSApiClient(
+        retry=RetryConfig(max_retries=3),
+        dataset_overrides={"DayAheadPrices": RetryConfig(max_retries=5)},
+    )
+
+    # act
+    retry = client.session.get_adapter(client.dataset_url("DayAheadPrices") + "?limit=5&offset=10").max_retries
+
+    # assert
+    assert retry.total == 5
+
+
+def test_givenDatasetOverride_whenClosingClient_thenItsAdapterIsClosed(monkeypatch):
+    # arrange
+    client = EDSApiClient(dataset_overrides={"DayAheadPrices": RetryConfig(max_retries=5)})
+    adapter = client.session.dataset_adapters[client.dataset_url("DayAheadPrices")]
+    closed = []
+    monkeypatch.setattr(adapter, "close", lambda: closed.append(True))
+
+    # act
+    client.close()
+
+    # assert
+    assert closed == [True]
