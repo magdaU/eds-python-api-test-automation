@@ -9,6 +9,7 @@ document says what is tested, when, by what, and when testing is done.
 | --- | --- |
 | API client: `client/` (`EDSApiClient`, `DatasetApi`, `NewsApi`, parsers) and `models/` | `main` |
 | EDS API as consumed by the client: datasets `CO2Emis`, `DayAheadPrices`, endpoints `/News*` | live, observed behaviour |
+| The public OpenAPI specification of the EDS API (`/swagger/public/swagger.json`), as far as the client relies on it | live, fetched once per live run |
 | Test framework: fixtures, helpers, CI workflows, Allure reporting | `main` |
 
 ## 2. Features to be tested
@@ -17,10 +18,11 @@ document says what is tested, when, by what, and when testing is done.
 | --- | --- |
 | Dataset queries | `limit`, `offset`, `sort`, `filter` (single, combined, edge and invalid values) |
 | News | `/News`, `/News/actual`, `/News/calendar`, `/News/archived`: paths, parameters, 400/204/404 behaviour, calendar vs archive consistency |
-| Response contract | JSON Schema and Pydantic model validation of dataset and news responses |
-| Client robustness | Retry with backoff on 429/5xx, no retry on 4xx, retry exhaustion, per-dataset overrides, timeout, refused connection, warning log on exhaustion |
-| Test infrastructure | Allure environment widget, fixture paths, CI publish guard |
-| Quality attributes | Low-load latency and error rate (JMeter), static analysis, statement and branch coverage |
+| Response contract | JSON Schema and Pydantic model validation of dataset and news responses; typed records (`DatasetApi.records()`); a body that is not the expected JSON raises `InvalidResponseError` |
+| API specification | The operations and parameters the client uses are still documented in the public OpenAPI specification (drift check) |
+| Client robustness | Retry with backoff on 429/5xx, no retry on 4xx (400, 401, 404), retry exhaustion, per-dataset overrides, timeout (a read timeout surfaces as `ConnectionError`), refused connection, warning log on exhaustion, query arguments keyword-only, session closed by `close()` or `with` |
+| Test infrastructure | Allure environment widget and failure categories, severity labels, CI publish guard |
+| Quality attributes | Low-load latency and error rate (JMeter), static analysis, statement and branch coverage, known vulnerabilities in dependencies and committed secrets (`Security` workflow) |
 
 **Not tested:** see "Out of scope" in the [test strategy](test-strategy.md#2-scope) and "Known gaps" in the
 [test coverage](test-coverage.md#6-known-gaps).
@@ -35,11 +37,12 @@ catalogued in [test-cases.md](test-cases.md).
 
 | When | What runs |
 | --- | --- |
-| Every pull request | Offline tests, `ruff`, `mypy`, coverage gate |
-| Every push to `main` | Full suite incl. live tests, `ruff`, `mypy`, coverage gate, Allure report published |
-| Daily 02:00 UTC | Live tests only |
+| Every pull request | Offline tests (in random order), `ruff`, `mypy`, coverage gate, `Security` (dependency audit and secret scan) |
+| Every push to `main` | Full suite incl. live tests (not the data-quality checks), `ruff`, `mypy`, coverage gate, `Security`, Allure report published |
+| Daily, cron 02:00 UTC | Live tests only, including the data-quality checks. GitHub starts scheduled runs late: the last seven began between 06:57 and 08:14 UTC |
 | Monday 03:00 UTC | JMeter performance plan |
-| Monday 04:00 UTC | Mutation checks (37 deliberate breakages of the client, models and schemas, offline) |
+| Monday 04:00 UTC | Mutation checks (43 deliberate breakages of the client, models and schemas, offline); the report is in the job summary |
+| Monday 05:00 UTC | `Security`: advisories published after the last change |
 | After a defect fix | Regression test added in the fix, then the normal triggers |
 
 ## 5. Pass and fail criteria
@@ -64,6 +67,7 @@ Exit criteria for merging and for a healthy `main` are listed in the [test strat
 | Test results | [test-results.md](test-results.md) | `scripts/generate_test_results.py` |
 | Live report with history | [Allure report](https://magdau.github.io/eds-python-api-test-automation/) | Published by CI on every push to `main` |
 | Performance report | `jmeter-report` artifact of the `Performance` workflow | CI |
+| Mutation report | Job summary and `mutation-report` artifact of the `Mutation checks` workflow | CI |
 
 ## 8. Environment
 
