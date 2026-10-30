@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 from pydantic import ValidationError
 
-from client.parsers import parse_records
+from client.parsers import InvalidResponseError, parse_records
 from models.co2emis import CO2EmisRecord
 from models.dayaheadprices import DayAheadPricesRecord
 from tests.support.allure_labels import labels
@@ -88,12 +88,14 @@ def test_givenUnknownExtraField_whenParsingRecords_thenItIsIgnored():
     assert not hasattr(records[0], "NewField")
 
 
-def test_givenResponseWithoutRecordsKey_whenParsingRecords_thenKeyErrorIsRaised():
-    # arrange
-    response_json = {"total": 0}
-
+@pytest.mark.parametrize(
+    "response_json",
+    [{"total": 0}, {"records": {"not": "a list"}}, ["not", "an", "object"]],
+    ids=["missing-records", "records-not-a-list", "body-not-an-object"],
+)
+def test_givenUnexpectedBody_whenParsingRecords_thenInvalidResponseErrorIsRaised(response_json):
     # act / assert
-    with pytest.raises(KeyError):
+    with pytest.raises(InvalidResponseError, match="list under 'records'"):
         parse_records(response_json, CO2EmisRecord)
 
 

@@ -36,6 +36,7 @@ EDS_CLIENT = "client/eds_client.py"
 DATASET_API = "client/dataset_api.py"
 RETRY = "client/retry.py"
 NEWS_API = "client/news_api.py"
+PARSERS = "client/parsers.py"
 
 
 @dataclass(frozen=True)
@@ -128,8 +129,8 @@ MUTATIONS = [
     Mutation(
         "records-not-parsed",
         DATASET_API,
-        "return parse_records(response.json(), self.model)",
-        'return response.json()["records"]',
+        "return parse_records(body, self.model)",
+        'return body["records"]',
     ),
     Mutation("records-error-status-ignored", DATASET_API, "response.raise_for_status()", "pass"),
     Mutation(
@@ -139,6 +140,19 @@ MUTATIONS = [
         "response = self.get()",
     ),
     Mutation("records-model-check-removed", DATASET_API, "if self.model is None:", "if False:"),
+    Mutation(
+        "records-shape-unchecked",
+        PARSERS,
+        'if not isinstance(response_json, dict) or not isinstance(response_json.get("records"), list):',
+        "if False:",
+    ),
+    Mutation(
+        "invalid-json-unwrapped",
+        DATASET_API,
+        'raise InvalidResponseError(f"{self.dataset} did not return JSON: {error}") from error',
+        "raise",
+    ),
+    Mutation("session-not-closed", EDS_CLIENT, "self.session.close()", "pass"),
 ]
 
 

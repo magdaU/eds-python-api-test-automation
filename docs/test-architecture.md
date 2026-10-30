@@ -38,7 +38,7 @@ The `Literal` list is a choice: a new area in the data fails parsing on purpose,
 | The metadata test checks the title and update interval, not only `active` | EDS discontinued `Elspotprices` after 2025-09-30 but its `active` flag stayed true; the tests were then moved to `DayAheadPrices` | `test_live_smoke.py` |
 | Test names are `given/when/then` and every body has `# arrange`, `# act`, `# assert` | A test name reads as a test case, so `test-cases.md` can be generated from them | `scripts/generate_test_cases.py` |
 | BDD only for a small set of behaviours | They read well as a specification; a scenario layer on every test would add indirection | `test-strategy.md` section 4 |
-| Mutation checks are a curated catalogue run weekly, not a generated mutation tool | A one-line change to the client must make a test fail. A tool that generates every mutant would run for hours on the retry tests and needs Linux; 40 chosen changes take about 6 minutes and run anywhere | `scripts/mutation_check.py`, `mutation.yml` |
+| Mutation checks are a curated catalogue run weekly, not a generated mutation tool | A one-line change to the client must make a test fail. A tool that generates every mutant would run for hours on the retry tests and needs Linux; 43 chosen changes take about 7 minutes and run anywhere | `scripts/mutation_check.py`, `mutation.yml` |
 | Performance thresholds are not enforced yet | There is no baseline: the weekly run now prints p50, p95 and p99, and limits are set after a few runs | `performance.yml`, section 4 below |
 
 ## 3. Risk to test map

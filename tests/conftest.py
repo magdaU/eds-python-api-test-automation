@@ -30,7 +30,8 @@ def scripted_server():
 
 @pytest.fixture(scope="session")
 def eds_client():
-    return EDSApiClient()
+    with EDSApiClient() as client:
+        yield client
 
 
 @pytest.fixture
