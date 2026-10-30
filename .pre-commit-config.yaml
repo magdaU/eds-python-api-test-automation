@@ -1,0 +1,55 @@
+# Local checks before a commit or push, the same tools and versions as CI (requirements-dev.txt), so nothing is downloaded
+# twice and a hook cannot drift from the pipeline. Set up once with:
+#   pip install -r requirements-dev.txt
+#   pre-commit install --install-hooks --hook-type pre-commit --hook-type commit-msg --hook-type pre-push
+default_install_hook_types: [pre-commit, commit-msg, pre-push]
+
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: ruff check
+        language: system
+        types: [python]
+
+      - id: ruff-format
+        name: ruff format --check
+        entry: ruff format --check
+        language: system
+        types: [python]
+
+      - id: mypy
+        name: mypy (strict, client and models)
+        entry: mypy
+        language: system
+        files: ^(client|models)/.*\.py$
+        pass_filenames: false
+
+      # A deliberate fake value is allowed with a `# pragma: allowlist secret` comment, as in the Security workflow.
+      - id: detect-secrets
+        name: detect-secrets
+        entry: detect-secrets-hook
+        language: system
+        exclude: ^docs/.*\.png$
+
+      # These two files are notes of the author, kept out of the repository on purpose.
+      - id: private-notes
+        name: private notes must not be committed
+        entry: LESSONS_LEARNED.md and CODE_REVIEW_NOTES.md stay local
+        language: fail
+        files: ^(LESSONS_LEARNED|CODE_REVIEW_NOTES)\.md$
+
+      - id: no-ai-attribution
+        name: no AI attribution in the commit message
+        entry: (?i)(co-authored-by:.*claude|generated with \[?claude)
+        language: pygrep
+        stages: [commit-msg]
+
+      - id: offline-tests
+        name: offline tests
+        entry: pytest -m "not live" -q
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]

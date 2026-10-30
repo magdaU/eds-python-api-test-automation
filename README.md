@@ -36,7 +36,7 @@ Regenerate the generated ones with `python scripts/generate_test_cases.py` and `
 
 ## 🛠️ Technologies
 
-Python · pytest · pytest-bdd (Gherkin) · hypothesis · pytest-rerunfailures · pytest-randomly · ruff · mypy · pytest-cov · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · JMeter · Git · GitHub Actions · GitHub Pages
+Python · pytest · pytest-bdd (Gherkin) · hypothesis · pytest-rerunfailures · pytest-randomly · ruff · mypy · pytest-cov · pre-commit · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · JMeter · Git · GitHub Actions · GitHub Pages
 
 ## 📁 Project Structure
 
@@ -98,7 +98,8 @@ eds-python-api-test-automation/
 │
 ├── Dockerfile
 ├── requirements.txt
-├── requirements-dev.txt   # ruff, mypy, pytest-cov, type stubs
+├── requirements-dev.txt   # ruff, mypy, pytest-cov, type stubs, pre-commit, detect-secrets
+├── .pre-commit-config.yaml # local hooks: ruff, mypy, detect-secrets, offline tests before a push
 ├── pyproject.toml         # ruff, mypy and coverage configuration
 ├── pytest.ini
 ├── README.md
@@ -186,6 +187,18 @@ ruff check .                         # lint, import order, bug patterns, complex
 mypy                                 # type check (client, models)
 pytest -m "not live" --cov           # offline tests; fails under 90% coverage
 ```
+
+The same tools run locally before each commit, with [pre-commit](https://pre-commit.com), using the versions pinned in `requirements-dev.txt`.
+Set it up once:
+
+```bash
+pip install -r requirements-dev.txt
+pre-commit install --install-hooks --hook-type pre-commit --hook-type commit-msg --hook-type pre-push
+```
+
+A commit runs `ruff check`, `ruff format --check`, `mypy` and `detect-secrets`; a push runs the offline tests. A commit message with an AI
+co-author line, and a commit of the author's private notes (`LESSONS_LEARNED.md`, `CODE_REVIEW_NOTES.md`), are refused.
+To run every hook on every file: `pre-commit run --all-files`.
 
 For an Allure HTML report:
 
