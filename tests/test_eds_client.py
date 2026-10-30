@@ -40,3 +40,32 @@ def test_givenServerSlowerThanTheTimeout_whenGettingDataset_thenConnectionErrorN
     # act / assert
     with pytest.raises(requests.exceptions.ConnectionError, match="Read timed out"):
         DatasetApi(client, "CO2Emis").get()
+
+
+def test_whenUsingClientAsContextManager_thenSessionIsClosedOnExit(monkeypatch):
+    # arrange
+    client = EDSApiClient()
+    closed = []
+    monkeypatch.setattr(client.session, "close", lambda: closed.append(True))
+
+    # act
+    with client:
+        pass
+
+    # assert
+    assert closed == [True]
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        lambda api: api.client.get_dataset("CO2Emis", 5),
+        lambda api: api.get(5),
+        lambda api: api.records(5),
+    ],
+    ids=["client-get-dataset", "api-get", "api-records"],
+)
+def test_givenPositionalQueryArgument_whenGettingDataset_thenTypeErrorIsRaised(co2_api, call):
+    # act / assert
+    with pytest.raises(TypeError, match="positional"):
+        call(co2_api)

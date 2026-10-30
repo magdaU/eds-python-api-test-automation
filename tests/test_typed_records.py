@@ -5,6 +5,7 @@ import requests
 from pydantic import ValidationError
 
 from client.dataset_api import DatasetApi
+from client.parsers import InvalidResponseError
 from models.co2emis import CO2EmisRecord
 from tests.support.allure_labels import labels
 from tests.support.mocks import records_response, sent_query
@@ -67,6 +68,15 @@ def test_givenErrorStatus_whenGettingRecords_thenHttpErrorIsRaised(co2_api, requ
     # act / assert
     with pytest.raises(requests.exceptions.HTTPError):
         co2_api.records(offset=-1)
+
+
+def test_givenBodyThatIsNotJson_whenGettingRecords_thenInvalidResponseErrorIsRaised(co2_api, requests_mock):
+    # arrange
+    requests_mock.get(co2_api.url, text="<html>maintenance</html>")
+
+    # act / assert
+    with pytest.raises(InvalidResponseError, match="did not return JSON"):
+        co2_api.records()
 
 
 def test_givenUnknownPriceArea_whenGettingRecords_thenValidationErrorIsRaised(co2_api, requests_mock):

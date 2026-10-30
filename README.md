@@ -107,7 +107,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-144 tests (111 offline, 33 live) across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
+151 tests (118 offline, 33 live) across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure

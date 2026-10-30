@@ -2,7 +2,7 @@ import json
 import logging
 import time
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Self
 from urllib.parse import quote
 
 import requests
@@ -90,16 +90,28 @@ class EDSApiClient:
     def _encode_filters(filters: dict[str, Any]) -> str:
         return json.dumps(filters, separators=(",", ":"))
 
+    def close(self) -> None:
+        """Release the pooled connections of the session. The client is also a context manager."""
+        self.session.close()
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *exc_info: object) -> None:
+        self.close()
+
     def get_dataset(
         self,
         dataset: str,
+        *,
         limit: int | None = None,
-        filters: dict[str, Any] | None = None,
         offset: int | None = None,
         sort: str | None = None,
+        filters: dict[str, Any] | None = None,
     ) -> requests.Response:
         """`limit=0` returns every record; a negative `limit` is rejected because the API
-        treats it the same way (it returned a 2-million-record dataset in one response)."""
+        treats it the same way (it returned a 2-million-record dataset in one response).
+        The query arguments are keyword-only, in the same order as `DatasetApi.get`."""
         if limit is not None and limit < 0:
             raise ValueError(f"limit must not be negative, got {limit}")
         params: dict[str, Any] = {}
