@@ -63,7 +63,7 @@ eds-python-api-test-automation/
 │   ├── test_dataset_contract.py      # CO2Emis + DayAheadPrices: sample vs schema, request URL/parameters, real HTTP round-trip
 │   ├── test_news_api.py              # News API: endpoint paths, parameters, sample vs schema (mocked)
 │   ├── test_live_smoke.py            # bounded live smoke tests against the real API
-│   ├── test_eds_client.py            # default/custom retry and timeout configuration
+│   ├── test_eds_client.py            # timeout (also a read timeout), closable session, keyword-only query arguments
 │   ├── test_boundary_values.py       # limit/offset boundary values
 │   ├── test_parameter_combinations.py # decision table of parameter combinations
 │   ├── test_filter_encoding.py       # filter encoding (non-ASCII, quotes, lists)
@@ -78,7 +78,9 @@ eds-python-api-test-automation/
 │   ├── test_logging.py               # warning logged when retries are exhausted
 │   ├── test_retry_after_cap.py       # Retry-After above the limit ends the request at once
 │   ├── test_allure_categories.py     # Allure failure categories map typical failures correctly
-│   └── test_retry_config.py          # per-dataset retry/backoff/jitter tuning
+│   ├── test_retry_config.py          # per-dataset retry/backoff/jitter tuning; an override serves its dataset only
+│   ├── test_typed_records.py         # DatasetApi.records(): typed records, query passed on, error and invalid-body handling
+│   └── test_openapi_drift.py         # live: the client's operations and parameters are still in the published OpenAPI specification
 │
 ├── .github/workflows/
 │   ├── tests.yml         # CI: tests, Allure report, GitHub Pages publish
@@ -107,9 +109,9 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-153 tests (119 offline, 34 live) across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
+156 tests (122 offline, 34 live) across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API. The [Allure report](https://magdau.github.io/eds-python-api-test-automation/)
-shows 141 of them: the 12 data-quality checks run only in the nightly `Live nightly` job, not on a push to `main`. They cover:
+shows 144 of them: the 12 data-quality checks run only in the nightly `Live nightly` job, not on a push to `main`. They cover:
 
 * HTTP status code, JSON content-type, response structure
 * `limit`, `filter`, `offset` (pagination), `sort` parameters

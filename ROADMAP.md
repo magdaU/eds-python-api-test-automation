@@ -57,10 +57,14 @@ All plans favor mocked tests (`requests-mock`) for bulk/edge-case coverage, with
 - At most 1 new live call added.
 
 **Steps:**
-1. Add `tests/test_negative_scenarios.py`.
+1. Add `tests/test_negative_scenarios.py`. *(Done, later folded into `tests/test_retry_behavior.py`; see the note below step 4.)*
 2. Use `requests-mock` to stub: 400 for invalid dataset, 404 for unknown path, repeated 429/500 responses to prove retry count via mock's `call_count`, and a `ConnectTimeout` exception.
 3. Assert that 4xx responses (e.g. 400) are *not* retried (mock `call_count == 1`) since only `RETRYABLE_STATUS_CODES` trigger retries.
 4. Add one bounded live test: call `get_dataset("NotARealDataset")` against the real API and assert a non-200 status.
+
+*Note after the fact:* `requests-mock` replaces the transport, so the client's retry adapter never runs against a mocked response
+and step 2 cannot prove the retry count. The retry and refused-connection tests therefore run against a local scripted HTTP
+server (`tests/support/scripted_server.py`, `tests/test_retry_behavior.py`); the mocked part covers only statuses without retries.
 
 **API-load note:** All error/retry-exhaustion paths are mocked (no real 429s deliberately triggered); only 1 bounded live call for an invalid-dataset smoke check.
 
