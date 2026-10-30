@@ -40,6 +40,26 @@ def test_givenNewsPath_whenBuildingNewsUrl_thenSlashesAreNormalized(path, expect
 
 
 @pytest.mark.parametrize(
+    ("path", "encoded"),
+    [
+        ("../Dataset", "..%2FDataset"),
+        ("actual?category=HIGH", "actual%3Fcategory%3DHIGH"),
+        ("my path", "my%20path"),
+    ],
+    ids=["path-traversal", "query", "space"],
+)
+def test_givenNewsPathWithSpecialCharacters_whenBuildingNewsUrl_thenItStaysOneEncodedPathSegment(path, encoded):
+    # arrange
+    client = EDSApiClient(base_url=BASE)
+
+    # act
+    url = client.news_url(path)
+
+    # assert
+    assert url == f"{BASE}/News/{encoded}"
+
+
+@pytest.mark.parametrize(
     ("dataset", "encoded"),
     [
         ("../News", "..%2FNews"),

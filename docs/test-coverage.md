@@ -23,9 +23,9 @@ Command: `pytest -m "not live" --cov` (branch measurement is switched on in `pyp
 Coverage shows which lines ran, not whether a test would fail if the line were wrong. An earlier version of the suite
 had 100% coverage and still contained tests that only repeated what the mock returned. Therefore the suite is also
 checked by mutations: one line of the client is changed or removed and the offline suite is run. Since 2026-10-29 a catalogue of
-45 such mutations (client, models and schemas) runs automatically (`scripts/mutation_check.py`, weekly in the `Mutation checks` workflow); the table below is
+46 such mutations (client, models and schemas) runs automatically (`scripts/mutation_check.py`, weekly in the `Mutation checks` workflow); the table below is
 the history of the first checks, done by hand. On 2026-10-30 the catalogue was run against the suite as of `main` after three
-changes (typed records, a closable session, invalid responses): all 43 mutations were killed (45 after the per-dataset override fix, which added two and replaced one).
+changes (typed records, a closable session, invalid responses): all 43 mutations were killed (45 after the per-dataset override fix, which added two and replaced one; 46 after the News path was encoded).
 
 | Mutation of the client | Failing tests | Detected |
 | --- | ---: | :---: |
@@ -76,7 +76,7 @@ tooling, mocks against schemas, edge cases of the models) and stay until a mutat
 | | `filter` encoding (non-ASCII, quotes, lists, empty, numbers) | `filter_encoding`, `parameter_combinations`, `properties`, `live_edge_cases` | Component, System |
 | | `filter` returns only the requested values (one value; two values combined with OR) | `live_smoke` | System |
 | | Combinations of the four parameters | `parameter_combinations` | Component |
-| | Request target and parameters per dataset | `dataset_contract`, `url_building` | Component |
+| | Request target and parameters per dataset; a dataset name or News path with `/`, `?` or `#` stays one encoded path segment | `dataset_contract`, `url_building` | Component |
 | | Query arguments are keyword-only and in one order in `EDSApiClient.get_dataset`, `DatasetApi.get` and `records` | `eds_client` | Component |
 | | Typed records: `records()` returns model objects, passes the query on, raises `HTTPError`, `ValidationError` and a `TypeError` when the API has no model | `typed_records` | Component |
 | News | Endpoint paths, parameters sent with exact case | `news_api` | Component |
@@ -90,7 +90,7 @@ tooling, mocks against schemas, edge cases of the models) and stay until a mutat
 | | A body that is not the expected JSON (not JSON, not an object, no list under `records`) raises `InvalidResponseError` | `models`, `typed_records` | Component |
 | | The operations and parameters the client uses are still documented in the published OpenAPI specification; the detector reports a missing path, a missing parameter and a wrong type | `openapi_drift` | System, Component |
 | | The 100 newest live records of both datasets fit the models (types, timestamps, known price areas) | `live_data_quality` | System |
-| Client robustness | Retry on 429 then success; exhaustion (503, News endpoints); zero retries; refused connection | `retry_behavior` | Integration |
+| Client robustness | Retry on 429 then success; exhaustion (503, News endpoints); zero retries; refused connection; `Retry-After` as seconds and as an HTTP date | `retry_behavior` | Integration |
 | | No retry on 400, 401 and 404 | BDD `resilience` | Integration |
 | | A `Retry-After` above the limit (60 s) ends the request at once; at the limit it is waited; no limit waits any time; the limit survives retries | `retry_after_cap`, BDD `resilience` | Integration |
 | | Retry, backoff, jitter and per-dataset overrides configured (an override serves its dataset only, also with a query string, and its adapter is closed with the client); warning above 10 retries | `retry_config`, `eds_client` | Component |

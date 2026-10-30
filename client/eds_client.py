@@ -157,7 +157,7 @@ class EDSApiClient:
         return f"{self.base_url}/dataset/{_path_segment(dataset)}"
 
     def news_url(self, path: str = "") -> str:
-        return "/".join(part for part in (f"{self.base_url}/News", path.strip("/")) if part)
+        return "/".join(part for part in (f"{self.base_url}/News", _path_segment(path.strip("/"))) if part)
 
     def _get(self, url: str, params: dict[str, Any]) -> requests.Response:
         started = time.perf_counter()
