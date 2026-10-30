@@ -107,7 +107,7 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-151 tests (118 offline, 33 live) across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
+153 tests (119 offline, 34 live) across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API:
 
 * HTTP status code, JSON content-type, response structure
@@ -117,6 +117,8 @@ with a handful of bounded live smoke tests against the real API:
 * News API (`/News`, `/News/actual`, `/News/calendar`, `/News/archived`): endpoint paths, parameters
   sent with their exact case, samples vs. schema; live checks of required/invalid parameters (400),
   empty results (204), unknown path (404), and calendar vs. archive consistency
+* API specification drift (live): every operation and parameter the client uses is still in the public OpenAPI
+  specification (`/swagger/public/swagger.json`), so a change on the EDS side shows up as one clear failure
 * Dataset status from the metadata endpoint (still published and updated; it caught that the earlier `Elspotprices` had been discontinued)
 * Data quality of the newest `CO2Emis` and `DayAheadPrices` records (nightly): freshness, gaps in the series, DK1/DK2, Danish time
   against UTC including daylight saving, plausible values
