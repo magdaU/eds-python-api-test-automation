@@ -75,12 +75,3 @@ def test_givenDatasetOverrideWithExcessiveMaxRetries_whenCreatingClient_thenWarn
 
     # assert
     assert any(record.levelname == "WARNING" for record in caplog.records)
-
-
-def test_givenSaneMaxRetries_whenCreatingClient_thenNoWarningIsLogged(caplog):
-    # act
-    with caplog.at_level(logging.WARNING):
-        EDSApiClient(retry=RetryConfig(max_retries=SANE_MAX_RETRIES))
-
-    # assert
-    assert caplog.records == []

@@ -52,7 +52,7 @@ MUTATIONS = [
         "client-errors-retried",
         EDS_CLIENT,
         "frozenset({429, 500, 502, 503, 504})",
-        "frozenset({400, 404, 429, 500, 502, 503, 504})",
+        "frozenset({400, 401, 404, 429, 500, 502, 503, 504})",
     ),
     Mutation(
         "timeout-not-passed",

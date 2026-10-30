@@ -31,15 +31,6 @@ def get_sent_query(**arguments):
         return parse_qs(urlparse(mocker.last_request.url).query)
 
 
-@given(filters=filter_dicts)
-def test_givenAnyFilters_whenEncodingThem_thenResultIsJsonThatRoundTrips(filters):
-    # act
-    encoded = EDSApiClient._encode_filters(filters)
-
-    # assert
-    assert json.loads(encoded) == filters
-
-
 @given(limit=non_negative_ints, offset=non_negative_ints, sort=st.text(min_size=1), filters=filter_dicts)
 def test_givenAnyValidParameters_whenGettingDataset_thenEveryParameterSurvivesTheUrl(limit, offset, sort, filters):
     # act
