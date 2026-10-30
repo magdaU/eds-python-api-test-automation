@@ -1,2 +1,0 @@
-WARNING  client.retry:retry.py:48 Retrying in 0.0 s, backoff (no response)
-WARNING  urllib3.connectionpool:connectionpool.py:874 Retrying (LoggingRetry(total=0, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError("HTTPConnection(host='127.0.0.1', port=58335): Failed to establish a new connection: [Errno 111] Connection refused")': /dataset/CO2Emis

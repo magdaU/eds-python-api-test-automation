@@ -1,1 +1,0 @@
-INFO     client.eds_client:eds_client.py:165 GET https://api.energidataservice.dk/dataset/DayAheadPrices params={'filter': '{"DayAheadPriceDKK":12}'} -> 200 in 0 ms
