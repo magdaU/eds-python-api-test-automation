@@ -8,9 +8,9 @@ Related: [test strategy](test-strategy.md) · [test plan](test-plan.md) · [test
 
 | Part | Responsibility | Size | Verdict |
 | --- | --- | ---: | --- |
-| `client/eds_client.py`: `EDSApiClient` | Transport: closable session (also a context manager; a dataset override gets its own adapter by exact URL), retry adapters, timeout, URLs, one log line per request; keyword-only query arguments | 196 lines | One reason to change (how the EDS API is called); URL helpers and logging are small enough to stay |
+| `client/eds_client.py`: `EDSApiClient` | Transport: closable session (also a context manager; a dataset override gets its own adapter by exact URL), retry adapters, timeout, URLs, one log line per request; keyword-only query arguments | 205 lines | One reason to change (how the EDS API is called); URL helpers and logging are small enough to stay |
 | `client/eds_client.py`: `RetryConfig` | Retry settings as one immutable value | in the file above | Clear |
-| `client/retry.py`: `LoggingRetry` | Logs each wait and refuses a `Retry-After` above the limit | 49 lines | Clear |
+| `client/retry.py`: `LoggingRetry` | Logs each wait and refuses a `Retry-After` above the limit | 54 lines | Clear |
 | `client/dataset_api.py`, `client/news_api.py` | API objects that know the path of one dataset or the News endpoints and hide the client; `DatasetApi.records()` returns typed records | 58 and 30 lines | Thin by design |
 | `client/parsers.py`, `models/` | Raw JSON to typed Pydantic records (`datetime` timestamps, `Literal` price areas); `InvalidResponseError` for an unexpected body | 11 to 18 lines each | Optional for a caller (see below) |
 | `tests/support/` | Mock loading, schema checks, dataset configuration, scripted local server, OpenAPI drift check, Allure helpers | 9 to 58 lines each | Shared by the tests, not by the client |

@@ -139,6 +139,7 @@ Code quality (same checks as the `Quality` workflow; install dev tools with `pip
 
 ```bash
 ruff check .                         # lint, import order, bug patterns, complexity, pytest style (PT)
+ruff format --check .                # formatting
 mypy                                 # type check (client, models)
 pytest -m "not live" --cov           # offline tests; fails under 90% coverage
 ```
