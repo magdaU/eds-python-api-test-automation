@@ -46,21 +46,21 @@ nightly data-quality run parses the newest live records, so a new price area or 
 
 ## 3. Risk to test map
 
-| Risk | Where it shows | Tests that answer it | Level |
-| --- | --- | --- | --- |
-| The API throttles (429) or fails (5xx) and the client hangs or hammers it | Slow or red CI, possible IP block | `test_retry_behavior`, `test_retry_after_cap`, `test_logging`, BDD `resilience` | Integration |
-| A request parameter is dropped or changed before it reaches the API | Wrong data without an error | `test_boundary_values`, `test_parameter_combinations`, `test_filter_encoding`, `test_properties`, BDD `dataset_queries` | Component |
-| A dangerous input leaves the client (negative `limit`, a dataset name that changes the path) | Millions of records, a different endpoint | `test_boundary_values`, `test_url_building`, `test_properties` | Component |
-| Data stops arriving, has holes, is out of range or mislabels time | Stale or wrong figures without any error | `test_live_data_quality` (nightly), metadata test in `test_live_smoke` | System |
-| The API changes its response (fields, statuses, messages) | Clients break silently | `test_schema_validation` (live), `test_live_edge_cases`, `test_live_smoke`, nightly run | System |
-| EDS stops documenting an operation or parameter the client uses | Specification and client part ways | `test_openapi_drift` | System |
-| An answer is not the JSON the client expects (HTML error page, wrong shape) | A bare `JSONDecodeError` or `KeyError` far from the cause | `test_models`, `test_typed_records` | Component |
-| A pinned dependency has a known vulnerability, or a secret is committed | Vulnerable environment, leaked credential | `Security` workflow | Static |
-| A dataset is discontinued while its tests keep passing | Green tests about frozen data | `test_live_smoke` (metadata test) | System |
-| The client waits forever on a silent server | Hanging CI | `test_eds_client` (timeout), `test_retry_behavior` (refused connection) | Component |
-| The report lies or its history is lost | Wrong decisions | `test_allure_categories`, `test_allure_environment`, CI guard | Component |
-| Latency or error rate degrades under light concurrency | Slow API for users | JMeter plan in `performance/` | Non-functional |
-| Not covered on purpose | | `start`, `end`, `columns`, `timezone`, other datasets, operations the client does not call, data values, TLS | See [test coverage](test-coverage.md#6-known-gaps) |
+| Risk | Tests that answer it | Level |
+| --- | --- | --- |
+| The API throttles (429) or fails (5xx) and the client hangs or hammers it | `test_retry_behavior`, `test_retry_after_cap`, `test_logging`, BDD `resilience` | Integration |
+| A request parameter is dropped or changed before it reaches the API | `test_boundary_values`, `test_parameter_combinations`, `test_filter_encoding`, `test_properties`, BDD `dataset_queries` | Component |
+| A dangerous input leaves the client (negative `limit`, a dataset name that changes the path) | `test_boundary_values`, `test_url_building`, `test_properties` | Component |
+| Data stops arriving, has holes, is out of range or mislabels time | `test_live_data_quality` (nightly), metadata test in `test_live_smoke` | System |
+| The API changes its response (fields, statuses, messages) | `test_schema_validation` (live), `test_live_edge_cases`, `test_live_smoke`, nightly run | System |
+| EDS stops documenting an operation or parameter the client uses | `test_openapi_drift` | System |
+| An answer is not the JSON the client expects (HTML error page, wrong shape) | `test_models`, `test_typed_records` | Component |
+| A pinned dependency has a known vulnerability, or a secret is committed | `Security` workflow | Static |
+| A dataset is discontinued while its tests keep passing | `test_live_smoke` (metadata test) | System |
+| The client waits forever on a silent server | `test_eds_client` (timeout), `test_retry_behavior` (refused connection) | Component |
+| The report lies or its history is lost | `test_allure_categories`, `test_allure_environment`, CI guard | Component |
+| Latency or error rate degrades under light concurrency | JMeter plan in `performance/` | Non-functional |
+| Not covered on purpose | `start`, `end`, `columns`, `timezone`, other datasets, operations the client does not call, data values, TLS | See [test coverage](test-coverage.md#6-known-gaps) |
 
 ## 4. Performance acceptance
 

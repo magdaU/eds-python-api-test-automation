@@ -24,19 +24,17 @@ Terminology follows ISTQB.
 | Low-load performance baseline (JMeter); known vulnerabilities in dependencies and committed secrets | Browsers, UI, other Python versions or operating systems in CI |
 
 **Test basis.** EDS publishes an OpenAPI 3.0.1 specification (`/swagger/public/swagger.json`, 15 GET operations, no
-authentication), but it is thin: it declares only status 200 (no 204, 400, 404 or 429), the main `/dataset/{datasetName}`
-operation has no response schema, and `limit` and `offset` are plain integers without a minimum (`limit=-1` returns the
-whole dataset). The response contract was therefore observed on the live API and recorded in JSON Schemas
-([`schemas/`](../schemas)) and in the [ROADMAP](../ROADMAP.md) (item 12). The **test oracle** is that observed contract,
-the operations and parameters the specification does document, and the documented behaviour of the client.
-A live drift test (`test_openapi_drift`) fails when the specification stops documenting an operation or parameter the client
-uses. Schemathesis is not used: with only status 200 declared every real error response would count as a violation, and
-unbounded `limit` and `offset` values would load the public API heavily.
+authentication), but it is thin: only status 200 is declared, `/dataset/{datasetName}` has no response schema, and `limit`
+and `offset` are plain integers without a minimum (`limit=-1` returns the whole dataset). The response contract was therefore
+observed on the live API and recorded in the JSON Schemas ([`schemas/`](../schemas)) and in the [ROADMAP](../ROADMAP.md)
+(item 12). The **test oracle** is that contract, what the specification does document, and the documented behaviour of the
+client. A live drift test (`test_openapi_drift`) fails when the specification stops documenting an operation or parameter the
+client uses. Schemathesis is not used: with only 200 declared every real error would count as a violation, and unbounded
+`limit` and `offset` would load the public API.
 
-One assumption could change without notice: the [EDS API guide](https://www.energidataservice.dk/guides/api-guides)
-documents HTTP 429 with a message in the body but no `Retry-After` header, which the real API has been observed to send.
-The client and the retry tests rely on it. If EDS stops sending it, the client falls back to its own backoff and the live
-runs show it as slower or throttled, not as a failed assertion.
+One assumption could change without notice: the [EDS API guide](https://www.energidataservice.dk/guides/api-guides) documents
+429 without a `Retry-After` header, which the real API has been observed to send. If it stops, the client falls back to its
+own backoff and the live runs show it as slower or throttled, not as a failed assertion.
 
 ## 3. Test levels
 
@@ -72,73 +70,57 @@ on retries, status handling after retries or real connection errors therefore ru
 
 ### Executable specifications (BDD)
 
-A few behaviours worth reading as a specification are written as Gherkin scenarios in
-[`tests/bdd/features/`](../tests/bdd/features) and run with `pytest-bdd`: which query parameters reach the API, what the
-client does when the API throttles or fails, and how News parameters are sent. The step definitions
-([`tests/bdd/conftest.py`](../tests/bdd/conftest.py)) reuse the API objects, `requests-mock` and the scripted server, so a
-scenario exercises the same code as every other test.
-
-- A scenario states one behaviour in the vocabulary of the API (dataset, limit, retry), not of the code.
-- Scenarios are offline and deterministic. Bulk edge cases, property-based tests and live checks stay in plain pytest.
-- [test-cases.md](test-cases.md) is generated from the feature files, so the specification and the catalogue cannot drift apart.
-
+A few behaviours worth reading as a specification are Gherkin scenarios in [`tests/bdd/features/`](../tests/bdd/features),
+run with `pytest-bdd`: which query parameters reach the API, what the client does when the API throttles or fails, and how
+News parameters are sent. Their steps ([`tests/bdd/conftest.py`](../tests/bdd/conftest.py)) reuse the API objects,
+`requests-mock` and the scripted server, so a scenario exercises the same code as every other test. Scenarios are offline,
+state one behaviour in the vocabulary of the API, and [test-cases.md](test-cases.md) is generated from the feature files.
 BDD is not applied everywhere on purpose: there are no business stakeholders to write scenarios with, and a scenario layer
 on every test would only add indirection.
 
 ## 5. Test design principles
 
-- **Name and structure.** Tests are named `givenX_whenY_thenZ` (or `whenY_thenZ`) and have the sections `# arrange`,
-  `# act`, `# assert`. An empty section is left out (live tests have no arrange), and act and assert are combined as
-  `# act / assert` around `pytest.raises`. Names read as test cases, which is why [test-cases.md](test-cases.md) is generated from them.
-- **Test the system, not the double.** A mocked test asserts what the client *sent* (path, parameters with exact case),
-  not what the mock returns. Tests that only echoed the mock were removed.
-- **Independent and deterministic.** No test depends on another, on order or on time. Only live tests depend on an external system.
-- **Every test earns its place.** A test that repeats another and kills no mutation is removed. A kill matrix (one run per
-  mutation, no `-x`) showed ten such cases on 2026-10-30; the suite went from 154 to 144 tests and still killed every
-  mutation. A test that kills nothing is not removed blindly: either a mutation for the behaviour it protects is missing
-  (then add it) or the test is redundant.
+- **Name and structure.** Tests are named `givenX_whenY_thenZ` (or `whenY_thenZ`) with the sections `# arrange`, `# act`,
+  `# assert` (an empty one is left out; `# act / assert` around `pytest.raises`), so names read as test cases and
+  [test-cases.md](test-cases.md) can be generated from them.
+- **Test the system, not the double.** A mocked test asserts what the client *sent* (path, parameters with exact case), not
+  what the mock returns. Independent and deterministic: no test depends on another, on order or on time; only live tests
+  depend on an external system.
+- **Every test earns its place.** A test that repeats another and kills no mutation is removed; a kill matrix on 2026-10-30
+  found ten such cases (154 to 144 tests, every mutation still killed). A test that kills nothing is not removed blindly:
+  either a mutation for the behaviour it protects is missing (add it) or the test is redundant.
 - **One reason to fail.** Mapping tests assert every attribute and use distinct values per attribute so swapped fields are detected.
-- **Test first where it pays (TDD).** For offline client logic that is cheap to specify, the test is written first and must
-  fail for the right reason: *red* (committed on its own), *green*, *refactor*. The URL-encoding of dataset names is the
-  worked example (commits `Red:`, `Green:`, `Refactor:`; the `Red:` commit fails on purpose, so only the head of a pull
-  request is expected to be green). TDD is not forced on live tests, the Allure script or documentation.
-- **Diagnosable failures.** The client logs one line per request (URL, parameters, status, duration including retry waits,
-  the start of an error body) and the wait before each retry with its reason. Allure attaches these logs, so a failed or
-  slow live test explains itself.
-- **Reports explain themselves.** An empty widget must not read as missing data: the Allure report says why the Categories
-  widgets are empty (`allure/report-notes.js`), but only when its own data confirms it.
+- **Test first where it pays (TDD).** For offline client logic that is cheap to specify, the failing test comes first (*red*,
+  committed on its own, then *green*, then *refactor*); the URL-encoding of dataset names is the worked example (commits
+  `Red:`, `Green:`, `Refactor:`; only the head of a pull request is expected to be green). Not forced on live tests, the Allure
+  script or documentation.
+- **Diagnosable failures.** The client logs one line per request (URL, parameters, status, duration, the start of an error
+  body) and each retry wait with its reason; Allure attaches the log to the test. Reports explain themselves too: an empty
+  widget must not read as missing data (`allure/report-notes.js`).
 - **No vacuous passes.** A test that validates items first proves there are items: the schema helper rejects an empty list,
   and live tests assert that records arrived. A check that can only pass against live data gets an offline test that proves
   it can fail (the OpenAPI drift detector).
-- **Severity.** Each module carries an Allure severity through `labels(epic, feature, severity)`: `critical` for retry,
-  contract, schemas and models; `minor` for test tooling and logs; `normal` otherwise.
+- **Severity.** Each module carries an Allure severity via `labels(epic, feature, severity)`: `critical` for retry, contract,
+  schemas and models; `minor` for test tooling and logs; `normal` otherwise.
 - **Mock-first, live-bounded.** Edge cases and error paths are proven offline. Live tests are smoke checks and a few edge
   cases, each one `limit=1` request with a pause between requests. `limit=-1` is never sent live: the API treats it as
   "no limit" and returns millions of records.
 - **Tolerate only transient failures.** Live tests (all marked flaky) rerun only on network errors (`ConnectionError`,
-  `Timeout`, `RetryError`), never on assertion failures, so a real defect is not hidden.
-- **Path-independent fixtures.** Mocks and schemas are located relative to the code, so tests run from any directory.
+  `Timeout`, `RetryError`), never on assertion failures. Mocks and schemas are located relative to the code, so tests run
+  from any directory.
 
 ## 6. Test data
 
-| Data | Source | Notes |
-| --- | --- | --- |
-| Sample responses | `tests/mocks/*.json`, hand-built | Validated against the JSON Schemas so samples cannot drift from the contract |
-| Generated inputs | `hypothesis` strategies | 100 examples per property |
-| OpenAPI specification | Public EDS API (`/swagger/public/swagger.json`) | Read-only, fetched once per live run, not stored |
-| Live data | Public EDS API | Read-only; asserted only on shape, order and error messages, never on specific values |
+Sample responses (`tests/mocks/*.json`) are hand-built and validated against the JSON Schemas so they cannot drift from the
+contract; `hypothesis` generates 100 examples per property; the OpenAPI specification is fetched read-only once per live
+run. Live data is read-only and asserted only on shape, order and error messages, never on specific values.
 
 ## 7. Environments and tools
 
-| | |
-| --- | --- |
-| Python | 3.12 (local, Docker `python:3.12-slim`, CI on `ubuntu-latest`) |
-| Test framework | `pytest`, `pytest-bdd`, `requests-mock`, `hypothesis`, `pytest-rerunfailures`, `pytest-randomly`, `pytest-cov` |
-| Contract | `jsonschema`, `pydantic` |
-| Reporting | Allure (published to GitHub Pages) |
-| Static analysis / security | `ruff`, `mypy` (strict), `pip-audit`, `detect-secrets` |
-| Performance | Apache JMeter 5.6.3 |
-| Packaging | `Dockerfile` (offline tests by default, non-root) |
+Python 3.12 (local, Docker `python:3.12-slim`, CI on `ubuntu-latest`). `pytest` with `pytest-bdd`, `requests-mock`,
+`hypothesis`, `pytest-rerunfailures`, `pytest-randomly`, `pytest-cov`; `jsonschema` and `pydantic` for the contract; Allure
+(published to GitHub Pages); `ruff`, `mypy` (strict), `pip-audit`, `detect-secrets`; Apache JMeter 5.6.3; a `Dockerfile`
+(offline tests by default, non-root).
 
 ## 8. Execution schedule and CI
 
@@ -151,9 +133,6 @@ on every test would only add indirection.
 | `Live nightly` | daily cron 02:00 UTC (GitHub started the last seven runs between 06:57 and 08:14 UTC), manual | Live tests only, including data quality, to catch API drift and stale or broken data. No Allure report: the result is the run itself |
 | `Performance` | Monday 03:00 UTC, manual | JMeter plan, fails on any failed sample |
 | `Mutation checks` | Monday 04:00 UTC, manual | 49 deliberate breakages of the client, models and schemas; fails when the offline tests miss one (about 7 minutes, report in the job summary) |
-
-The `Tests` workflow publishes the Allure report only when pytest exits with 0 or 1 and results exist, so a broken run
-cannot reset the Trend history.
 
 ## 9. Entry and exit criteria
 
@@ -171,7 +150,7 @@ line and branch). By convention: no test is skipped or marked as an expected fai
 | --- | --- | --- | --- |
 | EDS API changes a field, status or message | Medium | Live tests fail, schemas outdated | Nightly live run (its result is the Actions run), JSON Schemas, the OpenAPI drift test; on `main` the Allure *Contract drift* category |
 | Public API rate limiting (429) | Medium | Flaky live tests, blocked client | Few and small live requests, retry with backoff, rerun on network errors only; 429 is never triggered on purpose |
-| 429 with a long `Retry-After` (up to 300 s observed). Before the limit existed the client waited it out, so a full run took about 5 minutes instead of 30 seconds (see the [test report](test-report.md#7-residual-risks-and-open-items)) | High | Slow feedback, job near its timeout; now a throttled live fixture fails fast | The client refuses a `Retry-After` above 60 s (`RetryConfig.max_retry_after`) with `RetryAfterTooLongError` (Allure: *Infrastructure problems*); the wait and its reason are logged; job timeout 30 minutes. Measured for the discontinued `Elspotprices`: one query per ~300 s. The limit of `DayAheadPrices` is not measured, so a run sends exactly one query to it; a second run within five minutes could be throttled and fails fast. A push to `main` and `Live nightly` share the concurrency group `eds-live-api`, so two live runs never overlap; a pull request runs offline tests only and does not wait |
+| 429 with a long `Retry-After` (up to 300 s observed; waiting it out made a full run take about 5 minutes instead of 30 seconds, see the [test report](test-report.md#7-residual-risks-and-open-items)) | High | Slow feedback; now a throttled live fixture fails fast | The client refuses a `Retry-After` above 60 s (`RetryConfig.max_retry_after`) with `RetryAfterTooLongError` (Allure: *Infrastructure problems*); waits and reasons are logged. `Elspotprices` allowed one query per ~300 s; the limit of `DayAheadPrices` is not measured, so a run sends one query to it and a second run within five minutes could fail fast. A push to `main` and `Live nightly` share the concurrency group `eds-live-api`, so two live runs never overlap; pull requests run offline tests only |
 | Retry logic is wrong but untested | Medium | Hammering the API, or silent failures | Retry behaviour tested against a real local server, not only mocks |
 | Tests pass although the client is broken | Medium | False confidence | Mutation checks (49), the kill matrix, request-based assertions; coverage is not trusted alone (see [test coverage](test-coverage.md)) |
 | Report shows misleading history | Low | Wrong decisions | Publish guard in CI, Allure categories |
@@ -186,9 +165,9 @@ recorded in the [test report](test-report.md). With no separate issue tracker, t
 
 ## 12. Metrics and reporting
 
-Pass rate, trend, duration and retries are in the [Allure report](https://magdau.github.io/eds-python-api-test-automation/);
-test counts in [test-cases.md](test-cases.md); coverage in [test-coverage.md](test-coverage.md); one run in
-[test-results.md](test-results.md); summary, defects and risks in [test-report.md](test-report.md).
+Pass rate, trend, duration and retries: [Allure report](https://magdau.github.io/eds-python-api-test-automation/); test counts:
+[test-cases.md](test-cases.md); coverage: [test-coverage.md](test-coverage.md); one run: [test-results.md](test-results.md);
+summary, defects, risks: [test-report.md](test-report.md).
 
 ## 13. Test maintenance
 

@@ -117,23 +117,17 @@ pip install -r requirements.txt
 pytest -v
 ```
 
-Tests that hit the real EDS API carry the `live` marker. Skip them for a fast, offline run:
-
-```bash
-pytest -v -m "not live"
-```
-
-On GitHub, pull requests run only the offline tests; the full suite (including live) runs on `main`.
-A nightly workflow (`live-nightly.yml`, also runnable manually) runs only the live tests to catch API drift. It also runs the data-quality
-checks (`-m data_quality`: freshness, gaps, DK1/DK2, Danish time, value range), which the run on `main` skips so a data problem does not turn the build red.
+Tests that hit the real EDS API carry the `live` marker; skip them for a fast, offline run with `pytest -v -m "not live"`.
+On GitHub, pull requests run only the offline tests and the full suite runs on `main`. A nightly workflow (`live-nightly.yml`,
+also manual) runs only the live tests, including the data-quality checks (`-m data_quality`) that the run on `main` skips so
+a data problem does not turn the build red.
 
 > **Rate limit.** The public API throttles by dataset (the discontinued `Elspotprices` answered one query per ~300 s window).
 > A full run sends exactly one query to `DayAheadPrices`, whose limit is not measured (a push to `main` and `Live nightly` share the concurrency group `eds-live-api`, so two live runs never overlap; a run still waiting in that group is cancelled when a newer one arrives, so a pending run can be dropped); if a repeated run is throttled it fails fast
 > with `RetryAfterTooLongError`. For repeated local runs use `pytest -m "not live"`.
 
-**CI guard against empty reports.** The `Tests` workflow runs `pytest --collect-only` first and publishes the Allure
-report only when pytest exits with `0` or `1` and `allure-results` is not empty. Otherwise it skips the report and the
-`gh-pages` publish and fails the job, because a collection error once produced a 0-test report that reset the Trend history.
+**CI guard against empty reports.** The `Tests` workflow publishes the Allure report only when pytest exits with `0` or `1`
+and `allure-results` is not empty; otherwise it fails the job. A collection error once produced a 0-test report that reset the Trend history.
 
 Mutation checks (do the tests notice a deliberately broken client? takes about 6 minutes, offline; run on a clean tree):
 
@@ -149,17 +143,16 @@ mypy                                 # type check (client, models)
 pytest -m "not live" --cov           # offline tests; fails under 90% coverage
 ```
 
-The same tools run locally before each commit, with [pre-commit](https://pre-commit.com), using the versions pinned in `requirements-dev.txt`.
-Set it up once:
+The same tools run locally before each commit with [pre-commit](https://pre-commit.com) (versions pinned in `requirements-dev.txt`):
 
 ```bash
 pip install -r requirements-dev.txt
 pre-commit install --install-hooks --hook-type pre-commit --hook-type commit-msg --hook-type pre-push
 ```
 
-A commit runs `ruff check`, `ruff format --check`, `mypy` and `detect-secrets`; a push runs the offline tests. A commit message with an AI
-co-author line, and a commit of the author's private notes (`LESSONS_LEARNED.md`, `CODE_REVIEW_NOTES.md`), are refused.
-To run every hook on every file: `pre-commit run --all-files`.
+A commit runs `ruff check`, `ruff format --check`, `mypy` and `detect-secrets`; a push runs the offline tests. A commit message with
+an AI co-author line and a commit of the author's private notes (`LESSONS_LEARNED.md`, `CODE_REVIEW_NOTES.md`) are refused.
+Run every hook on every file with `pre-commit run --all-files`.
 
 For an Allure HTML report:
 
