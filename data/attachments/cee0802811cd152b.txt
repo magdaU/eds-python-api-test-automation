@@ -1,1 +1,0 @@
-WARNING  client.eds_client:eds_client.py:176 Request failed: GET http://127.0.0.1:38001/dataset/CO2Emis params={} after 101 ms: HTTPConnectionPool(host='127.0.0.1', port=38001): Max retries exceeded with url: /dataset/CO2Emis (Caused by ReadTimeoutError("HTTPConnectionPool(host='127.0.0.1', port=38001): Read timed out. (read timeout=0.1)"))

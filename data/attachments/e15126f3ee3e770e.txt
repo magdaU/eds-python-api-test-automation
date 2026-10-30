@@ -1,0 +1,1 @@
+INFO     client.eds_client:eds_client.py:191 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 1, 'offset': -1} -> 400 in 108 ms body=The offset specified in a OFFSET clause may not be negative.
