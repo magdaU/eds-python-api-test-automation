@@ -28,8 +28,8 @@ def test_whenGettingDatasetMetadata_thenTheDatasetIsStillPublishedAndUpdated(dat
     response = dataset_api.metadata()
 
     # assert
-    metadata = response.json()
     assert response.status_code == 200
+    metadata = response.json()
     assert metadata["datasetName"] == dataset.name
     assert metadata["active"] is True
     assert "discontinued" not in metadata["title"].lower(), metadata["title"]
@@ -53,11 +53,15 @@ def test_givenOldestFirstSort_whenGettingConsecutivePages_thenTogetherTheyEqualO
     oldest_first = {"sort": "Minutes5UTC asc, PriceArea asc"}
 
     # act
-    first_page = co2_api.get(limit=5, offset=0, **oldest_first).json()["records"]
-    second_page = co2_api.get(limit=5, offset=5, **oldest_first).json()["records"]
-    one_page = co2_api.get(limit=10, offset=0, **oldest_first).json()["records"]
+    responses = [
+        co2_api.get(limit=5, offset=0, **oldest_first),
+        co2_api.get(limit=5, offset=5, **oldest_first),
+        co2_api.get(limit=10, offset=0, **oldest_first),
+    ]
 
     # assert
+    assert [response.status_code for response in responses] == [200, 200, 200]
+    first_page, second_page, one_page = (response.json()["records"] for response in responses)
     assert len(one_page) == 10
     assert first_page + second_page == one_page
 
@@ -86,8 +90,8 @@ def test_givenPriceAreaFilter_whenGettingCo2Emis_thenOnlyTheRequestedAreasAreRet
     response = co2_api.get(limit=50, filters=filters)
 
     # assert
-    areas = {record["PriceArea"] for record in response.json()["records"]}
     assert response.status_code == 200
+    areas = {record["PriceArea"] for record in response.json()["records"]}
     # 50 records span many timestamps, so a late-publishing area still appears; a filter on two areas must return both
     assert areas == expected_areas
 
@@ -98,8 +102,8 @@ def test_givenDescendingSort_whenGettingDayAheadPrices_thenPricesAreDescending(d
     response = dayaheadprices_latest
 
     # assert
-    prices = [record["DayAheadPriceDKK"] for record in response.json()["records"]]
     assert response.status_code == 200
+    prices = [record["DayAheadPriceDKK"] for record in response.json()["records"]]
     assert len(prices) == 5
     assert prices == sorted(prices, reverse=True)
 
@@ -122,18 +126,18 @@ def test_whenGettingLiveNews_thenEveryItemMatchesSchema(news_api):
 def test_whenGettingLiveCalendar_thenEveryEntryMatchesSchemaAndArchiveAgrees(news_api):
     # arrange
     calendar_response = news_api.calendar()
+    assert calendar_response.status_code == 200
     calendar = calendar_response.json()
     years_with_news = [entry for entry in calendar if entry["numberOfNewsStories"] > 0]
-    assert calendar_response.status_code == 200
     assert years_with_news, "the calendar must list a year with news to compare"
     latest = max(years_with_news, key=lambda entry: entry["dateString"])
 
     # act
     archived_response = news_api.archived(date=f"{latest['dateString']}-01-01")
-    archived = archived_response.json()
 
     # assert
     assert archived_response.status_code == 200
+    archived = archived_response.json()
     assert_all_match_schema(calendar, "news_calendar_schema.json")
     assert_all_match_schema(archived, "news_schema.json")
     assert len(archived) == latest["numberOfNewsStories"]

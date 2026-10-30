@@ -110,9 +110,9 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-161 tests (127 offline, 34 live) across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
+164 tests (130 offline, 34 live) across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
 with a handful of bounded live smoke tests against the real API. The [Allure report](https://magdau.github.io/eds-python-api-test-automation/)
-shows 149 of them: the 12 data-quality checks run only in the nightly `Live nightly` job, not on a push to `main`. They cover:
+shows 152 of them: the 12 data-quality checks run only in the nightly `Live nightly` job, not on a push to `main`. They cover:
 
 * HTTP status code, JSON content-type, response structure
 * `limit`, `filter`, `offset` (pagination), `sort` parameters; `limit=0` returns every record, and the client rejects a negative `limit`
@@ -165,7 +165,7 @@ A nightly workflow (`live-nightly.yml`, also runnable manually) runs only the li
 checks (`-m data_quality`: freshness, gaps, DK1/DK2, Danish time, value range), which the run on `main` skips so a data problem does not turn the build red.
 
 > **Rate limit.** The public API throttles by dataset (the discontinued `Elspotprices` answered one query per ~300 s window).
-> A full run sends exactly one query to `DayAheadPrices`, whose limit is not measured; if a repeated run is throttled it fails fast
+> A full run sends exactly one query to `DayAheadPrices`, whose limit is not measured (a push to `main` and `Live nightly` share the concurrency group `eds-live-api`, so two live runs never overlap); if a repeated run is throttled it fails fast
 > with `RetryAfterTooLongError`. For repeated local runs use `pytest -m "not live"`.
 
 **CI guard against empty reports.** The `Tests` workflow runs `pytest --collect-only` first and publishes the Allure

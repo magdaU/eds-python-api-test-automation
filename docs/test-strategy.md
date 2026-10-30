@@ -164,7 +164,7 @@ a scenario layer on every test would only add indirection.
 | `Security` | pull request, push to `main`, Monday 05:00 UTC, manual | `pip-audit` on the pinned dependencies and `detect-secrets` on the tracked files; fails on any finding |
 | `Live nightly` | daily cron 02:00 UTC (GitHub started the last seven runs between 06:57 and 08:14 UTC), manual | Live tests only, including the data-quality checks, to catch API drift and stale or broken data. No Allure report: the result is the workflow run itself |
 | `Performance` | Monday 03:00 UTC, manual | JMeter plan, fails on any failed sample |
-| `Mutation checks` | Monday 04:00 UTC, manual | Catalogue of 46 deliberate breakages of the client, models and schemas; fails when the offline tests miss one (offline, about 7 minutes); the report is in the job summary |
+| `Mutation checks` | Monday 04:00 UTC, manual | Catalogue of 49 deliberate breakages of the client, models and schemas; fails when the offline tests miss one (offline, about 7 minutes); the report is in the job summary |
 
 A guard in the `Tests` workflow publishes the Allure report only when pytest exits with code 0 or 1 and results exist,
 so an empty or broken run cannot reset the Trend history.
@@ -191,9 +191,9 @@ the Allure report shows no failed or broken test.
 | --- | --- | --- | --- |
 | EDS API changes a field, status or message | Medium | Live tests fail, schemas outdated | Nightly live run (its result is the Actions run, not an Allure report), JSON Schemas, the OpenAPI drift test; on `main` runs the Allure *Contract drift* category |
 | Public API rate limiting (429) | Medium | Flaky live tests, blocked client | Few and small live requests, retry with backoff, rerun on network errors only, 429 is never triggered on purpose |
-| The public API answers 429 with a long `Retry-After` (up to 300 s observed). Before the limit existed the client waited it out, so a full run took about 5 minutes instead of 30 seconds (see the [test report](test-report.md#7-residual-risks-and-open-items)) | High | Slow feedback, job near its timeout; since the limit, a throttled live fixture fails fast instead | The client refuses a `Retry-After` above 60 s (`RetryConfig.max_retry_after`) with `RetryAfterTooLongError`, which Allure files under *Infrastructure problems*; the wait and its reason are logged; job timeout of 30 minutes. Measured for the now discontinued `Elspotprices`: one query per ~300 s window. The limit of `DayAheadPrices` is not measured (two runs a few seconds apart both passed), so a test run still sends exactly one query to it, shared by the live tests; a second run within five minutes could be throttled and then fails fast |
+| The public API answers 429 with a long `Retry-After` (up to 300 s observed). Before the limit existed the client waited it out, so a full run took about 5 minutes instead of 30 seconds (see the [test report](test-report.md#7-residual-risks-and-open-items)) | High | Slow feedback, job near its timeout; since the limit, a throttled live fixture fails fast instead | The client refuses a `Retry-After` above 60 s (`RetryConfig.max_retry_after`) with `RetryAfterTooLongError`, which Allure files under *Infrastructure problems*; the wait and its reason are logged; job timeout of 30 minutes. Measured for the now discontinued `Elspotprices`: one query per ~300 s window. The limit of `DayAheadPrices` is not measured (two runs a few seconds apart both passed), so a test run still sends exactly one query to it, shared by the live tests; a second run within five minutes could be throttled and then fails fast. A push to `main` and `Live nightly` share one concurrency group (`eds-live-api`), so two live runs never overlap; a pull request runs offline tests only and does not wait for it |
 | Retry logic is wrong but untested | Medium | Hammering the API, or silent failures | Retry behaviour tested against a real local server, not only mocks |
-| Tests pass although the client is broken | Medium | False confidence | Mutation checks (46), the kill matrix, request-based assertions, coverage is not trusted alone (see [test coverage](test-coverage.md)) |
+| Tests pass although the client is broken | Medium | False confidence | Mutation checks (49), the kill matrix, request-based assertions, coverage is not trusted alone (see [test coverage](test-coverage.md)) |
 | Report shows misleading history | Low | Wrong decisions | Publish guard in CI, Allure categories |
 | Dependency changes break the suite | Medium | Red build | Pinned versions; a changed minimum version is verified in a clean environment |
 | A pinned dependency has a known vulnerability | Medium | Vulnerable test or runtime environment | `pip-audit` on every pull request and weekly. On 2026-10-30 it flagged `requests` 2.32.3 and `pytest` 8.3.3; both were bumped after the offline suite, `mypy` and coverage passed on the new versions in a clean environment |
@@ -220,7 +220,7 @@ is the defect record.
 - Regenerate [test-cases.md](test-cases.md) (`python scripts/generate_test_cases.py`) after changing tests, and
   [test-results.md](test-results.md) (`python scripts/generate_test_results.py`) when a new report is needed.
 - Guard against the *pesticide paradox*: when client behaviour changes, check by a quick mutation (remove or change one
-  line of the client) that at least one test fails. The catalogue in `scripts/mutation_check.py` does this for 46 known changes
+  line of the client) that at least one test fails. The catalogue in `scripts/mutation_check.py` does this for 49 known changes
   every week (`Mutation checks` workflow); add a mutation there when a new client behaviour is protected by a test, and
   update the line of a mutation when the client line it names changes (otherwise the run reports `STALE`).
 - Before removing a test, build the kill matrix (which test fails for which mutation, no `-x`, fixed test order) and check

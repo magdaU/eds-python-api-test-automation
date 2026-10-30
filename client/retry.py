@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import Any, Self
 
 import requests
@@ -44,6 +45,10 @@ class LoggingRetry(Retry):
             )
         if retry_after:
             logger.warning("Retrying in %.1f s because the server sent Retry-After (%s)", retry_after, reason)
-        else:
-            logger.warning("Retrying in %.1f s, backoff (%s)", self.get_backoff_time(), reason)
-        super().sleep(response)
+            super().sleep(response)
+            return
+        # measured once: with jitter every call draws a new value, so a second call would wait a different time than logged
+        backoff = self.get_backoff_time()
+        logger.warning("Retrying in %.1f s, backoff (%s)", backoff, reason)
+        if backoff > 0:
+            time.sleep(backoff)

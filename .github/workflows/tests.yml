@@ -9,6 +9,12 @@ on:
 permissions:
   contents: read
 
+# A push to main also runs the live tests, and `Live nightly` shares this group: two live runs at the same time could hit the
+# throttling of the public API. A pull request runs offline tests only, so it gets a group of its own and never waits.
+concurrency:
+  group: ${{ github.event_name == 'push' && 'eds-live-api' || format('tests-pr-{0}', github.run_id) }}
+  cancel-in-progress: false
+
 jobs:
   test:
     runs-on: ubuntu-latest

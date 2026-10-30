@@ -13,11 +13,9 @@ pytestmark = labels("Dataset API", "Schema validation", "critical")
 @pytest.mark.live
 @pytest.mark.flaky(reruns=1, reruns_delay=5, only_rerun=TRANSIENT_NETWORK_ERRORS)
 def test_whenGettingCo2Emis_thenResponseMatchesSchema(co2_response):
-    # act
-    body = co2_response.json()
-
     # assert
     assert co2_response.status_code == 200
+    body = co2_response.json()
     assert body["records"], "no records returned, so the schema was not exercised on any record"
     assert_matches_schema(body, CO2EMIS_DATASET.schema_file)
 
@@ -25,11 +23,9 @@ def test_whenGettingCo2Emis_thenResponseMatchesSchema(co2_response):
 @pytest.mark.live
 @pytest.mark.flaky(reruns=1, reruns_delay=5, only_rerun=TRANSIENT_NETWORK_ERRORS)
 def test_whenGettingDayAheadPrices_thenResponseMatchesSchema(dayaheadprices_latest):
-    # act
-    body = dayaheadprices_latest.json()
-
     # assert
     assert dayaheadprices_latest.status_code == 200
+    body = dayaheadprices_latest.json()
     assert body["records"], "no records returned, so the schema was not exercised on any record"
     assert_matches_schema(body, DAYAHEADPRICES_DATASET.schema_file)
 

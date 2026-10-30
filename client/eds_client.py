@@ -81,7 +81,7 @@ class EDSApiClient:
         self._mount_retry("https://", retry)
         self._mount_retry("http://", retry)
         for dataset, override in (dataset_overrides or {}).items():
-            self.session.dataset_adapters[self.dataset_url(dataset)] = self._build_adapter(override)
+            self.session.dataset_adapters[_prepared_url(self.dataset_url(dataset))] = self._build_adapter(override)
 
     def _mount_retry(self, url_prefix: str, config: RetryConfig) -> None:
         self.session.mount(url_prefix, self._build_adapter(config))
@@ -171,6 +171,10 @@ class EDSApiClient:
             # once the budget is spent, raises. This is where that would otherwise go unnoticed.
             logger.warning("Giving up on %s after retries, %.0f ms: %s", url, _milliseconds_since(started), error)
             raise
+        except requests.exceptions.RequestException as error:
+            # a refused connection or a timeout never produces a response, so nothing else would log it
+            logger.warning("Request failed: GET %s params=%s after %.0f ms: %s", url, params, _milliseconds_since(started), error)
+            raise
         self._log_response(url, params, response, started)
         return response
 
@@ -189,6 +193,11 @@ class EDSApiClient:
 
 def _milliseconds_since(started: float) -> float:
     return (time.perf_counter() - started) * 1000
+
+
+def _prepared_url(url: str) -> str:
+    """The URL as `requests` sends it (lower-case host and so on), which is how the session looks an adapter up."""
+    return str(requests.Request("GET", url).prepare().url)
 
 
 def _path_segment(value: str) -> str:
