@@ -6,10 +6,10 @@ Related: [test strategy](test-strategy.md) · [test plan](test-plan.md) · [test
 
 ## 1. Summary and recommendation
 
-The suite has 156 automated test cases: 122 offline and 34 against the live EDS API. The 144 that run on every push to `main`
-(122 offline, 22 live) all passed in build #201. The other 12 are data-quality checks that run in the nightly job only (not in
+The suite has 164 automated test cases: 130 offline and 34 against the live EDS API. Build #201 (commit `3931c57`, when the
+suite had 156 cases) ran the 144 that run on every push to `main` (122 offline, 22 live), and all passed. The other 12 are data-quality checks that run in the nightly job only (not in
 the Allure report) and passed in the nightly run of 2026-10-30, the first to include them. Static analysis, the dependency
-audit and the secret scan are clean, coverage of the client is 100% (statements and branches), all 45 mutations are killed
+audit and the secret scan are clean, coverage of the client is 100% (statements and branches), all 49 mutations are killed
 (local run), and the nightly live run passed on each of its seven executions (2026-10-24 to 2026-10-30). **Every exit criterion
 in the [test strategy](test-strategy.md#9-entry-and-exit-criteria) is met, and the suite is fit for its purpose: gating
 changes to the client and detecting drift in the EDS API.**
@@ -27,13 +27,13 @@ vulnerabilities and secrets.
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| Offline tests (122) | 122 passed, in random order | [test results](test-results.md) |
-| Live tests on `main` (22) | 22 passed | [test results](test-results.md) |
+| Offline tests (122 in build #201) | 122 passed, in random order | [test results](test-results.md) |
+| Live tests on `main` (22 in build #201) | 22 passed | [test results](test-results.md) |
 | Data-quality checks (12, nightly only) | 12 passed in the nightly run of 2026-10-30 (commit `ebe4111`); not yet run with the current dependency pins | `Live nightly` workflow |
 | Failed, broken or skipped tests | 0 | [test results](test-results.md) |
 | `ruff` (with the `PT` rules), `mypy` (strict) | no findings | `Quality` workflow |
 | Statement / branch coverage of `client/` and `models/` | 100% (197 statements, 26 of 26 branches); gate 90% | [test coverage](test-coverage.md#1-code-coverage) |
-| Mutation checks | 45 of 45 killed (local run on 2026-10-30; not yet run in Actions) | `scripts/mutation_check.py` |
+| Mutation checks | 49 of 49 killed (local run on 2026-10-30; not yet run in Actions) | `scripts/mutation_check.py` |
 | Known vulnerabilities, committed secrets | none (`pip-audit`, `detect-secrets`) | `Security` workflow |
 | Nightly live run, 2026-10-24 to 2026-10-30 | 7 of 7 passed | `Live nightly` workflow history |
 | Performance plan (JMeter), latest run 2026-10-26 | passed; the plan has changed since (`DayAheadPrices` endpoint, percentiles in the job summary) and has not run again | `Performance` workflow, artifact `jmeter-report` |
@@ -44,13 +44,13 @@ The Allure report of `main` holds the 144 tests of build #201. Live report with 
 
 | Level | Offline | Live | Total |
 | --- | ---: | ---: | ---: |
-| Component | 98 | 0 | 98 |
-| Integration | 23 | 0 | 23 |
+| Component | 102 | 0 | 102 |
+| Integration | 27 | 0 | 27 |
 | System | 1 | 34 | 35 |
-| **Total** | **122** | **34** | **156** |
+| **Total** | **130** | **34** | **164** |
 
 The 34 live cases are 22 that run on every push to `main` and the 12 nightly data-quality checks. The one offline System case
-proves the OpenAPI drift detector can fail. The suite has 115 test functions and BDD scenarios; the difference is parametrized runs.
+proves the OpenAPI drift detector can fail. The suite has 121 test functions and BDD scenarios; the difference is parametrized runs.
 Details in [test cases](test-cases.md).
 
 ## 5. Deviations from the plan
@@ -108,7 +108,7 @@ Found by reviewing CI results and by auditing the tests and documentation agains
   2026-10-29 and 2026-10-30). CI was green each time, but nothing enforces the wait; branch protection requiring `Tests` and
   `Quality` would.
 - **Not yet run in Actions:** the JMeter plan since it moved to `DayAheadPrices` (no percentile limits yet, see
-  [test architecture](test-architecture.md#4-performance-acceptance)), `Mutation checks` (local run on 2026-10-30: all 45 caught),
+  [test architecture](test-architecture.md#4-performance-acceptance)), `Mutation checks` (local run on 2026-10-30: all 49 caught),
   and the nightly run with `requests` 2.33.0 and `pytest` 9.0.3 (passed in builds #187 and #201; first nightly: 2026-10-31).
   The CI publish-guard simulation is not repeated automatically.
 - **Scheduled runs start late.** The cron of `Live nightly` is 02:00 UTC, but GitHub started the last seven runs between 06:57
