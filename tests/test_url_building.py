@@ -1,10 +1,9 @@
-from urllib.parse import urlparse
-
 import pytest
 
 from client.dataset_api import DatasetApi
 from client.eds_client import EDSApiClient
 from tests.support.allure_labels import labels
+from tests.support.mocks import sent_path
 
 pytestmark = labels("Client library", "URL building")
 
@@ -69,4 +68,4 @@ def test_givenDatasetNameWithSlash_whenGettingDataset_thenRequestPathKeepsTheEnc
     api.get()
 
     # assert
-    assert urlparse(requests_mock.last_request.url).path == "/dataset/..%2FNews"
+    assert sent_path(requests_mock) == "/dataset/..%2FNews"

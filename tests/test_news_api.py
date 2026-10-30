@@ -1,9 +1,7 @@
-from urllib.parse import urlparse
-
 import pytest
 
 from tests.support.allure_labels import labels
-from tests.support.mocks import load_mock, sent_query
+from tests.support.mocks import load_mock, sent_path, sent_query
 from tests.support.schema import assert_all_match_schema
 
 pytestmark = labels("News API", "News")
@@ -20,7 +18,7 @@ def test_whenCallingNewsApiMethod_thenRequestGoesToItsEndpointPath(news_api, req
     getattr(news_api, method)()
 
     # assert
-    assert urlparse(requests_mock.last_request.url).path == expected_path
+    assert sent_path(requests_mock) == expected_path
     assert sent_query(requests_mock) == {}
 
 

@@ -1,7 +1,7 @@
 import pytest
 
 from tests.support.allure_labels import labels
-from tests.support.mocks import records_response, sent_query
+from tests.support.mocks import sent_query
 
 pytestmark = labels("Dataset API", "Parameter combinations")
 
@@ -18,13 +18,10 @@ COMBINATIONS = [
 
 @pytest.mark.parametrize(("arguments", "expected_query"), COMBINATIONS)
 def test_givenParameterCombination_whenGettingDataset_thenExactlyThoseParametersAreSent(
-    co2_api, requests_mock, arguments, expected_query
+    co2_api_answering_empty, requests_mock, arguments, expected_query
 ):
-    # arrange
-    requests_mock.get(co2_api.url, json=records_response([]))
-
     # act
-    co2_api.get(**arguments)
+    co2_api_answering_empty.get(**arguments)
 
     # assert
     assert sent_query(requests_mock) == expected_query

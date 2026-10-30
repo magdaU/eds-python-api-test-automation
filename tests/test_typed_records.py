@@ -34,12 +34,9 @@ def test_givenModel_whenGettingRecords_thenTypedRecordsAreReturned(co2_api, requ
     assert records[0].CO2Emission == 98.7
 
 
-def test_givenQueryParameters_whenGettingRecords_thenTheyReachTheApi(co2_api, requests_mock):
-    # arrange
-    requests_mock.get(co2_api.url, json=records_response([]))
-
+def test_givenQueryParameters_whenGettingRecords_thenTheyReachTheApi(co2_api_answering_empty, requests_mock):
     # act
-    co2_api.records(limit=3, offset=6, sort="Minutes5UTC desc", filters={"PriceArea": "DK1"})
+    co2_api_answering_empty.records(limit=3, offset=6, sort="Minutes5UTC desc", filters={"PriceArea": "DK1"})
 
     # assert
     assert sent_query(requests_mock) == {
