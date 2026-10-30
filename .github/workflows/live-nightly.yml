@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: live-nightly
+  group: eds-live-api
   cancel-in-progress: false
 
 jobs:

@@ -82,3 +82,38 @@ def test_givenServerErrorWithoutRetryAfter_whenRetrying_thenBackoffWaitIsLogged(
 
     # assert
     assert [record.getMessage() for record in caplog.records] == ["Retrying in 0.0 s, backoff (status 503)"]
+
+
+def test_givenBackoffWithJitter_whenRetrying_thenLoggedWaitIsTheWaitThatHappened(scripted_server, monkeypatch, caplog):
+    # arrange
+    server = scripted_server(503, 503, 200)
+    waits = []
+    monkeypatch.setattr("urllib3.util.retry.time.sleep", waits.append)
+
+    # act
+    with caplog.at_level(logging.WARNING):
+        api_for(server, max_retries=3, backoff_jitter=50.0).get()
+
+    # assert
+    # the first retry has no backoff, so only the second one waits (and adds jitter)
+    logged = [float(re.search(r"Retrying in ([\d.]+) s", record.getMessage()).group(1)) for record in caplog.records]
+    assert len(waits) == 1
+    assert logged == [0.0, round(waits[0], 1)]
+
+
+def test_givenNothingListening_whenGettingDataset_thenFailureWithUrlAndDurationIsLogged(scripted_server, caplog):
+    # arrange
+    server = scripted_server(200)
+    api = api_for(server, max_retries=0)
+    server.close()
+
+    # act
+    with caplog.at_level(logging.WARNING), pytest.raises(requests.exceptions.ConnectionError):
+        api.get(limit=1)
+
+    # assert
+    failures = [record.getMessage() for record in caplog.records if "Request failed" in record.getMessage()]
+    assert len(failures) == 1
+    assert f"{server.url}/dataset/CO2Emis" in failures[0]
+    assert "params={'limit': 1}" in failures[0]
+    assert re.search(r" after \d+ ms: ", failures[0])

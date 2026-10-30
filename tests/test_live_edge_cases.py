@@ -60,8 +60,8 @@ def test_givenFilterMatchingNothing_whenGettingDataset_thenResultIsEmptyAndFilte
     response = co2_api.get(limit=1, filters={"PriceArea": "ZZ9"})
 
     # assert
-    body = response.json()
     assert response.status_code == 200
+    body = response.json()
     assert body["records"] == []
     assert body["total"] == 0
     assert body["filters"] == '{"PriceArea":"ZZ9"}'

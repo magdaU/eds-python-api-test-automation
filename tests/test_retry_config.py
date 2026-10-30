@@ -1,5 +1,7 @@
 import logging
 
+import requests
+
 from client.eds_client import SANE_MAX_RETRIES, EDSApiClient, RetryConfig
 from tests.support.allure_labels import labels
 
@@ -119,3 +121,20 @@ def test_givenDatasetOverride_whenClosingClient_thenItsAdapterIsClosed(monkeypat
 
     # assert
     assert closed == [True]
+
+
+def test_givenBaseUrlWithUpperCaseHost_whenResolvingOverriddenDataset_thenOverrideStillApplies():
+    # arrange
+    client = EDSApiClient(
+        base_url="https://API.Energidataservice.DK",
+        retry=RetryConfig(max_retries=3),
+        dataset_overrides={"DayAheadPrices": RetryConfig(max_retries=5)},
+    )
+
+    # act
+    prepared_url = requests.Request("GET", client.dataset_url("DayAheadPrices")).prepare().url
+    overridden = client.session.get_adapter(prepared_url).max_retries
+
+    # assert
+    assert prepared_url.startswith("https://api.energidataservice.dk/")
+    assert overridden.total == 5

@@ -1,6 +1,6 @@
 # Test coverage
 
-What the tests cover and what they do not. Measured on `main` plus the per-dataset retry override fix (2026-10-30), Python 3.12. Related:
+What the tests cover and what they do not. Measured on `main` plus the review fixes (2026-10-30), Python 3.12. Related:
 [test strategy](test-strategy.md) · [test cases](test-cases.md) · [test results](test-results.md) · [test report](test-report.md).
 
 ## 1. Code coverage
@@ -9,9 +9,9 @@ Command: `pytest -m "not live" --cov` (branch measurement is switched on in `pyp
 
 | Package | Statements | Missed | Branches | Missed branches | Coverage |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `client/` | 182 | 0 | 26 | 0 | 100% |
+| `client/` | 192 | 0 | 28 | 0 | 100% |
 | `models/` | 15 | 0 | 0 | 0 | 100% |
-| **Total** | **197** | **0** | **26** | **0** | **100%** |
+| **Total** | **207** | **0** | **28** | **0** | **100%** |
 
 - Scope is `client/` and `models/` (the code under test). Test helpers and scripts are not measured.
 - Only offline tests are needed to reach 100%; live tests add confidence in the real API, not coverage.
@@ -23,9 +23,9 @@ Command: `pytest -m "not live" --cov` (branch measurement is switched on in `pyp
 Coverage shows which lines ran, not whether a test would fail if the line were wrong. An earlier version of the suite
 had 100% coverage and still contained tests that only repeated what the mock returned. Therefore the suite is also
 checked by mutations: one line of the client is changed or removed and the offline suite is run. Since 2026-10-29 a catalogue of
-46 such mutations (client, models and schemas) runs automatically (`scripts/mutation_check.py`, weekly in the `Mutation checks` workflow); the table below is
+49 such mutations (client, models and schemas) runs automatically (`scripts/mutation_check.py`, weekly in the `Mutation checks` workflow); the table below is
 the history of the first checks, done by hand. On 2026-10-30 the catalogue was run against the suite as of `main` after three
-changes (typed records, a closable session, invalid responses): all 43 mutations were killed (45 after the per-dataset override fix, which added two and replaced one; 46 after the News path was encoded).
+changes (typed records, a closable session, invalid responses): all 43 mutations were killed (45 after the per-dataset override fix, which added two and replaced one; 46 after the News path was encoded, 49 after the review fixes: one backoff measurement, failures logged, override key normalised).
 
 | Mutation of the client | Failing tests | Detected |
 | --- | ---: | :---: |
@@ -128,7 +128,7 @@ there is no formal requirements document, so features rather than requirement ID
 | --- | --- | --- |
 | Python | 3.12 | other versions (no matrix) |
 | Operating system | Linux (CI), Windows (local) | macOS |
-| `urllib3` | 2.0.2 (verified minimum), 2.8.0 (CI) | versions below 2.0 (unsupported: no `backoff_jitter`) |
+| `urllib3` | 2.0.2 (verified minimum), 2.8.0 (CI) | versions below 2.0 (unsupported: no `backoff_jitter`) and 3.x (excluded by `<3`: `LoggingRetry` overrides `new` and `sleep`) |
 | `requests`, `pytest` | 2.33.0 and 9.0.3 (pinned; the earlier 2.32.3 and 8.3.3 had known vulnerabilities) | other versions |
 
 ## 6. Known gaps
@@ -146,7 +146,7 @@ there is no formal requirements document, so features rather than requirement ID
 - Data values are not compared with an authoritative source. Only shape, types, order and error messages are checked.
 - The EDS guide documents a 429 only by its message in the body, not a `Retry-After` header; the client relies on the header the API has been observed to send (see the [test strategy](test-strategy.md#2-scope)).
 - A live 429 is never provoked on purpose, so rate-limit handling is proven only against the local server. `Retry-After`
-  handling is `urllib3`'s; the wait and its logging are tested against the local server. The real API has answered 429 with
+  handling is `urllib3`'s; the wait and its logging are tested against the local server (with jitter the logged wait equals the wait that happens; a refused connection or a timeout is logged too). The real API has answered 429 with
   `Retry-After` of up to 300 s; the client refuses waits above 60 s by default (`RetryConfig.max_retry_after`, tested against the
   local server) and fails with `RetryAfterTooLongError`.
 - Live `DayAheadPrices` checks use a single shared query per run, a precaution kept from the discontinued `Elspotprices`, which answered
