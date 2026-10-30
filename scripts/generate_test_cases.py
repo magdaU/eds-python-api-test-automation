@@ -67,8 +67,21 @@ WORDS = {
 
 
 def collect(*pytest_args: str) -> Counter[tuple[str, str]]:
-    """Variants per (module, test function), from `pytest --collect-only`."""
-    command = [sys.executable, "-m", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider", *pytest_args]
+    """Variants per (module, test function), from `pytest --collect-only`.
+
+    Random ordering is off so the test case IDs follow the source order and do not change between runs."""
+    command = [
+        sys.executable,
+        "-m",
+        "pytest",
+        "--collect-only",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "-p",
+        "no:randomly",
+        *pytest_args,
+    ]
     output = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=True).stdout
     counts: Counter[tuple[str, str]] = Counter()
     for line in output.splitlines():

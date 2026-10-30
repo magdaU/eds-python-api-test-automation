@@ -1,16 +1,16 @@
 # Test report
 
-Test summary report for the state of `main` at commit `2acf689` (CI build #195), 2026-10-30.
+Test summary report for the state of `main` at commit `3931c57` (CI build #201), 2026-10-30.
 Related: [test strategy](test-strategy.md) · [test plan](test-plan.md) · [test cases](test-cases.md) ·
 [test coverage](test-coverage.md) · [test results](test-results.md) · [test architecture](test-architecture.md).
 
 ## 1. Summary and recommendation
 
-The suite has 153 automated test cases: 119 offline and 34 against the live EDS API. The 141 that run on every push to `main`
-(119 offline, 22 live) all passed in build #195 (141 of 141, none failed, broken or skipped). The other 12 are data-quality
+The suite has 156 automated test cases: 122 offline and 34 against the live EDS API. The 144 that run on every push to `main`
+(122 offline, 22 live) all passed in build #201 (144 of 144, none failed, broken or skipped). The other 12 are data-quality
 checks that run in the nightly job only, so they are not in the Allure report; they passed in the nightly run of 2026-10-30
 (08:14 UTC), the first one to include them. Static analysis is clean, code coverage of the client is 100% (statements and
-branches), the dependency audit and the secret scan are clean, and all 43 mutations of the client are killed (run locally). The
+branches), the dependency audit and the secret scan are clean, and all 45 mutations of the client are killed (run locally). The
 nightly live run passed on each of its seven executions (2026-10-24 to 2026-10-30). **Every exit criterion in the
 [test strategy](test-strategy.md#9-entry-and-exit-criteria) is met, and the suite is fit for its purpose: gating changes to the
 client and detecting drift in the EDS API.**
@@ -19,6 +19,7 @@ Since build #177 (2026-10-29): duplicate tests were removed after checking, per 
 client was hardened (keyword-only query arguments in one order, a closable session, one error for an unexpected body, and
 `records()` passing its query on; defects 17 and 18); `pip-audit` flagged `requests` and `pytest`, which were bumped (defect 19);
 and a live test now notices when EDS stops documenting an operation the client uses in its OpenAPI specification (defect 22).
+A review found that a retry override for one dataset also applied to datasets with a longer name (defect 23), fixed in PR #100.
 Residual risks are in section 7: the `Mutation checks` workflow has not run in Actions yet, and the nightly run has not yet run with
 the new dependency pins.
 
@@ -33,32 +34,32 @@ of the main client behaviours, a low-load performance baseline, and known vulner
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| Offline tests (119) | 119 passed, in random order | [test results](test-results.md) |
+| Offline tests (122) | 122 passed, in random order | [test results](test-results.md) |
 | Live tests on `main` (22) | 22 passed | [test results](test-results.md) |
 | Data-quality checks (12, nightly only) | 12 passed in the nightly run of 2026-10-30 (commit `ebe4111`); not yet run with the current dependency pins | `Live nightly` workflow |
 | Failed, broken or skipped tests | 0 | [test results](test-results.md) |
 | `ruff` (with the `PT` rules) | no findings | `Quality` workflow |
 | `mypy` (strict) | no findings | `Quality` workflow |
-| Statement coverage of `client/` and `models/` | 100%, 187 statements (gate: 90% of the combined figure) | [test coverage](test-coverage.md#1-code-coverage) |
-| Branch coverage | 100% (24 of 24 branches) | [test coverage](test-coverage.md#1-code-coverage) |
-| Mutation checks | 43 of 43 killed (local run on 2026-10-30; not yet run in Actions) | `scripts/mutation_check.py` |
+| Statement coverage of `client/` and `models/` | 100%, 197 statements (gate: 90% of the combined figure) | [test coverage](test-coverage.md#1-code-coverage) |
+| Branch coverage | 100% (26 of 26 branches) | [test coverage](test-coverage.md#1-code-coverage) |
+| Mutation checks | 45 of 45 killed (local run on 2026-10-30; not yet run in Actions) | `scripts/mutation_check.py` |
 | Known vulnerabilities, committed secrets | none (`pip-audit`, `detect-secrets`) | `Security` workflow |
 | Nightly live run, 2026-10-24 to 2026-10-30 | 7 of 7 passed | `Live nightly` workflow history |
 | Performance plan (JMeter), latest run 2026-10-26 | passed (no failed sample); the plan has changed since (`DayAheadPrices` endpoint, percentiles in the job summary) and has not run again | `Performance` workflow, artifact `jmeter-report` |
 
-The Allure report of `main` holds the 141 tests of the push run (build #195). Live Allure report with history: <https://magdau.github.io/eds-python-api-test-automation/>.
+The Allure report of `main` holds the 144 tests of the push run (build #201). Live Allure report with history: <https://magdau.github.io/eds-python-api-test-automation/>.
 
 ## 4. Test cases by level
 
 | Level | Offline | Live | Total |
 | --- | ---: | ---: | ---: |
-| Component | 95 | 0 | 95 |
+| Component | 98 | 0 | 98 |
 | Integration | 23 | 0 | 23 |
 | System | 1 | 34 | 35 |
-| **Total** | **119** | **34** | **153** |
+| **Total** | **122** | **34** | **156** |
 
 The 34 live cases are 22 that run on every push to `main` and the 12 nightly data-quality checks. The one offline System case
-is the test that proves the OpenAPI drift detector can fail. 112 test functions and BDD scenarios; the difference is parametrized runs. Details in [test cases](test-cases.md).
+is the test that proves the OpenAPI drift detector can fail. 115 test functions and BDD scenarios; the difference is parametrized runs. Details in [test cases](test-cases.md).
 
 ## 5. Deviations from the plan
 
@@ -95,6 +96,8 @@ Found by reviewing CI results and by audits of the tests and documentation again
 | 20 | The README said 203 tests while the suite had 154 | A reader could not trust the numbers | PR #95 |
 | 21 | Duplicate and trivial tests: the same mechanism tested for two datasets, two "no warning on success" checks, a property test that was a subset of another | Upkeep cost and a false sense of breadth | PR #96: ten tests removed after a matrix of which test kills which mutation; the mutations are still all killed |
 | 22 | The strategy and coverage documents said EDS publishes no OpenAPI specification, and Schemathesis had been put aside for that reason. EDS does publish one (`/swagger/public/swagger.json`); it is thin (only status 200, no response schema for `/dataset`, unbounded `limit`) | A wrong premise behind a tooling decision | PR #98 (drift test) and the refresh of these documents: premise corrected, Schemathesis left out for the right reasons |
+| 23 | A per-dataset retry override was mounted by URL prefix, so an override for `CO2Emis` also served `CO2EmisProg` and any dataset whose name starts the same way | A dataset without an override retried by another dataset's settings | PR #100: the adapter is chosen by the exact dataset URL (also with a query string) and closed with the client; found by a review, reproduced by a test that failed before the fix (`5 == 3`); two new mutations |
+| 24 | The strategy and coverage documents listed boundary values (`limit` 2 and 100000, `offset` 1 and 100000) that no test used; the README tree missed two test files; the generated `test-cases.md` numbered tests in a random order (pytest-randomly), so its IDs changed with every run | Documents that promised more than the tests did, and a diff of the catalogue on every regeneration | PR #100 (documents) and this refresh: the documents say what is tested and name the gap, the generator collects tests in source order |
 
 ## 7. Residual risks and open items
 
@@ -117,9 +120,9 @@ Found by reviewing CI results and by audits of the tests and documentation again
   repository's JSON Schemas.
 - **Diagnostics.** Every request is logged (status, duration, start of an error body) together with the wait before each retry and its
   reason, and Allure attaches the log to the test. The nightly run produces no Allure report, but its workflow log contains the same lines.
-- **CI stability.** The `Tests` workflow has 195 runs; 10 did not succeed (5%): six during the first days of the project
+- **CI stability.** The `Tests` workflow has 201 runs; 10 did not succeed (5%): six during the first days of the project
   (22 and 25 September, causes not examined), two on 23 October (the collection error behind defect 1) and two on 28 October
-  (defect 12). The latest 37 runs (#159-#195) all succeeded. None was a failed assertion about the product.
+  (defect 12). The latest 43 runs (#159-#201) all succeeded. None was a failed assertion about the product.
 - **Process.** Every pull request merged from #77 to #89 (12 merges) was merged 33-49 seconds before its `Tests` run finished
   (measured on 2026-10-29 from the GitHub API). Of the nine merges #90 to #98, five (#90, #93, #94, #95 and #98) came 19-39 seconds
   before the `Tests` run of the pull request finished and four waited (measured on 2026-10-30). Together with the earlier eleven
@@ -128,10 +131,10 @@ Found by reviewing CI results and by audits of the tests and documentation again
 - **Performance.** The JMeter plan now queries `DayAheadPrices` and prints p50, p95 and p99 in the job summary, but has not run since
   the change and has no percentile limits yet (see [test architecture](test-architecture.md#4-performance-acceptance)).
 - **Manual evidence.** The CI publish-guard simulation is not repeated automatically. Mutation checks are set to run weekly
-  (`Mutation checks` workflow, catalogue of 43 changes; local run on 2026-10-30: all 43 caught), but the workflow has no run in
+  (`Mutation checks` workflow, catalogue of 45 changes; local run on 2026-10-30: all 45 caught), but the workflow has no run in
   Actions yet; its report (job summary and artifact) is still to be checked.
 - **Dependency pins.** `requests` 2.33.0 and `pytest` 9.0.3 passed the offline suite and the live tests of the push runs
-  (builds #187 and #195). The nightly run, which also holds the data-quality checks, has not run with them yet (the first one is the
+  (builds #187 and #201). The nightly run, which also holds the data-quality checks, has not run with them yet (the first one is the
   run of 2026-10-31).
 - **Scheduled runs start late.** The cron of `Live nightly` is 02:00 UTC, but GitHub started the last seven runs between 06:57
   and 08:14 UTC. Plan around the date, not the hour.
