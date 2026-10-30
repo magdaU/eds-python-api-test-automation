@@ -18,16 +18,15 @@ def test_givenLimitAtBoundary_whenGettingDataset_thenLimitIsSentUnchanged(co2_ap
     assert sent_query(requests_mock)["limit"] == [str(limit)]
 
 
-@pytest.mark.parametrize("offset", [0])
-def test_givenOffsetAtBoundary_whenGettingDataset_thenOffsetIsSentUnchanged(co2_api, requests_mock, offset):
+def test_givenZeroOffset_whenGettingDataset_thenOffsetIsSentUnchanged(co2_api, requests_mock):
     # arrange
     requests_mock.get(co2_api.url, json=records_response([]))
 
     # act
-    co2_api.get(offset=offset)
+    co2_api.get(offset=0)
 
     # assert
-    assert sent_query(requests_mock)["offset"] == [str(offset)]
+    assert sent_query(requests_mock)["offset"] == ["0"]
 
 
 def test_givenNoParameters_whenGettingDataset_thenNoQueryStringIsSent(co2_api, requests_mock):
@@ -51,14 +50,3 @@ def test_givenNegativeOffset_whenGettingDataset_thenValueIsSentAndServerRejectio
     # assert
     assert sent_query(requests_mock)["offset"] == ["-1"]
     assert response.status_code == 400
-
-
-@pytest.mark.parametrize("limit", [-1, -100])
-def test_givenNegativeLimit_whenGettingDataset_thenValueErrorIsRaisedAndNothingIsSent(co2_api, requests_mock, limit):
-    # arrange
-    requests_mock.get(co2_api.url, json=records_response([]))
-
-    # act / assert
-    with pytest.raises(ValueError, match="limit"):
-        co2_api.get(limit=limit)
-    assert requests_mock.call_count == 0

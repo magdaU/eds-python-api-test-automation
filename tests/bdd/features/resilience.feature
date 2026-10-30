@@ -29,4 +29,5 @@ Feature: Resilience when the API misbehaves
     Examples:
       | status |
       | 400    |
+      | 401    |
       | 404    |

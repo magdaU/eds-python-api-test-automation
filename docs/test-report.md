@@ -110,7 +110,7 @@ Found by reviewing CI results and by audits of the tests and documentation again
 - **Performance.** The JMeter plan now queries `DayAheadPrices` and prints p50, p95 and p99 in the job summary, but has not run since
   the change and has no percentile limits yet (see [test architecture](test-architecture.md#4-performance-acceptance)).
 - **Manual evidence.** The CI publish-guard simulation is not repeated automatically. Mutation checks now run weekly
-  (`Mutation checks` workflow, catalogue of 37 changes; local run on 2026-10-29: 36 caught, 1 equivalent change survived as expected);
+  (`Mutation checks` workflow, catalogue of 40 changes; local run on 2026-10-30: all 40 caught);
   the first run in Actions is still to be checked.
 
 ## 8. How this report is kept current

@@ -18,8 +18,8 @@ def scripted_server():
     """Factory for a local HTTP server that answers with the given statuses in order."""
     servers = []
 
-    def start(*statuses, headers=None):
-        server = ScriptedServer(list(statuses), headers)
+    def start(*statuses, headers=None, delay=0):
+        server = ScriptedServer(list(statuses), headers, delay)
         servers.append(server)
         return server
 
@@ -35,12 +35,12 @@ def eds_client():
 
 @pytest.fixture
 def co2_api(eds_client):
-    return DatasetApi(eds_client, CO2EMIS_DATASET.name)
+    return DatasetApi(eds_client, CO2EMIS_DATASET.name, CO2EMIS_DATASET.model)
 
 
 @pytest.fixture
 def dayaheadprices_api(eds_client):
-    return DatasetApi(eds_client, DAYAHEADPRICES_DATASET.name)
+    return DatasetApi(eds_client, DAYAHEADPRICES_DATASET.name, DAYAHEADPRICES_DATASET.model)
 
 
 @pytest.fixture
@@ -55,7 +55,7 @@ def dataset(request):
 
 @pytest.fixture
 def dataset_api(eds_client, dataset):
-    return DatasetApi(eds_client, dataset.name)
+    return DatasetApi(eds_client, dataset.name, dataset.model)
 
 
 @pytest.fixture

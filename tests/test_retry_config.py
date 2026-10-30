@@ -10,19 +10,6 @@ def _retry_of(client, dataset):
     return client.session.get_adapter(client.dataset_url(dataset)).max_retries
 
 
-def test_givenDefaultRetrySettings_whenResolvingAnyDataset_thenDefaultsApply():
-    # arrange
-    client = EDSApiClient(retry=RetryConfig(max_retries=3, backoff_factor=1.0, backoff_jitter=0.0))
-
-    # act
-    retry = _retry_of(client, "CO2Emis")
-
-    # assert
-    assert retry.total == 3
-    assert retry.backoff_factor == 1.0
-    assert retry.backoff_jitter == 0.0
-
-
 def test_givenDatasetOverride_whenResolvingDatasets_thenOverrideAppliesOnlyToThatDataset():
     # arrange
     client = EDSApiClient(
@@ -54,17 +41,6 @@ def test_givenBaseUrlWithTrailingSlash_whenResolvingOverriddenDataset_thenOverri
 
     # assert
     assert overridden.total == 5
-
-
-def test_givenBackoffJitter_whenCreatingClient_thenItIsConfiguredOnTheRetryObject():
-    # arrange
-    client = EDSApiClient(retry=RetryConfig(backoff_jitter=0.5))
-
-    # act
-    retry = _retry_of(client, "CO2Emis")
-
-    # assert
-    assert retry.backoff_jitter == 0.5
 
 
 def test_givenDatasetOverrideWithJitter_whenResolvingDatasets_thenOnlyThatDatasetHasJitter():

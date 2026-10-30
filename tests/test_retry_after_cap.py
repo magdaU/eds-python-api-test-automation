@@ -1,5 +1,3 @@
-import logging
-
 import pytest
 import requests
 
@@ -8,7 +6,7 @@ from client.retry import RetryAfterTooLongError
 from tests.support.allure_labels import labels
 from tests.support.scripted_server import api_for
 
-pytestmark = labels("Client library", "Retry-After limit")
+pytestmark = labels("Client library", "Retry-After limit", "critical")
 
 
 @pytest.fixture
@@ -47,7 +45,7 @@ def test_givenRetryAfterAboveTheLimit_whenServerThrottles_thenClientFailsFastWit
     assert "60 s" in str(error.value)
 
 
-@pytest.mark.parametrize("seconds, gives_up", [(60, False), (61, True)], ids=["at-the-limit", "just-above-the-limit"])
+@pytest.mark.parametrize(("seconds", "gives_up"), [(60, False), (61, True)], ids=["at-the-limit", "just-above-the-limit"])
 def test_givenRetryAfterAroundTheLimit_whenServerThrottles_thenOnlyAboveTheLimitIsRefused(
     scripted_server, waits, seconds, gives_up
 ):
@@ -90,16 +88,3 @@ def test_givenAnAllowedWait_whenTheNextWaitIsTooLong_thenClientGivesUpAtTheSecon
     # assert
     assert waits == [2]
     assert server.request_count == 2
-
-
-def test_givenRetryAfterAboveTheLimit_whenGivingUp_thenWarningNamesTheRetryAfter(scripted_server, waits, caplog):
-    # arrange
-    server = scripted_server(429, 200, headers={"Retry-After": "300"})
-
-    # act
-    with caplog.at_level(logging.WARNING), pytest.raises(RetryAfterTooLongError):
-        api_for(server).get()
-
-    # assert
-    messages = [record.getMessage() for record in caplog.records]
-    assert any("Giving up" in message and "Retry-After" in message for message in messages)

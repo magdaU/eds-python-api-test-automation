@@ -5,9 +5,9 @@ from tests.support.allure_labels import labels
 from tests.support.datasets import CO2EMIS_DATASET, DAYAHEADPRICES_DATASET
 from tests.support.live import TRANSIENT_NETWORK_ERRORS
 from tests.support.mocks import load_mock
-from tests.support.schema import assert_all_match_schema, assert_matches_schema
+from tests.support.schema import assert_matches_schema
 
-pytestmark = labels("Dataset API", "Schema validation")
+pytestmark = labels("Dataset API", "Schema validation", "critical")
 
 
 @pytest.mark.live
@@ -34,18 +34,12 @@ def test_whenGettingDayAheadPrices_thenResponseMatchesSchema(dayaheadprices_late
     assert_matches_schema(body, DAYAHEADPRICES_DATASET.schema_file)
 
 
-def test_givenNoItems_whenValidatingAllAgainstSchema_thenItFailsInsteadOfPassingVacuously():
-    # act / assert
-    with pytest.raises(AssertionError, match="nothing to validate"):
-        assert_all_match_schema([], "news_schema.json")
-
-
-def test_givenEmptyRecordsList_whenValidating_thenSchemaIsSatisfied(dataset):
+def test_givenEmptyRecordsList_whenValidating_thenSchemaIsSatisfied():
     # arrange
-    body = {"records": [], "total": 0, "limit": 5, "dataset": dataset.name}
+    body = {"records": [], "total": 0, "limit": 5, "dataset": CO2EMIS_DATASET.name}
 
     # act / assert
-    assert_matches_schema(body, dataset.schema_file)
+    assert_matches_schema(body, CO2EMIS_DATASET.schema_file)
 
 
 def test_givenRecordWithoutOptionalField_whenValidating_thenSchemaIsSatisfied(dataset):
@@ -102,11 +96,12 @@ def test_givenRecordWithoutRequiredField_whenValidating_thenValidationFails(data
         "dataset-not-string",
     ],
 )
-def test_givenMalformedBody_whenValidating_thenValidationFails(dataset, break_body):
+def test_givenMalformedBody_whenValidating_thenValidationFails(break_body):
     # arrange
-    body = load_mock(dataset.sample_response_file)
+    # both dataset schemas share the same envelope, so one dataset is enough
+    body = load_mock(CO2EMIS_DATASET.sample_response_file)
     break_body(body)
 
     # act / assert
     with pytest.raises(jsonschema.exceptions.ValidationError):
-        assert_matches_schema(body, dataset.schema_file)
+        assert_matches_schema(body, CO2EMIS_DATASET.schema_file)

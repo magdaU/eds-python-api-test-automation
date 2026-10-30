@@ -75,7 +75,8 @@ def series_records(request, eds_client):
     series = request.param
     response = DatasetApi(eds_client, series.dataset).get(limit=RECENT_RECORDS)
     records = response.json()["records"]
-    assert response.status_code == 200 and records, f"no {series.dataset} records to check"
+    assert response.status_code == 200
+    assert records, f"no {series.dataset} records to check"
     return series, records
 
 

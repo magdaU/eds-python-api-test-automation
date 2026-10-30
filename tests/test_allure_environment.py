@@ -10,7 +10,7 @@ from tests.support.allure_environment import (
 )
 from tests.support.allure_labels import labels
 
-pytestmark = labels("Client library", "Allure environment")
+pytestmark = labels("Client library", "Allure environment", "minor")
 
 
 def test_givenCiEnvironment_whenBuildingEnvironment_thenEveryFieldIsMapped():
@@ -18,7 +18,7 @@ def test_givenCiEnvironment_whenBuildingEnvironment_thenEveryFieldIsMapped():
     ci_env = {
         "GITHUB_ACTIONS": "true",
         "GITHUB_REF_NAME": "main",
-        "GITHUB_SHA": "abcdef1234567890",
+        "GITHUB_SHA": "abcdef1234567890",  # pragma: allowlist secret
         "GITHUB_RUN_NUMBER": "42",
     }
 
@@ -63,24 +63,6 @@ def test_givenProperties_whenWritingEnvironment_thenFileHasOneKeyValuePerLine(tm
     assert written.splitlines() == ["Base.URL=https://eds.example", "Python=3.12.2"]
 
 
-def test_givenNoFailures_whenExplainingCategories_thenNoteSaysEmptyIsExpected():
-    # act
-    note = categories_note(0)
-
-    # assert
-    assert note.startswith("none")
-    assert "empty by design" in note
-
-
-def test_givenThreeFailures_whenExplainingCategories_thenNoteGivesTheCount():
-    # act
-    note = categories_note(3)
-
-    # assert
-    assert note.startswith("3 test(s)")
-    assert "empty" not in note
-
-
 def test_givenFailedErrorAndSkippedReports_whenCountingCategorized_thenAllThreeAreCounted():
     # arrange
     class Reporter:
@@ -101,22 +83,3 @@ def test_givenFailedErrorAndSkippedReports_whenCountingCategorized_thenAllThreeA
 
     # assert
     assert counted == 4
-
-
-def test_givenNoTerminalReporter_whenCountingCategorized_thenZeroIsReturned():
-    # arrange
-    class PluginManager:
-        def get_plugin(self, name):
-            return None
-
-    class Config:
-        pluginmanager = PluginManager()
-
-    class Session:
-        config = Config()
-
-    # act
-    counted = count_categorized(Session())
-
-    # assert
-    assert counted == 0

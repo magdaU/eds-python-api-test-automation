@@ -36,7 +36,7 @@ Regenerate the generated ones with `python scripts/generate_test_cases.py` and `
 
 ## 🛠️ Technologies
 
-Python · pytest · pytest-bdd (Gherkin) · hypothesis · pytest-rerunfailures · ruff · mypy · pytest-cov · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · JMeter · Git · GitHub Actions · GitHub Pages
+Python · pytest · pytest-bdd (Gherkin) · hypothesis · pytest-rerunfailures · pytest-randomly · ruff · mypy · pytest-cov · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · JMeter · Git · GitHub Actions · GitHub Pages
 
 ## 📁 Project Structure
 
@@ -73,20 +73,17 @@ eds-python-api-test-automation/
 │   ├── test_live_edge_cases.py       # low-load live edge cases
 │   ├── test_live_data_quality.py     # nightly data quality: freshness, gaps, DK1/DK2, Danish time, value range
 │   ├── test_allure_environment.py    # Allure environment.properties
-│   ├── test_negative_scenarios.py    # connection refused
 │   ├── test_schema_validation.py     # JSON Schema validation
 │   ├── test_models.py                # Pydantic parsing
 │   ├── test_logging.py               # warning logged when retries are exhausted
-│   ├── test_support_paths.py         # fixtures load regardless of the working directory
 │   ├── test_retry_after_cap.py       # Retry-After above the limit ends the request at once
-│   ├── test_mutation_catalogue.py    # every mutation of the mutation checks still matches the client source
 │   ├── test_allure_categories.py     # Allure failure categories map typical failures correctly
-│   ├── test_inject_report_notes.py   # empty-Categories note is added to a generated report once
 │   └── test_retry_config.py          # per-dataset retry/backoff/jitter tuning
 │
 ├── .github/workflows/
 │   ├── tests.yml         # CI: tests, Allure report, GitHub Pages publish
 │   ├── quality.yml       # CI: ruff, mypy, offline tests with coverage gate
+│   ├── security.yml      # CI: pip-audit (known vulnerabilities) and detect-secrets, also weekly
 │   ├── live-nightly.yml  # CI: nightly live tests to catch API drift (also manual)
 │   ├── performance.yml   # CI: JMeter run (manual / weekly)
 │   └── mutation.yml      # CI: weekly mutation checks (scripts/mutation_check.py)
@@ -180,7 +177,7 @@ python scripts/mutation_check.py
 Code quality (same checks as the `Quality` workflow; install dev tools with `pip install -r requirements-dev.txt`):
 
 ```bash
-ruff check .                         # lint, import order, bug patterns, complexity
+ruff check .                         # lint, import order, bug patterns, complexity, pytest style (PT)
 mypy                                 # type check (client, models)
 pytest -m "not live" --cov           # offline tests; fails under 90% coverage
 ```

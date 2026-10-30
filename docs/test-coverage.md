@@ -22,7 +22,7 @@ Command: `pytest -m "not live" --cov --cov-branch`
 Coverage shows which lines ran, not whether a test would fail if the line were wrong. An earlier version of the suite
 had 100% coverage and still contained tests that only repeated what the mock returned. Therefore the suite is also
 checked by mutations: one line of the client is changed or removed and the offline suite is run. Since 2026-10-29 a catalogue of
-37 such mutations (client, models and schemas) runs automatically (`scripts/mutation_check.py`, weekly in the `Mutation checks` workflow); the table below is
+40 such mutations (client, models and schemas) runs automatically (`scripts/mutation_check.py`, weekly in the `Mutation checks` workflow); the table below is
 the history of the first checks, done by hand.
 
 | Mutation of the client | Failing tests | Detected |

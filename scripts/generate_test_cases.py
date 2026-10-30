@@ -25,14 +25,11 @@ MODULES = {
     "test_dataset_contract": ("Component", "mocked HTTP, local HTTP server", "Contract and request verification"),
     "test_eds_client": ("Component", "none", "Configuration checks"),
     "test_filter_encoding": ("Component", "mocked HTTP", "Equivalence partitioning"),
-    "test_inject_report_notes": ("Component", "temporary directory", "Equivalence partitioning"),
     "test_live_data_quality": ("System", "public EDS API", "Data quality checks"),
     "test_live_edge_cases": ("System", "public EDS API", "Error guessing, negative testing"),
     "test_live_smoke": ("System", "public EDS API", "Smoke testing"),
     "test_logging": ("Integration", "local HTTP server", "Negative testing, log assertions"),
     "test_models": ("Component", "none", "Equivalence partitioning, negative testing"),
-    "test_mutation_catalogue": ("Component", "none", "Regression test"),
-    "test_negative_scenarios": ("Component", "mocked HTTP, unused local port", "Negative testing"),
     "test_news": ("Component", "mocked HTTP", "Executable specification (Gherkin)"),
     "test_news_api": ("Component", "mocked HTTP", "Request verification, schema validation"),
     "test_parameter_combinations": ("Component", "mocked HTTP", "Decision table"),
@@ -46,7 +43,7 @@ MODULES = {
         "JSON Schema; two tests use the public EDS API",
         "Equivalence partitioning, negative testing",
     ),
-    "test_support_paths": ("Component", "none", "Regression test"),
+    "test_typed_records": ("Component", "mocked HTTP", "Contract and request verification"),
     "test_url_building": ("Component", "none", "Equivalence partitioning"),
 }
 LEVELS = ["Component", "Integration", "System"]
@@ -103,7 +100,7 @@ def read_labels(module: str) -> tuple[dict[str, tuple[str, str]], tuple[str, str
         if isinstance(node, ast.Assign) and any(getattr(target, "id", "") == "pytestmark" for target in node.targets):
             for name, args in label_calls(node.value):
                 if name == "labels":
-                    epic, feature = args
+                    epic, feature = args[:2]  # the optional third argument is the severity
                 elif name == "epic":
                     epic = args[0]
     per_test = {}

@@ -3,7 +3,7 @@ line-length = 130
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "RUF013", "B", "SIM", "UP", "C90", "PLC0415"]
+select = ["E", "F", "I", "RUF013", "B", "SIM", "UP", "C90", "PLC0415", "PT"]
 
 [tool.mypy]
 python_version = "3.12"
@@ -12,6 +12,7 @@ strict = true
 
 [tool.coverage.run]
 source = ["client", "models"]
+branch = true
 
 [tool.coverage.report]
 fail_under = 90

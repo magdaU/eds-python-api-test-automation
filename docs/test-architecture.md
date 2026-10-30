@@ -38,7 +38,7 @@ The `Literal` list is a choice: a new area in the data fails parsing on purpose,
 | The metadata test checks the title and update interval, not only `active` | EDS discontinued `Elspotprices` after 2025-09-30 but its `active` flag stayed true; the tests were then moved to `DayAheadPrices` | `test_live_smoke.py` |
 | Test names are `given/when/then` and every body has `# arrange`, `# act`, `# assert` | A test name reads as a test case, so `test-cases.md` can be generated from them | `scripts/generate_test_cases.py` |
 | BDD only for a small set of behaviours | They read well as a specification; a scenario layer on every test would add indirection | `test-strategy.md` section 4 |
-| Mutation checks are a curated catalogue run weekly, not a generated mutation tool | A one-line change to the client must make a test fail. A tool that generates every mutant would run for hours on the retry tests and needs Linux; 37 chosen changes take about 6 minutes and run anywhere | `scripts/mutation_check.py`, `mutation.yml` |
+| Mutation checks are a curated catalogue run weekly, not a generated mutation tool | A one-line change to the client must make a test fail. A tool that generates every mutant would run for hours on the retry tests and needs Linux; 40 chosen changes take about 6 minutes and run anywhere | `scripts/mutation_check.py`, `mutation.yml` |
 | Performance thresholds are not enforced yet | There is no baseline: the weekly run now prints p50, p95 and p99, and limits are set after a few runs | `performance.yml`, section 4 below |
 
 ## 3. Risk to test map
@@ -51,8 +51,8 @@ The `Literal` list is a choice: a new area in the data fails parsing on purpose,
 | Data stops arriving, has holes, is out of range or mislabels time (a dataset silently frozen) | Stale or wrong figures reach users without any error | `test_live_data_quality` (nightly), metadata test in `test_live_smoke` | System |
 | The API changes its response (fields, statuses, messages) | Clients break silently | `test_schema_validation` (live), `test_live_edge_cases`, `test_live_smoke`, nightly run | System |
 | A dataset is discontinued while its tests keep passing | Green tests about frozen data | `test_live_smoke` (metadata test) | System |
-| The client waits forever on a silent server | Hanging CI | `test_eds_client` (timeout), `test_negative_scenarios` (refused connection) | Component |
-| The report lies or its history is lost | Wrong decisions | `test_allure_categories`, `test_allure_environment`, `test_inject_report_notes`, CI guard | Component |
+| The client waits forever on a silent server | Hanging CI | `test_eds_client` (timeout), `test_retry_behavior` (refused connection) | Component |
+| The report lies or its history is lost | Wrong decisions | `test_allure_categories`, `test_allure_environment`, CI guard | Component |
 | Latency or error rate degrades under light concurrency | Slow API for users | JMeter plan in `performance/` | Non-functional |
 | Not covered on purpose | | Time range (`start`, `end`), `columns`, `timezone`, other datasets, data values, security, TLS | See [test coverage](test-coverage.md#6-known-gaps) |
 

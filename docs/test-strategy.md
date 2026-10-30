@@ -56,7 +56,7 @@ The number of test cases per level is in [test-cases.md](test-cases.md).
 | Functional, black-box | Boundary value analysis (`limit`: 0, 1, 2, 100000, negative; `offset`: 0, 1, 100000, negative) | `test_boundary_values` |
 | Functional, black-box | Decision table (combinations of the four optional parameters) | `test_parameter_combinations` |
 | Functional, black-box | Property-based testing (invariants for arbitrary inputs, via `hypothesis`) | `test_properties` |
-| Negative testing, error guessing | Invalid input, unknown paths and columns, timeouts, refused connections, persistent 5xx | `test_negative_scenarios`, `test_retry_behavior`, `test_live_edge_cases` |
+| Negative testing, error guessing | Invalid input, unknown paths and columns, timeouts, refused connections, persistent 5xx | `test_retry_behavior`, `test_live_edge_cases` |
 | Contract testing | JSON Schema validation of samples and live responses | `test_schema_validation`, `test_dataset_contract`, `test_news_api` |
 | Smoke testing | One bounded call per area against the live API | `test_live_smoke` |
 | Data-quality monitoring | The 100 newest records of `CO2Emis` and `DayAheadPrices`: freshness, gaps in the series, areas DK1/DK2, Danish time against UTC (daylight saving), plausible value range. One query per series | `test_live_data_quality` (marker `data_quality`, nightly only) |

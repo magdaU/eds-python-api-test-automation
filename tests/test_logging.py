@@ -7,7 +7,7 @@ import requests
 from tests.support.allure_labels import labels
 from tests.support.scripted_server import api_for
 
-pytestmark = labels("Client library", "Logging")
+pytestmark = labels("Client library", "Logging", "minor")
 
 
 def test_givenRetryableStatusPersists_whenRetriesAreExhausted_thenWarningIsLogged(scripted_server, caplog):
