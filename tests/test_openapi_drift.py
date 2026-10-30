@@ -17,6 +17,7 @@ pytestmark = labels("Dataset API", "API specification drift", "critical")
 @allure.epic("Live API")
 def test_whenComparingWithThePublishedSpecification_thenEveryOperationTheClientUsesIsStillDocumented(eds_client):
     # arrange
+    # plain requests on purpose: the client's retry and parsing would hide a specification that changed
     response = requests.get(f"{eds_client.base_url}{SPEC_PATH}", timeout=DEFAULT_TIMEOUT)
     response.raise_for_status()
 

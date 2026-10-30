@@ -165,7 +165,7 @@ A nightly workflow (`live-nightly.yml`, also runnable manually) runs only the li
 checks (`-m data_quality`: freshness, gaps, DK1/DK2, Danish time, value range), which the run on `main` skips so a data problem does not turn the build red.
 
 > **Rate limit.** The public API throttles by dataset (the discontinued `Elspotprices` answered one query per ~300 s window).
-> A full run sends exactly one query to `DayAheadPrices`, whose limit is not measured (a push to `main` and `Live nightly` share the concurrency group `eds-live-api`, so two live runs never overlap); if a repeated run is throttled it fails fast
+> A full run sends exactly one query to `DayAheadPrices`, whose limit is not measured (a push to `main` and `Live nightly` share the concurrency group `eds-live-api`, so two live runs never overlap; a run still waiting in that group is cancelled when a newer one arrives, so a pending run can be dropped); if a repeated run is throttled it fails fast
 > with `RetryAfterTooLongError`. For repeated local runs use `pytest -m "not live"`.
 
 **CI guard against empty reports.** The `Tests` workflow runs `pytest --collect-only` first and publishes the Allure
@@ -243,6 +243,9 @@ It hits the public EDS API, so keep the load low. In CI it runs only manually or
 docker build -t eds-api-tests .
 docker run --rm eds-api-tests
 ```
+
+The container runs as a non-root user and defaults to the offline tests (`-m "not live"`); for the live ones use
+`docker run --rm eds-api-tests pytest -v -m live`.
 
 <details>
 <summary>One-time GitHub Pages setup (only needed once, when forking/recreating this repo)</summary>
