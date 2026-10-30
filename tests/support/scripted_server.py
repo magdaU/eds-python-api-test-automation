@@ -1,5 +1,6 @@
 import json
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from client.dataset_api import DatasetApi
@@ -10,10 +11,12 @@ class ScriptedServer:
     """Answers each request with the next scripted status; the last one repeats.
 
     `headers` is one dict for every response, or a list with one dict per response (the last one repeats).
+    `delay` is how many seconds the server waits before it answers.
     """
 
-    def __init__(self, statuses, headers=None):
+    def __init__(self, statuses, headers=None, delay=0):
         self.statuses = statuses
+        self.delay = delay
         self.headers = headers or {}
         self.request_count = 0
         outer = self
@@ -22,6 +25,8 @@ class ScriptedServer:
             def do_GET(self):
                 index = min(outer.request_count, len(outer.statuses) - 1)
                 outer.request_count += 1
+                if outer.delay:
+                    time.sleep(outer.delay)
                 body = json.dumps({"records": [], "total": 0}).encode()
                 self.send_response(outer.statuses[index])
                 self.send_header("Content-Type", "application/json")

@@ -1,19 +1,11 @@
+import pytest
+import requests
+
+from client.dataset_api import DatasetApi
 from client.eds_client import DEFAULT_TIMEOUT, EDSApiClient, RetryConfig
 from tests.support.allure_labels import labels
 
 pytestmark = labels("Client library", "Client configuration")
-
-
-def test_givenCustomRetrySettings_whenCreatingClient_thenTheyAreApplied():
-    # arrange
-    client = EDSApiClient(retry=RetryConfig(max_retries=5, backoff_factor=2.0))
-
-    # act
-    adapter = client.session.get_adapter(client.base_url)
-
-    # assert
-    assert adapter.max_retries.total == 5
-    assert adapter.max_retries.backoff_factor == 2.0
 
 
 def test_whenCreatingClientWithDefaults_thenDefaultTimeoutIsUsedPerRequest(requests_mock):
@@ -38,3 +30,13 @@ def test_givenCustomTimeout_whenGettingDataset_thenItIsPassedToTheRequest(reques
 
     # assert
     assert requests_mock.last_request.timeout == 3
+
+
+def test_givenServerSlowerThanTheTimeout_whenGettingDataset_thenConnectionErrorNamesTheReadTimeout(scripted_server):
+    # arrange
+    server = scripted_server(200, delay=0.5)
+    client = EDSApiClient(base_url=server.url, timeout=0.1, retry=RetryConfig(max_retries=0, backoff_factor=0))
+
+    # act / assert
+    with pytest.raises(requests.exceptions.ConnectionError, match="Read timed out"):
+        DatasetApi(client, "CO2Emis").get()

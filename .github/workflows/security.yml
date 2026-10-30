@@ -1,0 +1,61 @@
+name: Security
+
+# Known vulnerabilities in the pinned dependencies and secrets committed by mistake. The weekly run catches advisories
+# published after the last change; nothing here calls the public EDS API.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Audit dependencies for known vulnerabilities
+        run: |
+          pip install pip-audit==2.10.1
+          pip-audit -r requirements-dev.txt
+
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      # Scans the tracked files; a deliberate fake value is allowed with a `# pragma: allowlist secret` comment.
+      - name: Scan tracked files for secrets
+        run: |
+          pip install detect-secrets==1.5.0
+          git ls-files -z | xargs -0 detect-secrets scan > secrets.json
+          python - <<'PY'
+          import json, sys
+          found = json.load(open("secrets.json"))["results"]
+          for path, items in found.items():
+              for item in items:
+                  print(f"::error file={path},line={item['line_number']}::possible secret ({item['type']})")
+          sys.exit(1 if found else 0)
+          PY

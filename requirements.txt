@@ -1,6 +1,6 @@
-requests==2.32.3
+requests==2.33.0
 urllib3>=2.0.2
-pytest==8.3.3
+pytest==9.0.3
 requests-mock==1.12.1
 jsonschema==4.23.0
 pydantic==2.12.5
@@ -9,3 +9,4 @@ pytest-rerunfailures==16.7
 pytest-bdd==9.0.0
 hypothesis==6.170.8
 tzdata==2025.2
+pytest-randomly==5.0.0

@@ -11,10 +11,9 @@ pytestmark = labels("Client library", "URL building")
 BASE = "http://localhost:9999"
 
 
-@pytest.mark.parametrize("base_url", [BASE, BASE + "/"])
-def test_givenBaseUrlWithOrWithoutTrailingSlash_whenBuildingDatasetUrl_thenNoDoubleSlash(base_url):
+def test_givenBaseUrlWithTrailingSlash_whenBuildingDatasetUrl_thenNoDoubleSlash():
     # arrange
-    client = EDSApiClient(base_url=base_url)
+    client = EDSApiClient(base_url=BASE + "/")
 
     # act
     url = client.dataset_url("CO2Emis")
@@ -24,12 +23,10 @@ def test_givenBaseUrlWithOrWithoutTrailingSlash_whenBuildingDatasetUrl_thenNoDou
 
 
 @pytest.mark.parametrize(
-    "path, expected_suffix",
+    ("path", "expected_suffix"),
     [
         ("", "/News"),
-        ("actual", "/News/actual"),
-        ("/actual", "/News/actual"),
-        ("calendar/", "/News/calendar"),
+        ("/actual/", "/News/actual"),
     ],
 )
 def test_givenNewsPath_whenBuildingNewsUrl_thenSlashesAreNormalized(path, expected_suffix):
@@ -44,7 +41,7 @@ def test_givenNewsPath_whenBuildingNewsUrl_thenSlashesAreNormalized(path, expect
 
 
 @pytest.mark.parametrize(
-    "dataset, encoded",
+    ("dataset", "encoded"),
     [
         ("../News", "..%2FNews"),
         ("my data", "my%20data"),

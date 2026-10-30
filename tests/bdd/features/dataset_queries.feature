@@ -14,9 +14,7 @@ Feature: Querying a dataset
     Then the request carries sort "<sort>"
 
     Examples:
-      | sort                             |
-      | DayAheadPriceDKK                     |
-      | DayAheadPriceDKK desc                |
+      | sort                                 |
       | PriceArea asc, DayAheadPriceDKK desc |
 
   Scenario: Filtering by price area

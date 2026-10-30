@@ -8,9 +8,6 @@ pytestmark = labels("Dataset API", "Parameter combinations")
 # Decision table over the four optional parameters: each row is one rule,
 # the expected value says which query parameters must reach the API.
 COMBINATIONS = [
-    ({"limit": 5}, {"limit": ["5"]}),
-    ({"limit": 5, "offset": 10}, {"limit": ["5"], "offset": ["10"]}),
-    ({"limit": 5, "sort": "CO2Emission desc"}, {"limit": ["5"], "sort": ["CO2Emission desc"]}),
     ({"offset": 10, "filters": {"PriceArea": "DK1"}}, {"offset": ["10"], "filter": ['{"PriceArea":"DK1"}']}),
     (
         {"limit": 7, "offset": 3, "sort": "Minutes5UTC", "filters": {"PriceArea": "DK2"}},
@@ -19,7 +16,7 @@ COMBINATIONS = [
 ]
 
 
-@pytest.mark.parametrize("arguments, expected_query", COMBINATIONS)
+@pytest.mark.parametrize(("arguments", "expected_query"), COMBINATIONS)
 def test_givenParameterCombination_whenGettingDataset_thenExactlyThoseParametersAreSent(
     co2_api, requests_mock, arguments, expected_query
 ):

@@ -5,6 +5,7 @@ import re
 import pytest
 
 import allure
+from models.co2emis import CO2EmisRecord
 from tests.support.live import TRANSIENT_NETWORK_ERRORS
 from tests.support.schema import assert_all_match_schema, assert_matches_schema
 
@@ -33,6 +34,16 @@ def test_whenGettingDatasetMetadata_thenTheDatasetIsStillPublishedAndUpdated(dat
     assert metadata["active"] is True
     assert "discontinued" not in metadata["title"].lower(), metadata["title"]
     assert UPDATE_INTERVAL.fullmatch(metadata["updateFrequency"]), f"update frequency is {metadata['updateFrequency']!r}"
+
+
+@allure.feature("CO2Emis")
+def test_whenGettingRecords_thenTheyAreTypedModelObjects(co2_api):
+    # act
+    records = co2_api.records(limit=3)
+
+    # assert
+    assert len(records) == 3
+    assert all(isinstance(record, CO2EmisRecord) for record in records)
 
 
 @allure.feature("CO2Emis")
@@ -113,7 +124,8 @@ def test_whenGettingLiveCalendar_thenEveryEntryMatchesSchemaAndArchiveAgrees(new
     calendar_response = news_api.calendar()
     calendar = calendar_response.json()
     years_with_news = [entry for entry in calendar if entry["numberOfNewsStories"] > 0]
-    assert calendar_response.status_code == 200 and years_with_news, "the calendar must list a year with news to compare"
+    assert calendar_response.status_code == 200
+    assert years_with_news, "the calendar must list a year with news to compare"
     latest = max(years_with_news, key=lambda entry: entry["dateString"])
 
     # act

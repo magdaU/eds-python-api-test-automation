@@ -4,10 +4,12 @@ Each mutation is applied to the client source, the offline suite runs until its 
 A mutant that no test notices ("survived") means a behaviour of the client is not protected by an assertion.
 The unmutated suite must pass first, otherwise every mutant would look detected.
 
-Usage (from the repository root, on a clean working tree): python scripts/mutation_check.py [name ...]
-Exit code 1 when a detectable mutant survives or a mutation no longer matches the source.
+Usage (from the repository root, on a clean working tree): python scripts/mutation_check.py [--report FILE] [name ...]
+--report writes the result of every mutation as a Markdown table (the workflow shows it in the job summary).
+Exit code 1 when a mutant survives or a mutation no longer matches the source.
 """
 
+import argparse
 import subprocess
 import sys
 import time
@@ -15,7 +17,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-# The catalogue test reads the client source, so it fails for every mutant; it must not count as a detection.
 PYTEST = [
     sys.executable,
     "-m",
@@ -24,13 +25,15 @@ PYTEST = [
     "-q",
     "-p",
     "no:cacheprovider",
+    "-p",
+    "no:randomly",  # a fixed order, so a mutant is judged the same way on every run
     "-o",
     "log_cli=false",
     "-m",
     "not live",
-    "--ignore=tests/test_mutation_catalogue.py",
 ]
 EDS_CLIENT = "client/eds_client.py"
+DATASET_API = "client/dataset_api.py"
 RETRY = "client/retry.py"
 NEWS_API = "client/news_api.py"
 
@@ -41,7 +44,6 @@ class Mutation:
     path: str
     old: str  # one line of the source that occurs exactly once in `path`
     new: str
-    equivalent: bool = False  # behaves the same through the public interface, so surviving is expected
 
 
 MUTATIONS = [
@@ -123,8 +125,20 @@ MUTATIONS = [
         '"required": ["PriceArea"]',
     ),
     Mutation("schema-emission-any-type", "schemas/co2emis_schema.json", '"CO2Emission": {"type": "number"}', '"CO2Emission": {}'),
-    # the client only ever sends GET, so retrying every method cannot be seen from outside
-    Mutation("all-methods-retried", EDS_CLIENT, 'allowed_methods=["GET"],', "allowed_methods=None,", equivalent=True),
+    Mutation(
+        "records-not-parsed",
+        DATASET_API,
+        "return parse_records(response.json(), self.model)",
+        'return response.json()["records"]',
+    ),
+    Mutation("records-error-status-ignored", DATASET_API, "response.raise_for_status()", "pass"),
+    Mutation(
+        "records-query-dropped",
+        DATASET_API,
+        "response = self.get(limit=limit, offset=offset, sort=sort, filters=filters)",
+        "response = self.get()",
+    ),
+    Mutation("records-model-check-removed", DATASET_API, "if self.model is None:", "if False:"),
 ]
 
 
@@ -146,11 +160,32 @@ def run_mutation(mutation: Mutation) -> str:
     return {0: "survived", 1: "killed"}.get(returncode, "INVALID")  # anything else: the mutant did not even load
 
 
-def is_problem(mutation: Mutation, outcome: str) -> bool:
-    return outcome in ("STALE", "INVALID") or (outcome == "survived" and not mutation.equivalent)
+def is_problem(outcome: str) -> bool:
+    return outcome != "killed"
 
 
-def main(selected: list[str]) -> int:
+def write_report(path: Path, results: list[tuple[Mutation, str, float]]) -> None:
+    survivors = [mutation.name for mutation, outcome, _ in results if is_problem(outcome)]
+    verdict = (
+        f"**Not killed: {', '.join(survivors)}.** A behaviour of the client has no assertion."
+        if survivors
+        else "Every change was noticed."
+    )
+    lines = [
+        "## Mutation checks",
+        "",
+        f"{len(results) - len(survivors)} of {len(results)} mutations killed. {verdict}",
+        "",
+        "| Result | Mutation | File | Change | Seconds |",
+        "| --- | --- | --- | --- | ---: |",
+    ]
+    for mutation, outcome, seconds in results:
+        change = f"`{mutation.old.strip()}` → `{mutation.new.strip()}`".replace("|", "\\|")
+        lines.append(f"| {outcome.upper()} | {mutation.name} | `{mutation.path}` | {change} | {seconds:.0f} |")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def main(selected: list[str], report: Path | None = None) -> int:
     mutations = [mutation for mutation in MUTATIONS if not selected or mutation.name in selected]
     if selected and len(mutations) != len(selected):
         print(f"Unknown mutation among: {', '.join(selected)}")
@@ -161,18 +196,26 @@ def main(selected: list[str]) -> int:
         return 2
 
     problems = []
+    results = []
     for mutation in mutations:
         started = time.perf_counter()
         outcome = run_mutation(mutation)
-        flag = "  <-- PROBLEM" if is_problem(mutation, outcome) else ""
-        print(f"{outcome:9} {mutation.name} ({time.perf_counter() - started:.0f} s){flag}", flush=True)
+        seconds = time.perf_counter() - started
+        results.append((mutation, outcome, seconds))
+        flag = "  <-- PROBLEM" if is_problem(outcome) else ""
+        print(f"{outcome:9} {mutation.name} ({seconds:.0f} s){flag}", flush=True)
         if flag:
             problems.append(mutation.name)
+    if report:
+        write_report(report, results)
 
-    killed = sum(1 for _ in mutations) - len(problems)
-    print(f"\n{len(mutations)} mutations, {len(problems)} problems: {', '.join(problems) or 'none'}")
-    return 1 if problems else 0 if killed >= 0 else 0
+    print(f"\n{len(mutations) - len(problems)} of {len(mutations)} mutations killed; problems: {', '.join(problems) or 'none'}")
+    return 1 if problems else 0
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))
+    parser = argparse.ArgumentParser(description="Check that the offline tests notice deliberate breakages of the client.")
+    parser.add_argument("names", nargs="*", help="run only these mutations")
+    parser.add_argument("--report", type=Path, help="write the results as a Markdown table to this file")
+    arguments = parser.parse_args()
+    sys.exit(main(arguments.names, arguments.report))
