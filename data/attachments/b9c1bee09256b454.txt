@@ -1,3 +1,0 @@
-INFO     client.eds_client:eds_client.py:185 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 5, 'offset': 0, 'sort': 'Minutes5UTC asc, PriceArea asc'} -> 200 in 529 ms
-INFO     client.eds_client:eds_client.py:185 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 5, 'offset': 5, 'sort': 'Minutes5UTC asc, PriceArea asc'} -> 200 in 873 ms
-INFO     client.eds_client:eds_client.py:185 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 10, 'offset': 0, 'sort': 'Minutes5UTC asc, PriceArea asc'} -> 200 in 614 ms
