@@ -248,6 +248,16 @@ server (`tests/support/scripted_server.py`, `tests/test_retry_behavior.py`); the
 
 ---
 
+## 14. Review follow-ups
+
+**Goal:** Close the open points left by the code review.
+
+- [x] Describe in the README that a run waiting in the `eds-live-api` concurrency group is cancelled when a newer one arrives.
+- [x] Add `ruff format --check .` to `quality.yml`.
+- [x] Decide on `TimeUTC` as a required field: it stays optional, a record without a time is a data-quality finding, not a parsing failure.
+- [x] Decide whether `test_openapi_drift.py` goes through the client: it keeps plain `requests`, so the client's retry and parsing do not hide a changed specification.
+- [x] Make the Dockerfile default to `-m "not live"` and run as a non-root user.
+
 ## Resolved questions
 
 1. **Allure publishing target (item 7):** the report is also published to GitHub Pages (`gh-pages` branch), not only uploaded as a CI artifact.
