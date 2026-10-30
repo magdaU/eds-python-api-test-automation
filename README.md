@@ -56,8 +56,8 @@ eds-python-api-test-automation/
 │   └── report-notes.js   # explains empty Categories widgets in the generated report
 │
 ├── tests/
-│   ├── conftest.py                   # fixtures: client, API objects, parametrized dataset
-│   ├── support/                      # shared test helpers: mock loading, schema asserts, dataset configs, scripted local server
+│   ├── conftest.py                   # fixtures: client, API objects, parametrized dataset, API objects answering an empty result
+│   ├── support/                      # shared test helpers: mock loading and the sent path/query, schema asserts, dataset configs, scripted local server
 │   ├── mocks/                        # requests-mock fixture data
 │   ├── bdd/                          # BDD: Gherkin scenarios (features/*.feature) and their step definitions
 │   ├── test_dataset_contract.py      # CO2Emis + DayAheadPrices: sample vs schema, request URL/parameters, real HTTP round-trip

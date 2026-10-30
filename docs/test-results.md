@@ -7,13 +7,13 @@
 
 | | |
 | --- | --- |
-| Build | [Build #195](https://github.com/magdaU/eds-python-api-test-automation/actions/runs/41055567357) (GitHub Actions) |
-| Branch / commit | `main` / `2acf689` |
+| Build | [Build #201](https://github.com/magdaU/eds-python-api-test-automation/actions/runs/41078872007) (GitHub Actions) |
+| Branch / commit | `main` / `3931c57` |
 | Scope | not data_quality |
-| Started (UTC) | 2026-10-30 12:28:27 |
-| Finished (UTC) | 2026-10-30 12:29:12 |
-| Duration, first test start to last test stop | 0 min 45 s |
-| Summed duration of the test bodies | 22.5 s (setup and fixtures excluded) |
+| Started (UTC) | 2026-10-30 15:14:59 |
+| Finished (UTC) | 2026-10-30 15:15:49 |
+| Duration, first test start to last test stop | 0 min 51 s |
+| Summed duration of the test bodies | 29.2 s (setup and fixtures excluded) |
 | Python / OS | 3.12.15 / Linux |
 | Base URL | https://api.energidataservice.dk |
 
@@ -21,35 +21,35 @@
 
 | Passed | Failed | Broken | Skipped | Total |
 | ---: | ---: | ---: | ---: | ---: |
-| 141 | 0 | 0 | 0 | 141 |
+| 144 | 0 | 0 | 0 | 144 |
 
 ## Results by module
 
 | Module | Passed | Failed | Broken | Skipped | Total | Summed time (ms) |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | `test_allure_categories` | 6 | 0 | 0 | 0 | 6 | 2 |
-| `test_allure_environment` | 4 | 0 | 0 | 0 | 4 | 10 |
-| `test_boundary_values` | 5 | 0 | 0 | 0 | 5 | 4 |
-| `test_dataset_contract` | 5 | 0 | 0 | 0 | 5 | 9 |
-| `test_dataset_queries` | 4 | 0 | 0 | 0 | 4 | 5 |
-| `test_eds_client` | 7 | 0 | 0 | 0 | 7 | 104 |
-| `test_filter_encoding` | 3 | 0 | 0 | 0 | 3 | 3 |
-| `test_live_edge_cases` | 9 | 0 | 0 | 0 | 9 | 6515 |
-| `test_live_smoke` | 10 | 0 | 0 | 0 | 10 | 13124 |
-| `test_logging` | 5 | 0 | 0 | 0 | 5 | 15 |
-| `test_models` | 15 | 0 | 0 | 0 | 15 | 2 |
-| `test_news` | 3 | 0 | 0 | 0 | 3 | 5 |
-| `test_news_api` | 9 | 0 | 0 | 0 | 9 | 15 |
-| `test_openapi_drift` | 2 | 0 | 0 | 0 | 2 | 823 |
-| `test_parameter_combinations` | 2 | 0 | 0 | 0 | 2 | 1 |
-| `test_properties` | 3 | 0 | 0 | 0 | 3 | 1730 |
+| `test_allure_environment` | 4 | 0 | 0 | 0 | 4 | 13 |
+| `test_boundary_values` | 5 | 0 | 0 | 0 | 5 | 7 |
+| `test_dataset_contract` | 5 | 0 | 0 | 0 | 5 | 14 |
+| `test_dataset_queries` | 4 | 0 | 0 | 0 | 4 | 15 |
+| `test_eds_client` | 7 | 0 | 0 | 0 | 7 | 107 |
+| `test_filter_encoding` | 3 | 0 | 0 | 0 | 3 | 4 |
+| `test_live_edge_cases` | 9 | 0 | 0 | 0 | 9 | 10234 |
+| `test_live_smoke` | 10 | 0 | 0 | 0 | 10 | 14421 |
+| `test_logging` | 5 | 0 | 0 | 0 | 5 | 17 |
+| `test_models` | 15 | 0 | 0 | 0 | 15 | 4 |
+| `test_news` | 3 | 0 | 0 | 0 | 3 | 7 |
+| `test_news_api` | 9 | 0 | 0 | 0 | 9 | 24 |
+| `test_openapi_drift` | 2 | 0 | 0 | 0 | 2 | 1933 |
+| `test_parameter_combinations` | 2 | 0 | 0 | 0 | 2 | 3 |
+| `test_properties` | 3 | 0 | 0 | 0 | 3 | 2233 |
 | `test_resilience` | 6 | 0 | 0 | 0 | 6 | 24 |
-| `test_retry_after_cap` | 7 | 0 | 0 | 0 | 7 | 14 |
-| `test_retry_behavior` | 5 | 0 | 0 | 0 | 5 | 13 |
-| `test_retry_config` | 5 | 0 | 0 | 0 | 5 | 0 |
-| `test_schema_validation` | 13 | 0 | 0 | 0 | 13 | 36 |
-| `test_typed_records` | 6 | 0 | 0 | 0 | 6 | 4 |
-| `test_url_building` | 7 | 0 | 0 | 0 | 7 | 1 |
+| `test_retry_after_cap` | 7 | 0 | 0 | 0 | 7 | 18 |
+| `test_retry_behavior` | 5 | 0 | 0 | 0 | 5 | 17 |
+| `test_retry_config` | 8 | 0 | 0 | 0 | 8 | 5 |
+| `test_schema_validation` | 13 | 0 | 0 | 0 | 13 | 54 |
+| `test_typed_records` | 6 | 0 | 0 | 0 | 6 | 5 |
+| `test_url_building` | 7 | 0 | 0 | 0 | 7 | 3 |
 
 ## Tests that did not pass
 

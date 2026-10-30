@@ -8,14 +8,14 @@ Related: [test strategy](test-strategy.md) · [test plan](test-plan.md) · [test
 
 | Part | Responsibility | Size | Verdict |
 | --- | --- | ---: | --- |
-| `client/eds_client.py`: `EDSApiClient` | Transport: session (closable, also a context manager), retry adapters, timeout, URLs, one log line per request; query arguments keyword-only | 176 lines | One reason to change (how the EDS API is called); the URL helpers and the logging are small enough to stay here |
+| `client/eds_client.py`: `EDSApiClient` | Transport: session (closable, also a context manager; a dataset override gets its own adapter by exact URL), retry adapters, timeout, URLs, one log line per request; query arguments keyword-only | 196 lines | One reason to change (how the EDS API is called); the URL helpers and the logging are small enough to stay here |
 | `client/eds_client.py`: `RetryConfig` | Retry settings as one immutable value | in the file above | Clear |
 | `client/retry.py`: `LoggingRetry` | Logs each wait and refuses a `Retry-After` above the limit | 49 lines | Clear |
 | `client/dataset_api.py`, `client/news_api.py` | API objects: know the path of one dataset or the News endpoints, hide the client; `DatasetApi.records()` returns typed records | 58 and 30 lines | Thin by design |
 | `client/parsers.py`, `models/` | Raw JSON to typed Pydantic records (timestamps as `datetime`, price areas as `Literal`); `InvalidResponseError` for an unexpected body | 11 to 18 lines each | Used by `DatasetApi.records()` and by the nightly data-quality check; optional for a caller (see below) |
 | `tests/support/` | Mock loading, schema checks, dataset configuration, scripted local server (with an optional response delay), OpenAPI drift check, Allure helpers | 9 to 58 lines each | Clear; shared by the tests, not by the client |
 
-**Verdict: no restructuring.** The whole production code (`client/` and `models/`) is about 350 lines, each class has one clear job, and the layers do not
+**Verdict: no restructuring.** The whole production code (`client/` and `models/`) is about 370 lines, each class has one clear job, and the layers do not
 leak (tests use API objects, API objects use the client, nothing goes the other way). Splitting `EDSApiClient` further
 (a separate URL builder, a separate logger) would add files without removing a real problem, which is against the project's
 KISS and YAGNI conventions. Reopen this only if a concrete pain shows up, for example a second transport or a client
