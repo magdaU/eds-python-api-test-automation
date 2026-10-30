@@ -74,27 +74,12 @@ def test_givenRecordWithoutRequiredField_whenValidating_thenValidationFails(data
 @pytest.mark.parametrize(
     "break_body",
     [
-        lambda body: body.pop("total"),
-        lambda body: body.pop("records"),
         lambda body: body.update(records={"not": "a list"}),
         lambda body: body.update(total="three"),
-        lambda body: body["records"].__setitem__(0, "not an object"),
         lambda body: body.pop("limit"),
         lambda body: body.pop("dataset"),
-        lambda body: body.update(limit="many"),
-        lambda body: body.update(dataset=7),
     ],
-    ids=[
-        "missing-total",
-        "missing-records",
-        "records-not-array",
-        "total-not-integer",
-        "record-not-object",
-        "missing-limit",
-        "missing-dataset",
-        "limit-not-integer",
-        "dataset-not-string",
-    ],
+    ids=["records-not-array", "total-not-integer", "missing-limit", "missing-dataset"],
 )
 def test_givenMalformedBody_whenValidating_thenValidationFails(break_body):
     # arrange

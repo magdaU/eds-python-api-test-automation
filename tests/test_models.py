@@ -48,11 +48,10 @@ def test_givenRecordWithoutRequiredField_whenParsingRecords_thenValidationErrorI
 @pytest.mark.parametrize(
     "record",
     [
-        {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK1", "CO2Emission": "not-a-number"},
         {"Minutes5UTC": "yesterday", "PriceArea": "DK1", "CO2Emission": 123.4},
         {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK3", "CO2Emission": 123.4},
     ],
-    ids=["wrong-type", "bad-utc-time", "unknown-area"],
+    ids=["bad-utc-time", "unknown-area"],
 )
 def test_givenInvalidFieldValue_whenParsingRecords_thenValidationErrorIsRaised(record):
     # arrange

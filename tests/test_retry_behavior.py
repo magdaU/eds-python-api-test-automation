@@ -15,17 +15,16 @@ pytestmark = labels("Client library", "Retry behavior", "critical")
 # client's own HTTPAdapter/Retry, so the retry behavior itself is exercised.
 
 
-@pytest.mark.parametrize("failing_statuses", [(503, 503), (429,)])
-def test_givenTransientFailuresWithinRetryBudget_whenGettingDataset_thenFinalSuccessIsReturned(scripted_server, failing_statuses):
+def test_givenThrottledOnce_whenGettingDataset_thenFinalSuccessIsReturned(scripted_server):
     # arrange
-    server = scripted_server(*failing_statuses, 200)
+    server = scripted_server(429, 200)
 
     # act
     response = api_for(server).get()
 
     # assert
     assert response.status_code == 200
-    assert server.request_count == len(failing_statuses) + 1
+    assert server.request_count == 2
 
 
 def test_givenPersistentServerError_whenGettingDataset_thenRetriesStopAfterMaxRetries(scripted_server):

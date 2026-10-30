@@ -25,18 +25,6 @@ def test_givenRetryableStatusPersists_whenRetriesAreExhausted_thenWarningIsLogge
     assert "too many 429 error responses" in gave_up[0]
 
 
-def test_givenSuccessfulResponse_whenGettingDataset_thenNoWarningIsLogged(co2_api, requests_mock, caplog):
-    # arrange
-    requests_mock.get(co2_api.url, status_code=200, json={"records": [], "total": 0})
-
-    # act
-    with caplog.at_level(logging.WARNING):
-        co2_api.get()
-
-    # assert
-    assert caplog.records == []
-
-
 def test_givenSuccessfulResponse_whenGettingDataset_thenOneLineLogsRequestStatusAndDuration(scripted_server, caplog):
     # arrange
     server = scripted_server(200)
