@@ -56,31 +56,10 @@ eds-python-api-test-automation/
 │   └── report-notes.js   # explains empty Categories widgets in the generated report
 │
 ├── tests/
-│   ├── conftest.py                   # fixtures: client, API objects, parametrized dataset, API objects answering an empty result
-│   ├── support/                      # shared test helpers: mock loading and the sent path/query, schema asserts, dataset configs, scripted local server
-│   ├── mocks/                        # requests-mock fixture data
-│   ├── bdd/                          # BDD: Gherkin scenarios (features/*.feature) and their step definitions
-│   ├── test_dataset_contract.py      # CO2Emis + DayAheadPrices: sample vs schema, request URL/parameters, real HTTP round-trip
-│   ├── test_news_api.py              # News API: endpoint paths, parameters, sample vs schema (mocked)
-│   ├── test_live_smoke.py            # bounded live smoke tests against the real API
-│   ├── test_eds_client.py            # timeout (also a read timeout), closable session, keyword-only query arguments
-│   ├── test_boundary_values.py       # limit/offset boundary values
-│   ├── test_parameter_combinations.py # decision table of parameter combinations
-│   ├── test_filter_encoding.py       # filter encoding (non-ASCII, quotes, lists)
-│   ├── test_url_building.py          # URL building and slash normalization
-│   ├── test_properties.py            # property-based tests (hypothesis)
-│   ├── test_retry_behavior.py        # real retry behavior against a local scripted server
-│   ├── test_live_edge_cases.py       # low-load live edge cases
-│   ├── test_live_data_quality.py     # nightly data quality: freshness, gaps, DK1/DK2, Danish time, value range
-│   ├── test_allure_environment.py    # Allure environment.properties
-│   ├── test_schema_validation.py     # JSON Schema validation
-│   ├── test_models.py                # Pydantic parsing
-│   ├── test_logging.py               # warning logged when retries are exhausted
-│   ├── test_retry_after_cap.py       # Retry-After above the limit ends the request at once
-│   ├── test_allure_categories.py     # Allure failure categories map typical failures correctly
-│   ├── test_retry_config.py          # per-dataset retry/backoff/jitter tuning; an override serves its dataset only
-│   ├── test_typed_records.py         # DatasetApi.records(): typed records, query passed on, error and invalid-body handling
-│   └── test_openapi_drift.py         # live: the client's operations and parameters are still in the published OpenAPI specification
+│   ├── conftest.py, support/, mocks/   # fixtures, shared helpers (scripted local server, schema asserts), requests-mock data
+│   ├── bdd/                            # Gherkin scenarios (features/*.feature) and their step definitions
+│   └── test_*.py                       # one module per concern: contract, News, retry, boundaries, encoding, schema,
+│                                       # models, properties, logging, Allure, live smoke / edge cases / data quality / OpenAPI drift
 │
 ├── .github/workflows/
 │   ├── tests.yml         # CI: tests, Allure report, GitHub Pages publish
@@ -111,38 +90,22 @@ eds-python-api-test-automation/
 ## 🧪 Current Test Coverage
 
 164 tests (130 offline, 34 live) across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
-with a handful of bounded live smoke tests against the real API. The [Allure report](https://magdau.github.io/eds-python-api-test-automation/)
-shows 152 of them: the 12 data-quality checks run only in the nightly `Live nightly` job, not on a push to `main`. They cover:
+with a few bounded live tests against the real API. The [Allure report](https://magdau.github.io/eds-python-api-test-automation/)
+shows 152 of them: the 12 data-quality checks run only in the nightly `Live nightly` job. They cover:
 
-* HTTP status code, JSON content-type, response structure
-* `limit`, `filter`, `offset` (pagination), `sort` parameters; `limit=0` returns every record, and the client rejects a negative `limit`
-* Negative scenarios: refused connection; 4xx not retried (real local server);
-  invalid dataset and unknown path against the live API
-* News API (`/News`, `/News/actual`, `/News/calendar`, `/News/archived`): endpoint paths, parameters
-  sent with their exact case, samples vs. schema; live checks of required/invalid parameters (400),
-  empty results (204), unknown path (404), and calendar vs. archive consistency
-* API specification drift (live): every operation and parameter the client uses is still in the public OpenAPI
-  specification (`/swagger/public/swagger.json`), so a change on the EDS side shows up as one clear failure
-* Dataset status from the metadata endpoint (still published and updated; it caught that the earlier `Elspotprices` had been discontinued)
-* Data quality of the newest `CO2Emis` and `DayAheadPrices` records (nightly): freshness, gaps in the series, DK1/DK2, Danish time
-  against UTC including daylight saving, plausible values
-* JSON Schema validation of API responses
-* Pydantic model parsing (valid + invalid data; `datetime` timestamps, price areas as `Literal`), also checked on live records in the nightly run
-* Boundary values (`limit`/`offset`: 0, 1, negative), parameter combinations (decision table),
-  filter encoding (non-ASCII, quotes, lists) and URL building
-* Real retry behavior against a local scripted HTTP server (503/429 then 200, retry exhaustion,
-  no retry on 4xx), plus a request timeout on every call
-* Low-load live edge cases (one `limit=1` request each): negative offset, unknown sort/filter column,
-  filter or offset matching nothing, unknown News category/path
-* BDD scenarios (`pytest-bdd`, Gherkin in `tests/bdd/features/`): query parameters, retry behaviour against a local
-  server, and News parameters, written as Given/When/Then and run through the same API objects as the other tests
-* Property-based tests (`hypothesis`): filter JSON round-trip, parameters surviving the URL, negative `limit`, URL building
-* Client diagnostics (against a real local server): one log line per request with status, duration and the start of an
-  error body, the wait before each retry and why (`Retry-After` or backoff), and a warning when retries are exhausted;
-  Allure attaches this log to each test. A `Retry-After` longer than a limit (60 s by default) ends the request at once
-* Retry/backoff configuration, including per-dataset overrides and jitter
-* Automatic pytest-level rerun (`pytest-rerunfailures`) on all live tests
-  (network errors only), feeding Allure's Retries trend
+* Status code, content type and structure; `limit`, `filter`, `offset` and `sort` (`limit=0` returns every record, a negative `limit` is rejected)
+* Negative scenarios: refused connection, 4xx not retried, invalid dataset and unknown path against the live API
+* News API (`/News`, `/actual`, `/calendar`, `/archived`): paths, parameters with their exact case, samples vs. schema, live 400/204/404 checks
+* API specification drift (live): every operation and parameter the client uses is still in the public OpenAPI specification
+* Dataset status from the metadata endpoint (it caught that `Elspotprices` had been discontinued)
+* Data quality of the newest records (nightly): freshness, gaps, DK1/DK2, Danish time against UTC, plausible values
+* JSON Schema validation and Pydantic parsing (valid and invalid data, also on live records)
+* Boundary values, parameter combinations (decision table), filter encoding, URL building, property-based tests (`hypothesis`)
+* Real retry behavior against a local scripted server (503/429 then 200, exhaustion, no retry on 4xx), a timeout on every call,
+  per-dataset retry/backoff/jitter tuning, and diagnostics: one log line per request, the wait before each retry and why
+  (a `Retry-After` above 60 s ends the request at once), a warning when retries are exhausted
+* BDD scenarios (`pytest-bdd`) for query parameters, retries and News
+* pytest-level reruns on live tests (network errors only), feeding Allure's Retries trend
 
 ## 🚀 Getting Started
 
@@ -154,25 +117,17 @@ pip install -r requirements.txt
 pytest -v
 ```
 
-Tests that hit the real EDS API carry the `live` marker. Skip them for a fast, offline run:
-
-```bash
-pytest -v -m "not live"
-```
-
-On GitHub, pull requests run only the offline tests; the full suite (including live) runs on `main`.
-A nightly workflow (`live-nightly.yml`, also runnable manually) runs only the live tests to catch API drift. It also runs the data-quality
-checks (`-m data_quality`: freshness, gaps, DK1/DK2, Danish time, value range), which the run on `main` skips so a data problem does not turn the build red.
+Tests that hit the real EDS API carry the `live` marker; skip them for a fast, offline run with `pytest -v -m "not live"`.
+On GitHub, pull requests run only the offline tests and the full suite runs on `main`. A nightly workflow (`live-nightly.yml`,
+also manual) runs only the live tests, including the data-quality checks (`-m data_quality`) that the run on `main` skips so
+a data problem does not turn the build red.
 
 > **Rate limit.** The public API throttles by dataset (the discontinued `Elspotprices` answered one query per ~300 s window).
 > A full run sends exactly one query to `DayAheadPrices`, whose limit is not measured (a push to `main` and `Live nightly` share the concurrency group `eds-live-api`, so two live runs never overlap; a run still waiting in that group is cancelled when a newer one arrives, so a pending run can be dropped); if a repeated run is throttled it fails fast
 > with `RetryAfterTooLongError`. For repeated local runs use `pytest -m "not live"`.
 
-**CI guard against empty reports.** The `Tests` workflow runs `pytest --collect-only` first and publishes the Allure
-report only when pytest exits with `0` (all passed) or `1` (some failed) and `allure-results` is not empty. On any other
-outcome (collection error, no tests collected) it skips the report and the `gh-pages` publish, annotates the run with
-`::error::` and fails the job. It exists because a missing dependency once made collection fail, and the resulting
-0-test report dropped the Allure Trend history to zero.
+**CI guard against empty reports.** The `Tests` workflow publishes the Allure report only when pytest exits with `0` or `1`
+and `allure-results` is not empty; otherwise it fails the job. A collection error once produced a 0-test report that reset the Trend history.
 
 Mutation checks (do the tests notice a deliberately broken client? takes about 6 minutes, offline; run on a clean tree):
 
@@ -188,17 +143,16 @@ mypy                                 # type check (client, models)
 pytest -m "not live" --cov           # offline tests; fails under 90% coverage
 ```
 
-The same tools run locally before each commit, with [pre-commit](https://pre-commit.com), using the versions pinned in `requirements-dev.txt`.
-Set it up once:
+The same tools run locally before each commit with [pre-commit](https://pre-commit.com) (versions pinned in `requirements-dev.txt`):
 
 ```bash
 pip install -r requirements-dev.txt
 pre-commit install --install-hooks --hook-type pre-commit --hook-type commit-msg --hook-type pre-push
 ```
 
-A commit runs `ruff check`, `ruff format --check`, `mypy` and `detect-secrets`; a push runs the offline tests. A commit message with an AI
-co-author line, and a commit of the author's private notes (`LESSONS_LEARNED.md`, `CODE_REVIEW_NOTES.md`), are refused.
-To run every hook on every file: `pre-commit run --all-files`.
+A commit runs `ruff check`, `ruff format --check`, `mypy` and `detect-secrets`; a push runs the offline tests. A commit message with
+an AI co-author line and a commit of the author's private notes (`LESSONS_LEARNED.md`, `CODE_REVIEW_NOTES.md`) are refused.
+Run every hook on every file with `pre-commit run --all-files`.
 
 For an Allure HTML report:
 
@@ -207,19 +161,11 @@ pytest --alluredir=allure-results
 allure serve allure-results
 ```
 
-The live report is published on every push to `main` (see [Test Results](#-test-results)).
+The live report is published on every push to `main`. A local run shows only that run, without the trend, executor and
+categories data. The Environment widget is written automatically whenever `--alluredir` is used.
 
-The Environment widget (base URL, Python/OS, library versions, CI branch/commit/run) is written automatically
-by a pytest hook whenever `--alluredir` is used, locally and in CI.
-
-An ad hoc local `allure serve` run only shows that single run — it won't have the
-trend/executor/categories data unless you copy it in yourself.
-
-The **Categories** widget groups only failed, broken and skipped tests (see `allure/categories.json`), so
-an empty widget ("0 items total") means the run had no failures, not that categories are missing. In the published
-report the widget, the **Categories** page and **Categories trend** say so themselves (`allure/report-notes.js`, added after the report is
-generated; it writes the note only when the report's own data confirms there is nothing to categorize), and the
-Environment widget repeats it in its `Categories` line.
+The **Categories** widget lists only failed, broken and skipped tests (`allure/categories.json`), so "0 items total" means
+no failures. The published report says so itself (`allure/report-notes.js`).
 
 ### Performance tests (JMeter)
 
@@ -248,21 +194,15 @@ The container runs as a non-root user and defaults to the offline tests (`-m "no
 `docker run --rm eds-api-tests pytest -v -m live`.
 
 <details>
-<summary>One-time GitHub Pages setup (only needed once, when forking/recreating this repo)</summary>
+<summary>One-time GitHub Pages setup (only when forking/recreating this repo)</summary>
 
-The workflow publishes the generated report to the `gh-pages` branch via
-`peaceiris/actions-gh-pages`, but GitHub won't serve it until two manual,
-one-time steps are done — no workflow step can do these for you:
+The workflow publishes the report to the `gh-pages` branch, but GitHub serves it only after two manual steps:
 
-1. The repository must be **public** (Pages hosting for a private repo needs a
-   paid GitHub plan, and would default to a private site anyway).
-2. Push to `main` at least once so the workflow creates the `gh-pages` branch,
-   **then** go to `Settings → Pages → Build and deployment → Source` and switch
-   it to **"Deploy from a branch"**, branch `gh-pages`, folder `/ (root)`. It
-   can't be set before the branch exists — the dropdown has nothing to point at.
+1. The repository must be **public** (Pages for a private repo needs a paid plan).
+2. Push to `main` once so the branch exists, then set `Settings → Pages → Source` to **"Deploy from a branch"**,
+   branch `gh-pages`, folder `/ (root)`.
 
-After that one-time setup, every push to `main` updates the live report
-automatically.
+After that every push to `main` updates the report.
 </details>
 
 ## 🔌 API Under Test
