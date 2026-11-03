@@ -103,7 +103,8 @@ on every test would only add indirection.
 - **Severity.** Each module carries an Allure severity via `labels(epic, feature, severity)`: `critical` for retry, contract,
   schemas and models; `minor` for test tooling and logs; `normal` otherwise.
 - **Mock-first, live-bounded.** Edge cases and error paths are proven offline. Live tests are smoke checks and a few edge
-  cases, each one `limit=1` request with a pause between requests. `limit=-1` is never sent live: the API treats it as
+  cases. The edge cases are each one `limit=1` request with a pause between requests; the smoke and data-quality checks
+  request up to `limit=100`, and the paging test sends three requests. `limit=-1` is never sent live: the API treats it as
   "no limit" and returns millions of records.
 - **Tolerate only transient failures.** Live tests (all marked flaky) rerun only on network errors (`ConnectionError`,
   `Timeout`, `RetryError`), never on assertion failures. Mocks and schemas are located relative to the code, so tests run

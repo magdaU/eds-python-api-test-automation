@@ -45,6 +45,7 @@ eds-python-api-test-automation/
 │
 ├── client/
 │   ├── eds_client.py    # EDSApiClient: transport, retry/backoff, per-dataset overrides, logging
+│   ├── retry.py         # LoggingRetry, RetryAfterTooLongError (a Retry-After above the limit fails fast)
 │   ├── dataset_api.py   # DatasetApi: API object for one dataset (URL + get)
 │   ├── news_api.py      # NewsApi: API object for /News endpoints
 │   └── parsers.py       # raw JSON -> typed Pydantic models
@@ -129,7 +130,7 @@ a data problem does not turn the build red.
 **CI guard against empty reports.** The `Tests` workflow publishes the Allure report only when pytest exits with `0` or `1`
 and `allure-results` is not empty; otherwise it fails the job. A collection error once produced a 0-test report that reset the Trend history.
 
-Mutation checks (do the tests notice a deliberately broken client? takes about 6 minutes, offline; run on a clean tree):
+Mutation checks (do the tests notice a deliberately broken client? takes about 7 minutes, offline; run on a clean tree):
 
 ```bash
 python scripts/mutation_check.py
