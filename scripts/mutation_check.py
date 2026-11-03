@@ -17,6 +17,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+SUITE_TIMEOUT_SECONDS = 300  # the offline suite takes about 30 s; far longer means a mutant made it hang
 PYTEST = [
     sys.executable,
     "-m",
@@ -173,7 +174,10 @@ MUTATIONS = [
 
 
 def run_suite() -> int:
-    return subprocess.run(PYTEST, cwd=ROOT, capture_output=True, check=False).returncode
+    try:
+        return subprocess.run(PYTEST, cwd=ROOT, capture_output=True, check=False, timeout=SUITE_TIMEOUT_SECONDS).returncode
+    except subprocess.TimeoutExpired:
+        return 1  # a mutant that hangs the suite is noticed, so it counts as killed
 
 
 def run_mutation(mutation: Mutation) -> str:
