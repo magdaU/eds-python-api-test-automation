@@ -4,16 +4,16 @@
 > Regenerate after adding, renaming or removing tests. IDs are sequential and are **not stable** between
 > regenerations, so refer to a test by its module and name.
 
-126 test functions expand to 184 executed test cases (*Variants* counts parametrized runs). Each test name reads `given<precondition>_when<action>_then<expected result>`; the columns below are that name, split. Tests that call the public EDS API count as *System* level whichever module they live in. See the [test strategy](test-strategy.md) for how the levels are used.
+125 test functions expand to 183 executed test cases (*Variants* counts parametrized runs). Each test name reads `given<precondition>_when<action>_then<expected result>`; the columns below are that name, split. Tests that call the public EDS API count as *System* level whichever module they live in. See the [test strategy](test-strategy.md) for how the levels are used.
 
 ## Summary by test level
 
 | Test level | Offline | Live | Total |
 | --- | ---: | ---: | ---: |
 | Component | 118 | 0 | 118 |
-| Integration | 27 | 0 | 27 |
+| Integration | 26 | 0 | 26 |
 | System | 1 | 38 | 39 |
-| **Total** | **146** | **38** | **184** |
+| **Total** | **145** | **38** | **183** |
 
 ## Test cases
 
@@ -251,10 +251,9 @@ Source: [`tests/test_retry_behavior.py`](../tests/test_retry_behavior.py) | Leve
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
 | TC-095 | Throttled once | Getting dataset | Final success is returned | 1 | Offline |
-| TC-096 | Persistent server error | Getting dataset | Retries stop after max retries | 1 | Offline |
-| TC-097 | Persistent server error | Getting news | Retries stop after max retries | 1 | Offline |
-| TC-098 | Zero max retries | Server fails | No retry is made | 1 | Offline |
-| TC-099 | Nothing listening | Getting dataset | Connection error is raised after one retry | 1 | Offline |
+| TC-096 | Persistent server error | Getting news | Retries stop after max retries | 1 | Offline |
+| TC-097 | Zero max retries | Server fails | No retry is made | 1 | Offline |
+| TC-098 | Nothing listening | Getting dataset | Connection error is raised after one retry | 1 | Offline |
 
 ### Client library: Retry configuration
 
@@ -262,15 +261,15 @@ Source: [`tests/test_retry_config.py`](../tests/test_retry_config.py) | Level: C
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-100 | Dataset override | Resolving datasets | Override applies only to that dataset | 1 | Offline |
-| TC-101 | Base URL with trailing slash | Resolving overridden dataset | Override still applies | 1 | Offline |
-| TC-102 | Dataset override with jitter | Resolving datasets | Only that dataset has jitter | 1 | Offline |
-| TC-103 | Excessive max retries | Creating client | Warning is logged | 1 | Offline |
-| TC-104 | Dataset override with excessive max retries | Creating client | Warning is logged | 1 | Offline |
-| TC-105 | Dataset override | Resolving dataset with longer name | Override does not apply | 1 | Offline |
-| TC-106 | Dataset override | Request has query string | Override still applies | 1 | Offline |
-| TC-107 | Dataset override | Closing client | Its adapter is closed | 1 | Offline |
-| TC-108 | Base URL with upper case host | Resolving overridden dataset | Override still applies | 1 | Offline |
+| TC-099 | Dataset override | Resolving datasets | Override applies only to that dataset | 1 | Offline |
+| TC-100 | Base URL with trailing slash | Resolving overridden dataset | Override still applies | 1 | Offline |
+| TC-101 | Dataset override with jitter | Resolving datasets | Only that dataset has jitter | 1 | Offline |
+| TC-102 | Excessive max retries | Creating client | Warning is logged | 1 | Offline |
+| TC-103 | Dataset override with excessive max retries | Creating client | Warning is logged | 1 | Offline |
+| TC-104 | Dataset override | Resolving dataset with longer name | Override does not apply | 1 | Offline |
+| TC-105 | Dataset override | Request has query string | Override still applies | 1 | Offline |
+| TC-106 | Dataset override | Closing client | Its adapter is closed | 1 | Offline |
+| TC-107 | Base URL with upper case host | Resolving overridden dataset | Override still applies | 1 | Offline |
 
 ### Dataset API: Schema validation
 
@@ -278,13 +277,13 @@ Source: [`tests/test_schema_validation.py`](../tests/test_schema_validation.py) 
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-109 | - | Getting CO2Emis | Response matches schema | 1 | Live |
-| TC-110 | - | Getting day ahead prices | Response matches schema | 1 | Live |
-| TC-111 | Empty records list | Validating | Schema is satisfied | 1 | Offline |
-| TC-112 | Record without optional field | Validating | Schema is satisfied | 2 | Offline |
-| TC-113 | Record with text as value | Validating | Validation fails | 2 | Offline |
-| TC-114 | Record without required field | Validating | Validation fails | 2 | Offline |
-| TC-115 | Malformed body | Validating | Validation fails | 4 | Offline |
+| TC-108 | - | Getting CO2Emis | Response matches schema | 1 | Live |
+| TC-109 | - | Getting day ahead prices | Response matches schema | 1 | Live |
+| TC-110 | Empty records list | Validating | Schema is satisfied | 1 | Offline |
+| TC-111 | Record without optional field | Validating | Schema is satisfied | 2 | Offline |
+| TC-112 | Record with text as value | Validating | Validation fails | 2 | Offline |
+| TC-113 | Record without required field | Validating | Validation fails | 2 | Offline |
+| TC-114 | Malformed body | Validating | Validation fails | 4 | Offline |
 
 ### Dataset API: Typed records
 
@@ -292,12 +291,12 @@ Source: [`tests/test_typed_records.py`](../tests/test_typed_records.py) | Level:
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-116 | Model | Getting records | Typed records are returned | 1 | Offline |
-| TC-117 | Query parameters | Getting records | They reach the API | 2 | Offline |
-| TC-118 | No model | Getting records | Type error says so | 2 | Offline |
-| TC-119 | Error status | Getting records | HTTP error is raised | 2 | Offline |
-| TC-120 | Body that is not JSON | Getting records | Invalid response error is raised | 2 | Offline |
-| TC-121 | Unknown price area | Getting records | Validation error is raised | 1 | Offline |
+| TC-115 | Model | Getting records | Typed records are returned | 1 | Offline |
+| TC-116 | Query parameters | Getting records | They reach the API | 2 | Offline |
+| TC-117 | No model | Getting records | Type error says so | 2 | Offline |
+| TC-118 | Error status | Getting records | HTTP error is raised | 2 | Offline |
+| TC-119 | Body that is not JSON | Getting records | Invalid response error is raised | 2 | Offline |
+| TC-120 | Unknown price area | Getting records | Validation error is raised | 1 | Offline |
 
 ### Client library: URL building
 
@@ -305,8 +304,8 @@ Source: [`tests/test_url_building.py`](../tests/test_url_building.py) | Level: C
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-122 | Base URL with trailing slash | Building dataset URL | No double slash | 1 | Offline |
-| TC-123 | News path | Building news URL | Slashes are normalized | 2 | Offline |
-| TC-124 | News path with special characters | Building news URL | It stays one encoded path segment | 3 | Offline |
-| TC-125 | Dataset name with special characters | Building dataset URL | It stays one encoded segment | 3 | Offline |
-| TC-126 | Dataset name with slash | Getting dataset | Request path keeps the encoded slash | 1 | Offline |
+| TC-121 | Base URL with trailing slash | Building dataset URL | No double slash | 1 | Offline |
+| TC-122 | News path | Building news URL | Slashes are normalized | 2 | Offline |
+| TC-123 | News path with special characters | Building news URL | It stays one encoded path segment | 3 | Offline |
+| TC-124 | Dataset name with special characters | Building dataset URL | It stays one encoded segment | 3 | Offline |
+| TC-125 | Dataset name with slash | Getting dataset | Request path keeps the encoded slash | 1 | Offline |

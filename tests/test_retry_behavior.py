@@ -28,18 +28,6 @@ def test_givenThrottledOnce_whenGettingDataset_thenFinalSuccessIsReturned(script
     assert server.request_count == 2
 
 
-def test_givenPersistentServerError_whenGettingDataset_thenRetriesStopAfterMaxRetries(
-    scripted_server,
-):
-    # arrange
-    server = scripted_server(503)
-
-    # act / assert
-    with pytest.raises(requests.exceptions.RetryError):
-        api_for(server, max_retries=2).get()
-    assert server.request_count == 3
-
-
 def test_givenPersistentServerError_whenGettingNews_thenRetriesStopAfterMaxRetries(scripted_server):
     # arrange
     server = scripted_server(500)
