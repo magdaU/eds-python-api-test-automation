@@ -11,9 +11,6 @@ class NewsApi:
     def __init__(self, client: EDSApiClient):
         self.client = client
 
-    def url(self, path: str = "") -> str:
-        return self.client.news_url(path)
-
     def get(self, path: str = "", params: dict[str, Any] | None = None) -> requests.Response:
         return self.client.get_news(path, params)
 

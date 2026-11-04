@@ -20,10 +20,6 @@ class DatasetApi[ModelT: BaseModel]:
         self.dataset = dataset
         self.model = model
 
-    @property
-    def url(self) -> str:
-        return self.client.dataset_url(self.dataset)
-
     def metadata(self) -> requests.Response:
         return self.client.get_dataset_metadata(self.dataset)
 
