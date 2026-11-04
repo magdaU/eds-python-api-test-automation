@@ -39,3 +39,20 @@ jobs:
 
       - name: Offline tests with coverage (fails under 90%)
         run: pytest -m "not live" --cov
+
+  # Builds the image and runs its default command, so a broken Dockerfile is caught before a release.
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Build image
+        run: docker build -t eds-api-tests .
+
+      - name: Run the default command (offline tests)
+        run: docker run --rm eds-api-tests

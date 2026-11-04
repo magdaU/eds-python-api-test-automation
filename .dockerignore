@@ -7,3 +7,7 @@ venv/
 *.egg-info/
 allure-results/
 .git/
+allure-report/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
