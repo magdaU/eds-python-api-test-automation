@@ -54,15 +54,14 @@ def test_givenErrorResponse_whenGettingDataset_thenBodyPreviewIsLogged(scripted_
     assert messages[0].endswith('body={"records": [], "total": 0}')
 
 
-def test_givenRetryAfterHeader_whenServerThrottles_thenWaitAndReasonAreLogged(scripted_server, monkeypatch, caplog):
+def test_givenRetryAfterHeader_whenServerThrottles_thenWaitAndReasonAreLogged(scripted_server, caplog):
     # arrange
     server = scripted_server(429, 200, headers={"Retry-After": "2"})
     waits = []
-    monkeypatch.setattr("urllib3.util.retry.time.sleep", waits.append)
 
     # act
     with caplog.at_level(logging.WARNING):
-        api_for(server).get()
+        api_for(server, sleep=waits.append).get()
 
     # assert
     assert waits == [2]
@@ -71,28 +70,26 @@ def test_givenRetryAfterHeader_whenServerThrottles_thenWaitAndReasonAreLogged(sc
     ]
 
 
-def test_givenServerErrorWithoutRetryAfter_whenRetrying_thenBackoffWaitIsLogged(scripted_server, monkeypatch, caplog):
+def test_givenServerErrorWithoutRetryAfter_whenRetrying_thenBackoffWaitIsLogged(scripted_server, caplog):
     # arrange
     server = scripted_server(503, 200)
-    monkeypatch.setattr("urllib3.util.retry.time.sleep", lambda seconds: None)
 
     # act
     with caplog.at_level(logging.WARNING):
-        api_for(server).get()
+        api_for(server, sleep=lambda seconds: None).get()
 
     # assert
     assert [record.getMessage() for record in caplog.records] == ["Retrying in 0.0 s, backoff (status 503)"]
 
 
-def test_givenBackoffWithJitter_whenRetrying_thenLoggedWaitIsTheWaitThatHappened(scripted_server, monkeypatch, caplog):
+def test_givenBackoffWithJitter_whenRetrying_thenLoggedWaitIsTheWaitThatHappened(scripted_server, caplog):
     # arrange
     server = scripted_server(503, 503, 200)
     waits = []
-    monkeypatch.setattr("urllib3.util.retry.time.sleep", waits.append)
 
     # act
     with caplog.at_level(logging.WARNING):
-        api_for(server, max_retries=3, backoff_jitter=50.0).get()
+        api_for(server, max_retries=3, sleep=waits.append, backoff_jitter=50.0).get()
 
     # assert
     # the first retry has no backoff, so only the second one waits (and adds jitter)

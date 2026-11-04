@@ -13,11 +13,9 @@ pytestmark = labels("Client library", "Retry-After limit", "critical")
 
 
 @pytest.fixture
-def waits(monkeypatch):
-    """The seconds the retry logic asked to sleep, without really sleeping."""
-    recorded = []
-    monkeypatch.setattr("urllib3.util.retry.time.sleep", recorded.append)
-    return recorded
+def waits():
+    """The seconds the retry logic asked to sleep; pass `waits.append` as `sleep=` to avoid really sleeping."""
+    return []
 
 
 def test_whenCreatingRetryConfig_thenTheDefaultLimitIsSixtySeconds():
@@ -39,7 +37,7 @@ def test_givenRetryAfterAboveTheLimit_whenServerThrottles_thenClientFailsFastWit
 
     # act
     with pytest.raises(RetryAfterTooLongError) as error:
-        api_for(server).get()
+        api_for(server, sleep=waits.append).get()
 
     # assert
     assert waits == []
@@ -53,7 +51,7 @@ def test_givenRetryAfterAtTheLimit_whenServerThrottles_thenClientWaitsAndSucceed
     server = scripted_server(429, 200, headers={"Retry-After": str(int(DEFAULT_MAX_RETRY_AFTER))})
 
     # act
-    response = api_for(server).get()
+    response = api_for(server, sleep=waits.append).get()
 
     # assert
     assert waits == [DEFAULT_MAX_RETRY_AFTER]
@@ -66,7 +64,7 @@ def test_givenRetryAfterJustAboveTheLimit_whenServerThrottles_thenClientRefusesT
 
     # act
     with pytest.raises(RetryAfterTooLongError):
-        api_for(server).get()
+        api_for(server, sleep=waits.append).get()
 
     # assert
     assert waits == []
@@ -82,7 +80,7 @@ def test_givenRetryAfterAsHttpDateAboveTheLimit_whenServerThrottles_thenClientFa
 
     # act
     with pytest.raises(RetryAfterTooLongError):
-        api_for(server).get()
+        api_for(server, sleep=waits.append).get()
 
     # assert
     assert waits == []
@@ -94,7 +92,7 @@ def test_givenRetryAfterAsHttpDateBelowTheLimit_whenServerThrottles_thenClientWa
     server = scripted_server(429, 200, headers={"Retry-After": http_date(30)})
 
     # act
-    response = api_for(server).get()
+    response = api_for(server, sleep=waits.append).get()
 
     # assert
     assert response.status_code == 200
@@ -107,7 +105,7 @@ def test_givenNoLimit_whenServerAsksForALongWait_thenClientStillWaits(scripted_s
     server = scripted_server(429, 200, headers={"Retry-After": "300"})
 
     # act
-    response = api_for(server, max_retry_after=None).get()
+    response = api_for(server, sleep=waits.append, max_retry_after=None).get()
 
     # assert
     assert waits == [300]
@@ -120,7 +118,7 @@ def test_givenAnAllowedWait_whenTheNextWaitIsTooLong_thenClientGivesUpAtTheSecon
 
     # act
     with pytest.raises(RetryAfterTooLongError):
-        api_for(server).get()
+        api_for(server, sleep=waits.append).get()
 
     # assert
     assert waits == [2]

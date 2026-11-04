@@ -106,7 +106,7 @@ MUTATIONS = [
         'return self.dataset_adapters.get(url.split("?", 1)[0]) or super().get_adapter(url)',
         "return next(iter(self.dataset_adapters.values()), None) or super().get_adapter(url)",
     ),
-    Mutation("backoff-measured-twice", RETRY, "time.sleep(backoff)", "super().sleep(response)"),
+    Mutation("backoff-measured-twice", RETRY, "self.sleep_func(backoff)", "self.sleep_func(self.get_backoff_time())"),
     Mutation(
         "connection-failure-not-logged",
         EDS_CLIENT,

@@ -1,6 +1,7 @@
 import json
 import logging
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Self
 from urllib.parse import quote
@@ -65,6 +66,7 @@ class EDSApiClient:
     hits rate limits more. An override replaces the instance settings as a whole.
     `timeout` (seconds) applies to each connect/read of a single attempt, not
     to the whole retry cycle, so a server-ordered `Retry-After` wait is not cut short.
+    `sleep` performs every retry wait (default `time.sleep`); a test passes a recording function to avoid real waiting.
     """
 
     def __init__(
@@ -73,9 +75,11 @@ class EDSApiClient:
         retry: RetryConfig = DEFAULT_RETRY,
         dataset_overrides: dict[str, RetryConfig] | None = None,
         timeout: float = DEFAULT_TIMEOUT,
+        sleep: Callable[[float], None] = time.sleep,
     ):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
+        self._sleep = sleep
         self.session = _Session()
 
         self._mount_retry("https://", retry)
@@ -86,8 +90,7 @@ class EDSApiClient:
     def _mount_retry(self, url_prefix: str, config: RetryConfig) -> None:
         self.session.mount(url_prefix, self._build_adapter(config))
 
-    @staticmethod
-    def _build_adapter(config: RetryConfig) -> HTTPAdapter:
+    def _build_adapter(self, config: RetryConfig) -> HTTPAdapter:
         if config.max_retries > SANE_MAX_RETRIES:
             logger.warning(
                 "max_retries=%s exceeds the recommended maximum of %s -- this risks "
@@ -101,6 +104,7 @@ class EDSApiClient:
             backoff_factor=config.backoff_factor,
             backoff_jitter=config.backoff_jitter,
             max_retry_after=config.max_retry_after,
+            sleep_func=self._sleep,
             status_forcelist=RETRYABLE_STATUS_CODES,
             allowed_methods=["GET"],
         )

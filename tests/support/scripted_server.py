@@ -49,10 +49,10 @@ class ScriptedServer:
         self.httpd.server_close()
 
 
-def client_for(server, max_retries=2, **retry_options):
+def client_for(server, max_retries=2, sleep=time.sleep, **retry_options):
     retry = RetryConfig(max_retries=max_retries, backoff_factor=0, **retry_options)
-    return EDSApiClient(base_url=server.url, retry=retry)
+    return EDSApiClient(base_url=server.url, retry=retry, sleep=sleep)
 
 
-def api_for(server, max_retries=2, **retry_options):
-    return DatasetApi(client_for(server, max_retries, **retry_options), "CO2Emis")
+def api_for(server, max_retries=2, sleep=time.sleep, **retry_options):
+    return DatasetApi(client_for(server, max_retries, sleep, **retry_options), "CO2Emis")

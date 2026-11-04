@@ -1,5 +1,6 @@
 import logging
 import time
+from collections.abc import Callable
 from typing import Any, Self
 
 import requests
@@ -23,16 +24,28 @@ class LoggingRetry(Retry):
 
     A server-ordered `Retry-After` can be minutes long and is spent inside the HTTP stack, so without this a slow run
     looks like a hang. With `max_retry_after` set, a longer wait ends the request at once with `RetryAfterTooLongError`.
+
+    Every wait goes through `sleep_func` (default `time.sleep`). A test passes its own function, which records the
+    seconds instead of waiting. That is why tests do not patch `time.sleep`: urllib3 uses the global `time` module, so
+    such a patch would replace `time.sleep` everywhere for as long as the test runs, test code included.
     """
 
-    def __init__(self, *args: Any, max_retry_after: float | None = None, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        *args: Any,
+        max_retry_after: float | None = None,
+        sleep_func: Callable[[float], None] = time.sleep,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.max_retry_after = max_retry_after
+        self.sleep_func = sleep_func
 
     def new(self, **kw: Any) -> Self:
-        """urllib3 builds a fresh `Retry` for every attempt; the limit has to survive that."""
+        """urllib3 builds a fresh `Retry` for every attempt; the limit and the sleep function have to survive that."""
         retry = super().new(**kw)
         retry.max_retry_after = self.max_retry_after
+        retry.sleep_func = self.sleep_func
         return retry
 
     def sleep(self, response: BaseHTTPResponse | None = None) -> None:
@@ -45,10 +58,10 @@ class LoggingRetry(Retry):
             )
         if retry_after:
             logger.warning("Retrying in %.1f s because the server sent Retry-After (%s)", retry_after, reason)
-            super().sleep(response)
+            self.sleep_func(retry_after)
             return
         # measured once: with jitter every call draws a new value, so a second call would wait a different time than logged
         backoff = self.get_backoff_time()
         logger.warning("Retrying in %.1f s, backoff (%s)", backoff, reason)
         if backoff > 0:
-            time.sleep(backoff)
+            self.sleep_func(backoff)
