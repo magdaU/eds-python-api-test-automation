@@ -5,7 +5,7 @@ import json
 
 import pytest
 import requests_mock
-from hypothesis import given, settings
+from hypothesis import given
 from hypothesis import strategies as st
 
 from client.eds_client import EDSApiClient
@@ -19,9 +19,6 @@ BASE = "http://localhost:9999"
 non_negative_ints = st.integers(min_value=0, max_value=10**9)
 json_scalars = st.one_of(st.text(), st.integers(), st.booleans(), st.none())
 filter_dicts = st.dictionaries(st.text(min_size=1), st.one_of(json_scalars, st.lists(json_scalars)))
-
-settings.register_profile("default", max_examples=100, deadline=None)
-settings.load_profile("default")
 
 
 def get_sent_query(**arguments):
