@@ -4,16 +4,16 @@
 > Regenerate after adding, renaming or removing tests. IDs are sequential and are **not stable** between
 > regenerations, so refer to a test by its module and name.
 
-125 test functions expand to 183 executed test cases (*Variants* counts parametrized runs). Each test name reads `given<precondition>_when<action>_then<expected result>`; the columns below are that name, split. Tests that call the public EDS API count as *System* level whichever module they live in. See the [test strategy](test-strategy.md) for how the levels are used.
+125 test functions expand to 184 executed test cases (*Variants* counts parametrized runs). Each test name reads `given<precondition>_when<action>_then<expected result>`; the columns below are that name, split. Tests that call the public EDS API count as *System* level whichever module they live in. See the [test strategy](test-strategy.md) for how the levels are used.
 
 ## Summary by test level
 
 | Test level | Offline | Live | Total |
 | --- | ---: | ---: | ---: |
-| Component | 118 | 0 | 118 |
+| Component | 119 | 0 | 119 |
 | Integration | 26 | 0 | 26 |
 | System | 1 | 38 | 39 |
-| **Total** | **145** | **38** | **183** |
+| **Total** | **146** | **38** | **184** |
 
 ## Test cases
 
@@ -23,7 +23,7 @@ Source: [`tests/test_allure_categories.py`](../tests/test_allure_categories.py) 
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-001 | Failure message | Categorizing | Expected category is assigned | 6 | Offline |
+| TC-001 | Failure message | Categorizing | Expected category is assigned | 7 | Offline |
 
 ### Client library: Allure environment
 
