@@ -34,4 +34,17 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run live tests
-        run: pytest -m live -v
+        run: pytest -m live -v --junitxml=junit-live.xml
+
+      # Runs even when the tests failed, so the summary shows what failed without opening the logs.
+      - name: Summarise the live run
+        if: always()
+        run: python scripts/summarise_junit.py junit-live.xml >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the JUnit report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: junit-live
+          path: junit-live.xml
+          if-no-files-found: warn
