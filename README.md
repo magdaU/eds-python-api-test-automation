@@ -127,7 +127,10 @@ a data problem does not turn the build red.
 > A full run sends exactly one query to `DayAheadPrices`, whose limit is not measured (a push to `main` and `Live nightly` share the concurrency group `eds-live-api`, so two live runs never overlap; a run still waiting in that group is cancelled when a newer one arrives, so a pending run can be dropped); if a repeated run is throttled it fails fast
 > with `RetryAfterTooLongError`. For repeated local runs use `pytest -m "not live"`.
 
-> **Throttling in live tests.** The live tests use the default client and its retry settings. All their waits (`Retry-After`
+> **Wait budget.** `EDSApiClient(wait_budget=...)` caps the total of all waits (`Retry-After` and backoff) of one client; the
+> default is no limit. A wait over the budget is refused with `RetryAfterTooLongError`.
+>
+> **Throttling in live tests.** The live tests use the default client and its retry settings, with a wait budget. All their waits (`Retry-After`
 > and backoff) share one budget of 120 s per run (`LIVE_RETRY_BUDGET_SECONDS` in `tests/support/live.py`). A wait that would
 > exceed the budget, or a `Retry-After` above the client's 60 s cap, is refused: the test is reported as **skipped** with the
 > reason `API throttled`, not failed. A rerun happens only on network errors, never on throttling. Every test also has a

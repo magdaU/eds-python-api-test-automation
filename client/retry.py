@@ -44,6 +44,32 @@ class RetryAfterTooLong(Exception):
         self.allowed_seconds = allowed_seconds
 
 
+class WaitBudget:
+    """Total seconds of waiting (`Retry-After` and backoff) that one client may spend.
+
+    A wait that would go over the budget is refused with `RetryAfterTooLong` and not taken; the
+    client turns that into `RetryAfterTooLongError`. Every request of the client shares the budget.
+    `wait` performs the waits that are taken (default `time.sleep`).
+    """
+
+    def __init__(self, seconds: float, wait: Callable[[float], None] = time.sleep) -> None:
+        self.seconds = seconds
+        self.spent = 0.0
+        self.wait = wait
+
+    def sleep(self, seconds: float) -> None:
+        remaining = self.seconds - self.spent
+        if seconds > remaining:
+            raise RetryAfterTooLong(
+                f"the wait budget of {self.seconds:.0f} s for this client is used up "
+                f"({self.spent:.0f} s spent); the next wait of {seconds:.0f} s is not taken",
+                requested_seconds=seconds,
+                allowed_seconds=remaining,
+            )
+        self.spent += seconds
+        self.wait(seconds)
+
+
 class LoggingRetry(Retry):
     """`Retry` that logs how long it is about to wait and why, and refuses a `Retry-After` that
     is too long.

@@ -9,7 +9,7 @@ from urllib.parse import quote
 import requests
 from requests.adapters import BaseAdapter, HTTPAdapter
 
-from client.retry import LoggingRetry, RetryAfterTooLong, RetryAfterTooLongError
+from client.retry import LoggingRetry, RetryAfterTooLong, RetryAfterTooLongError, WaitBudget
 
 BASE_URL = "https://api.energidataservice.dk"
 DEFAULT_MAX_RETRIES = 3
@@ -75,7 +75,8 @@ class EDSApiClient:
     `timeout` (seconds) applies to each connect/read of a single attempt, not
     to the whole retry cycle, so a server-ordered `Retry-After` wait is not cut short.
     `sleep` performs every retry wait (default `time.sleep`); a test passes a recording function to
-    avoid real waiting.
+    avoid real waiting. `wait_budget` (seconds, default no limit) caps the total of all waits of
+    this client: a wait that would exceed it is refused with `RetryAfterTooLongError`.
     """
 
     def __init__(
@@ -85,12 +86,16 @@ class EDSApiClient:
         dataset_overrides: dict[str, RetryConfig] | None = None,
         timeout: float = DEFAULT_TIMEOUT,
         sleep: Callable[[float], None] = time.sleep,
+        wait_budget: float | None = None,
     ):
         if timeout <= 0:
             raise ValueError(f"timeout must be positive, got {timeout}")
+        if wait_budget is not None and wait_budget < 0:
+            raise ValueError(f"wait_budget must not be negative, got {wait_budget}")
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
-        self._sleep = sleep
+        self.wait_budget = None if wait_budget is None else WaitBudget(wait_budget, sleep)
+        self._wait = sleep if self.wait_budget is None else self.wait_budget.sleep
         self.session = _Session()
 
         self._mount_retry("https://", retry)
@@ -117,7 +122,7 @@ class EDSApiClient:
             backoff_factor=config.backoff_factor,
             backoff_jitter=config.backoff_jitter,
             max_retry_after=config.max_retry_after,
-            sleep_func=self._sleep,
+            sleep_func=self._wait,
             status_forcelist=RETRYABLE_STATUS_CODES,
             allowed_methods=["GET"],
         )

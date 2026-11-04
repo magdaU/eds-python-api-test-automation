@@ -206,6 +206,13 @@ MUTATIONS = [
         "if False:",
     ),
     Mutation("zero-timeout-allowed", EDS_CLIENT, "if timeout <= 0:", "if False:"),
+    Mutation("wait-budget-not-enforced", RETRY, "if seconds > remaining:", "if False:"),
+    Mutation(
+        "wait-budget-not-wired",
+        EDS_CLIENT,
+        "self._wait = sleep if self.wait_budget is None else self.wait_budget.sleep",
+        "self._wait = sleep",
+    ),
     Mutation(
         "model-co2-area-any-text",
         "models/co2emis.py",

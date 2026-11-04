@@ -260,7 +260,7 @@ server (`tests/support/scripted_server.py`, `tests/test_retry_behavior.py`); the
 
 ## 15. Follow-ups (not yet planned)
 
-- [ ] **Total retry budget in the client.** Live tests already share a budget of 120 s per run (`RetryBudget` in `tests/support/live.py`), but it lives in the test support code. Move it into the client, so that a sequence of requests in production code (paging, retries of several datasets) is bounded too.
+- [x] **Total retry budget in the client.** `EDSApiClient(wait_budget=...)` caps the total of all waits (`Retry-After` and backoff) of one client; a wait over the budget is refused with `RetryAfterTooLongError`. The default is no limit, so existing callers are unchanged. The live tests use a budget of 120 s per run.
 
 ---
 

@@ -108,7 +108,7 @@ on every test would only add indirection.
   "no limit" and returns millions of records.
 - **Tolerate only transient failures.** Live tests (all marked flaky) rerun only on network errors (`ConnectionError`,
   `Timeout`), never on assertion failures or on throttling. A throttled live test (`RetryAfterTooLongError`) is skipped
-  with its reason, not failed. All waits of one run share a budget of 120 s (`RetryBudget` in `tests/support/live.py`), and
+  with its reason, not failed. All waits of one run share a budget of 120 s (`wait_budget` of `EDSApiClient`, set in `tests/support/live.py`), and
   each test has a 120 s timeout (`pytest-timeout`), so one test cannot wait for minutes. The offline tests keep the client
   defaults. Mocks and schemas are located relative to the code, so tests run from any directory.
 
