@@ -40,6 +40,7 @@ def test_givenSuccessfulResponse_whenGettingDataset_thenOneLineLogsRequestStatus
         api_for(server).get(limit=1)
 
     # assert
+    assert [record.levelno for record in caplog.records] == [logging.INFO]
     messages = [record.getMessage() for record in caplog.records]
     assert len(messages) == 1
     assert re.fullmatch(
@@ -57,6 +58,7 @@ def test_givenErrorResponse_whenGettingDataset_thenBodyPreviewIsLogged(scripted_
         api_for(server).get()
 
     # assert
+    assert [record.levelno for record in caplog.records] == [logging.WARNING]
     messages = [record.getMessage() for record in caplog.records]
     assert len(messages) == 1
     assert "-> 400 in" in messages[0]

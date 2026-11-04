@@ -217,7 +217,7 @@ class EDSApiClient:
         if response.ok:
             logger.info(line)
         else:
-            logger.info("%s body=%s", line, response.text[:ERROR_BODY_PREVIEW_CHARS])
+            logger.warning("%s body=%s", line, response.text[:ERROR_BODY_PREVIEW_CHARS])
 
 
 def _milliseconds_since(started: float) -> float:
