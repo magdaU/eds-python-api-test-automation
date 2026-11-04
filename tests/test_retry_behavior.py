@@ -1,3 +1,4 @@
+import logging
 import socket
 
 import pytest
@@ -58,7 +59,7 @@ def test_givenZeroMaxRetries_whenServerFails_thenNoRetryIsMade(scripted_server):
     assert server.request_count == 1
 
 
-def test_givenNothingListening_whenGettingDataset_thenConnectionErrorIsRaised():
+def test_givenNothingListening_whenGettingDataset_thenConnectionErrorIsRaisedAfterOneRetry(caplog):
     # arrange
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
@@ -66,6 +67,9 @@ def test_givenNothingListening_whenGettingDataset_thenConnectionErrorIsRaised():
     client = EDSApiClient(base_url=f"http://127.0.0.1:{free_port}", retry=RetryConfig(max_retries=1, backoff_factor=0))
     api = DatasetApi(client, "CO2Emis")
 
-    # act / assert
-    with pytest.raises(requests.exceptions.ConnectionError):
+    # act
+    with caplog.at_level(logging.WARNING, logger="client.retry"), pytest.raises(requests.exceptions.ConnectionError):
         api.get()
+
+    # assert
+    assert caplog.messages.count("Retrying in 0.0 s, backoff (no response)") == 1

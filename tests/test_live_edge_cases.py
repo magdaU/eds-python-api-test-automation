@@ -114,3 +114,44 @@ def test_givenUnknownNewsPath_whenGettingNews_thenNotFoundIsReturned(news_api):
 
     # assert
     assert response.status_code == 404
+
+
+@allure.feature("News")
+def test_givenSubPathBelowCalendar_whenGettingNews_thenNotFoundIsReturned(news_api):
+    # act
+    response = news_api.get("calendar/extra")
+
+    # assert
+    assert response.status_code == 404
+
+
+@allure.feature("News")
+def test_givenUnknownParameter_whenGettingCalendar_thenItIsIgnored(news_api):
+    # act
+    response = news_api.get("calendar", {"bogus": "1"})
+
+    # assert
+    assert response.status_code == 200
+    body = response.json()
+    assert body
+    assert set(body[0]) == {"dateString", "numberOfNewsStories"}
+
+
+@allure.feature("News")
+def test_givenUnknownParameter_whenGettingNewsList_thenItIsIgnored(news_api):
+    # act
+    response = news_api.get(params={"bogus": "1"})
+
+    # assert
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+
+@allure.feature("News")
+def test_givenDifferentCase_whenGettingCalendar_thenPathIsStillResolved(news_api):
+    # act
+    response = news_api.get("Calendar")
+
+    # assert
+    assert response.status_code == 200
+    assert response.json()[0]["dateString"]

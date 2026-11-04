@@ -6,7 +6,7 @@ Related: [test strategy](test-strategy.md) · [test plan](test-plan.md) · [test
 
 ## 1. Summary and recommendation
 
-The suite has 164 automated test cases: 130 offline and 34 against the live EDS API. Build #218 (commit `67915ed`) ran the 152 that run on every push to `main` (130 offline, 22 live), and all passed. The other 12 are data-quality checks that run in the nightly job only (not in
+The suite has 168 automated test cases: 130 offline and 38 against the live EDS API. Build #218 (commit `67915ed`) ran the 152 that ran on every push to `main` then (130 offline, 22 live), and all passed; four live News negative tests were added after it (26 live on `main` from the next run). The other 12 are data-quality checks that run in the nightly job only (not in
 the Allure report) and passed in the nightly run of 2026-10-30, the first to include them. Static analysis, the dependency
 audit and the secret scan are clean, coverage of the client is 100% (statements and branches), all 49 mutations are killed
 (local run), and the nightly live run passed on each of its seven executions (2026-10-24 to 2026-10-30). **Every exit criterion
@@ -29,14 +29,14 @@ vulnerabilities and secrets.
 | --- | --- | --- |
 | Offline tests (130) | 130 passed, in random order | [test results](test-results.md) |
 | Live tests on `main` (22) | 22 passed | [test results](test-results.md) |
-| Data-quality checks (12, nightly only) | 12 passed in the nightly run of 2026-10-30 (commit `ebe4111`); not yet run with the current dependency pins | `Live nightly` workflow |
+| Data-quality checks (12, nightly only) | 12 passed in the nightly runs of 2026-11-02 and 2026-11-03 (commit `887be33`, current dependency pins) | `Live nightly` workflow |
 | Failed, broken or skipped tests | 0 | [test results](test-results.md) |
 | `ruff` (with the `PT` rules), `mypy` (strict) | no findings | `Quality` workflow |
 | Statement / branch coverage of `client/` and `models/` | 100% (207 statements, 28 of 28 branches); gate 90% | [test coverage](test-coverage.md#1-code-coverage) |
-| Mutation checks | 49 of 49 killed (local run on 2026-10-30; not yet run in Actions) | `scripts/mutation_check.py` |
+| Mutation checks | 49 of 49 killed (local run on 2026-10-30); the scheduled run in Actions on 2026-11-02 succeeded | `scripts/mutation_check.py` |
 | Known vulnerabilities, committed secrets | none (`pip-audit`, `detect-secrets`) | `Security` workflow |
 | Nightly live run, 2026-10-24 to 2026-10-30 | 7 of 7 passed | `Live nightly` workflow history |
-| Performance plan (JMeter), latest run 2026-10-26 | passed; the plan has changed since (`DayAheadPrices` endpoint, percentiles in the job summary) and has not run again | `Performance` workflow, artifact `jmeter-report` |
+| Performance plan (JMeter), latest run 2026-11-02 | passed (scheduled run on commit `887be33`, with the `DayAheadPrices` endpoint and percentiles in the job summary; the percentiles are not limits yet) | `Performance` workflow, artifact `jmeter-report` |
 
 The Allure report of `main` holds the 152 tests of build #218. Live report with history: <https://magdau.github.io/eds-python-api-test-automation/>.
 
@@ -46,17 +46,16 @@ The Allure report of `main` holds the 152 tests of build #218. Live report with 
 | --- | ---: | ---: | ---: |
 | Component | 102 | 0 | 102 |
 | Integration | 27 | 0 | 27 |
-| System | 1 | 34 | 35 |
-| **Total** | **130** | **34** | **164** |
+| System | 1 | 38 | 39 |
+| **Total** | **130** | **38** | **168** |
 
-The 34 live cases are 22 that run on every push to `main` and the 12 nightly data-quality checks. The one offline System case
-proves the OpenAPI drift detector can fail. The suite has 121 test functions and BDD scenarios; the difference is parametrized runs.
+The 38 live cases are 26 that run on every push to `main` (22 in build #218) and the 12 nightly data-quality checks. The one offline System case
+proves the OpenAPI drift detector can fail. The suite has 126 test functions and BDD scenarios; the difference is parametrized runs.
 Details in [test cases](test-cases.md).
 
 ## 5. Deviations from the plan
 
-All planned triggers ran except `Mutation checks`, which has not run in Actions yet (first scheduled run: Monday 2026-11-02
-04:00 UTC; the catalogue ran locally). No test was skipped or disabled. The 12 data-quality checks are left out of the run on
+All planned triggers ran, including `Mutation checks` (first scheduled run in Actions: Monday 2026-11-02, succeeded). No test was skipped or disabled. The 12 data-quality checks are left out of the run on
 `main` on purpose. `main` was red twice (builds #154 and #158, one broken infrastructure test each; defects 11 and 12).
 
 ## 6. Defects and weaknesses found and resolved
@@ -111,9 +110,9 @@ Found by reviewing CI results and by auditing the tests and documentation agains
 - **Process.** At least 26 pull requests (#61 to #98) were merged 19-49 seconds before their `Tests` run finished (GitHub API,
   2026-10-29 and 2026-10-30). CI was green each time, but nothing enforces the wait; branch protection requiring `Tests` and
   `Quality` would.
-- **Not yet run in Actions:** the JMeter plan since it moved to `DayAheadPrices` (no percentile limits yet, see
-  [test architecture](test-architecture.md#4-performance-acceptance)), `Mutation checks` (local run on 2026-10-30: all 49 caught),
-  and the nightly run with `requests` 2.33.0 and `pytest` 9.0.3 (passed in builds #187 and #218; first nightly: 2026-10-31).
+- **First runs in Actions (all green):** `Mutation checks` and the JMeter plan on `DayAheadPrices` (both scheduled, 2026-11-02;
+  the JMeter percentiles are reported, not yet limits, see [test architecture](test-architecture.md#4-performance-acceptance)),
+  and the nightly run with `requests` 2.33.0 and `pytest` 9.0.3 (builds #187 and #218; nightlies of 2026-10-31 to 2026-11-03).
   The CI publish-guard simulation is not repeated automatically.
 - **Scheduled runs start late.** The cron of `Live nightly` is 02:00 UTC, but GitHub started the last seven runs between 06:57
   and 08:14 UTC. Plan around the date, not the hour.

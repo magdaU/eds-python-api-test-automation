@@ -101,6 +101,6 @@ testing, executable specifications and random order are applied as listed in the
   in headless Chrome.
 - Diagnostics log only the first 300 characters of an error body and never a successful body.
 - The mutation catalogue is curated, not generated: it covers the behaviours in `scripts/mutation_check.py`, not every line of
-  the client. About 40 offline tests kill none of its mutations (log lines, Allure tooling, mocks against schemas, model edge
+  the client. On 2026-10-30 (40 mutations, 121 tests) 51 tests killed none of them (log lines, Allure tooling, mocks against schemas, model edge
   cases); mutations for the behaviours worth protecting are still to be added.
-- `Mutation checks` has not run in Actions yet (first scheduled run: Monday 2026-11-02 04:00 UTC); the catalogue was run locally.
+- `Mutation checks` ran in Actions for the first time on Monday 2026-11-02 (scheduled, succeeded); the catalogue was also run locally on 2026-10-30.
