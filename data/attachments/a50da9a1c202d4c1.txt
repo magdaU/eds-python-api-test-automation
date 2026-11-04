@@ -1,0 +1,2 @@
+WARNING  client.retry:retry.py:119 Retrying in 58.0 s because the server sent Retry-After (status 429)
+WARNING  client.eds_client:eds_client.py:237 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 1, 'filter': '{"NoSuchColumn":"x"}'} -> 400 in 58188 ms body=Invalid column NoSuchColumn

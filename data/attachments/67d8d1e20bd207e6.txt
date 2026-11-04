@@ -1,0 +1,2 @@
+WARNING  client.retry:retry.py:119 Retrying in 59.0 s because the server sent Retry-After (status 429)
+WARNING  client.eds_client:eds_client.py:192 Giving up on https://api.energidataservice.dk/dataset/CO2Emis: the wait budget of 120 s for this client is used up (109 s spent); the next wait of 59 s is not taken
