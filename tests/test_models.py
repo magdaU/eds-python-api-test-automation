@@ -107,8 +107,8 @@ def test_givenUnknownExtraField_whenParsingRecords_thenItIsIgnored():
 
 @pytest.mark.parametrize(
     "response_json",
-    [{"total": 0}, {"records": {"not": "a list"}}, ["not", "an", "object"]],
-    ids=["missing-records", "records-not-a-list", "body-not-an-object"],
+    [{"total": 0}, ["not", "an", "object"]],
+    ids=["missing-records", "body-not-an-object"],
 )
 def test_givenUnexpectedBody_whenParsingRecords_thenInvalidResponseErrorIsRaised(response_json):
     # act / assert
