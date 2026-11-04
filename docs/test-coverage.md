@@ -1,6 +1,6 @@
 # Test coverage
 
-What the tests cover and what they do not. Measured on `main` plus the review fixes (2026-10-30), Python 3.12. Related:
+What the tests cover and what they do not. Current figures are at the start of section 2 (2026-11-04); the first analysis was on 2026-10-30. Python 3.12. Related:
 [test strategy](test-strategy.md) · [test cases](test-cases.md) · [test results](test-results.md) · [test report](test-report.md).
 
 ## 1. Code coverage
@@ -18,6 +18,8 @@ Command: `pytest -m "not live" --cov` (branch measurement is switched on in `pyp
 - CI enforces at least 90% (`fail_under` in `pyproject.toml`) on the combined figure of statements and branches.
 
 ## 2. Why coverage alone is not trusted
+
+**Current state** (figures from commands, 2026-11-04): 49 of 49 mutations killed (`python scripts/mutation_check.py`); 143 offline tests (`pytest --collect-only -q -m "not live"`) and 38 live tests, 12 of them data-quality checks (`pytest --collect-only -q -m live`, `-m data_quality`); 100% statement and branch coverage of `client/` and `models/`. The 2026-10-30 figures below (40 mutations, 121 tests) are the first analysis and are labelled as such.
 
 Coverage shows which lines ran, not whether a test would fail if the line were wrong. An earlier version of the suite had
 100% coverage and still contained tests that only repeated what the mock returned. The suite is therefore also checked by
@@ -101,6 +103,6 @@ testing, executable specifications and random order are applied as listed in the
   in headless Chrome.
 - Diagnostics log only the first 300 characters of an error body and never a successful body.
 - The mutation catalogue is curated, not generated: it covers the behaviours in `scripts/mutation_check.py`, not every line of
-  the client. On 2026-10-30 (40 mutations, 121 tests) 51 tests killed none of them (log lines, Allure tooling, mocks against schemas, model edge
+  the client. In the first analysis of 2026-10-30 (40 mutations, 121 tests) 51 tests killed none of them (log lines, Allure tooling, mocks against schemas, model edge
   cases); mutations for the behaviours worth protecting are still to be added.
 - `Mutation checks` ran in Actions for the first time on Monday 2026-11-02 (scheduled, succeeded); the catalogue was also run locally on 2026-10-30.
