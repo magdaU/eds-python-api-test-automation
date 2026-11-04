@@ -4,16 +4,16 @@
 > Regenerate after adding, renaming or removing tests. IDs are sequential and are **not stable** between
 > regenerations, so refer to a test by its module and name.
 
-125 test functions expand to 184 executed test cases (*Variants* counts parametrized runs). Each test name reads `given<precondition>_when<action>_then<expected result>`; the columns below are that name, split. Tests that call the public EDS API count as *System* level whichever module they live in. See the [test strategy](test-strategy.md) for how the levels are used.
+125 test functions expand to 181 executed test cases (*Variants* counts parametrized runs). Each test name reads `given<precondition>_when<action>_then<expected result>`; the columns below are that name, split. Tests that call the public EDS API count as *System* level whichever module they live in. See the [test strategy](test-strategy.md) for how the levels are used.
 
 ## Summary by test level
 
 | Test level | Offline | Live | Total |
 | --- | ---: | ---: | ---: |
-| Component | 119 | 0 | 119 |
-| Integration | 26 | 0 | 26 |
+| Component | 118 | 0 | 118 |
+| Integration | 24 | 0 | 24 |
 | System | 1 | 38 | 39 |
-| **Total** | **146** | **38** | **184** |
+| **Total** | **143** | **38** | **181** |
 
 ## Test cases
 
@@ -164,7 +164,7 @@ Source: [`tests/test_models.py`](../tests/test_models.py) | Level: Component | E
 | TC-062 | Invalid field value | Parsing records | Validation error is raised | 2 | Offline |
 | TC-063 | Empty records | Parsing records | Empty list is returned | 1 | Offline |
 | TC-064 | Unknown extra field | Parsing records | It is ignored | 1 | Offline |
-| TC-065 | Unexpected body | Parsing records | Invalid response error is raised | 3 | Offline |
+| TC-065 | Unexpected body | Parsing records | Invalid response error is raised | 2 | Offline |
 | TC-066 | Valid day ahead prices JSON | Parsing records | Every field is mapped | 1 | Offline |
 | TC-067 | Known price area | Parsing day ahead prices | It is accepted | 2 | Offline |
 | TC-068 | Invalid day ahead prices record | Parsing records | Validation error is raised | 2 | Offline |
@@ -226,7 +226,7 @@ Source: [`tests/bdd/features/resilience.feature`](../tests/bdd/features/resilien
 | TC-082 | The client waits as long as a throttling server asks | an API that answers 429 with "Retry-After: 2" and then 200 | I get a dataset | the client waited 2 seconds before it retried; the response status is 200 | 1 | Offline |
 | TC-083 | The client refuses to wait much longer than it allows | an API that answers 429 with "Retry-After: 300" and then 200 | I get a dataset | the request fails because the server asked for a longer wait than allowed; the client did not wait | 1 | Offline |
 | TC-084 | The client gives up when the API keeps failing | an API that always answers 503 | I get a dataset | the request fails with a retry error after 3 attempts | 1 | Offline |
-| TC-085 | Client errors are not retried | an API that always answers &lt;status&gt; | I get a dataset | the response status is &lt;status&gt;; the API received 1 request | 3 | Offline |
+| TC-085 | Client errors are not retried | an API that always answers &lt;status&gt; | I get a dataset | the response status is &lt;status&gt;; the API received 1 request | 1 | Offline |
 
 ### Client library: Retry-After limit
 
