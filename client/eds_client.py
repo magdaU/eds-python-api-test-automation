@@ -47,10 +47,9 @@ DEFAULT_RETRY = RetryConfig()
 class _Session(requests.Session):
     """A `Session` that gives a dataset its own retry adapter, and only that dataset.
 
-    `Session.mount` matches a URL by prefix, so an adapter mounted for `/dataset/CO2Emis` would also
-    serve
-    `/dataset/CO2EmisProg`. Here the URL has to be the dataset's own, with or without a query
-    string.
+    `Session.mount` matches a URL by prefix, so an adapter mounted for `/dataset/CO2Emis` would
+    also serve `/dataset/CO2EmisProg`. Here the URL has to be the dataset's own, with or without a
+    query string.
     """
 
     def __init__(self) -> None:
@@ -186,7 +185,11 @@ class EDSApiClient:
             response = self.session.get(url, params=params, timeout=self.timeout)
         except RetryAfterTooLong as error:
             logger.warning("Giving up on %s: %s", url, error)
-            raise RetryAfterTooLongError(str(error)) from error
+            raise RetryAfterTooLongError(
+                str(error),
+                requested_seconds=error.requested_seconds,
+                allowed_seconds=error.allowed_seconds,
+            ) from error
         except requests.exceptions.RetryError as error:
             # Retryable statuses never reach the caller as a response: urllib3 retries them and,
             # once the budget is spent, raises. This is where that would otherwise go unnoticed.
@@ -215,8 +218,8 @@ class EDSApiClient:
     def _log_response(
         url: str, params: dict[str, Any], response: requests.Response, started: float
     ) -> None:
-        """One line per request: what was asked, the status and how long it took (waits for retries
-        included).
+        """One line per request: what was asked, the status and how long it took, waits for retries
+        included.
 
         An error response also gets the start of its body, which is where the API says what was
         wrong.
@@ -234,8 +237,8 @@ def _milliseconds_since(started: float) -> float:
 
 
 def _prepared_url(url: str) -> str:
-    """The URL as `requests` sends it (lower-case host and so on), which is how the session looks an
-    adapter up."""
+    """The URL as `requests` sends it (lower-case host and so on), which is how the session looks
+    an adapter up."""
     return str(requests.Request("GET", url).prepare().url)
 
 

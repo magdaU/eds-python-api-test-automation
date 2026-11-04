@@ -45,8 +45,8 @@ def test_givenRetryAfterAboveTheLimit_whenServerThrottles_thenClientFailsFastWit
     # assert
     assert waits == []
     assert server.request_count == 1
-    assert "300 s" in str(error.value)
-    assert "60 s" in str(error.value)
+    assert error.value.requested_seconds == 300
+    assert error.value.allowed_seconds == DEFAULT_MAX_RETRY_AFTER
 
 
 def test_givenRetryAfterAtTheLimit_whenServerThrottles_thenClientWaitsAndSucceeds(
