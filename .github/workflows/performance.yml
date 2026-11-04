@@ -19,6 +19,12 @@ on:
 permissions:
   contents: read
 
+# This run also hits the public API, so it shares the group with the live tests: two runs at the same time could hit the
+# throttling of the public API.
+concurrency:
+  group: eds-live-api
+  cancel-in-progress: false
+
 env:
   JMETER_VERSION: "5.6.3"
 
