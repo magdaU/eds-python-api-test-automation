@@ -8,6 +8,8 @@ from models.dayaheadprices import DayAheadPricesRecord
 
 @dataclass(frozen=True)
 class DatasetUnderTest:
+    """What the shared dataset tests need to know about one dataset: sample, schema, fields."""
+
     name: str
     sample_response_file: str
     schema_file: str
@@ -18,7 +20,13 @@ class DatasetUnderTest:
 
 
 CO2EMIS_DATASET = DatasetUnderTest(
-    "CO2Emis", "co2emis_sample.json", "co2emis_schema.json", "Minutes5DK", "Minutes5UTC", "CO2Emission", CO2EmisRecord
+    "CO2Emis",
+    "co2emis_sample.json",
+    "co2emis_schema.json",
+    "Minutes5DK",
+    "Minutes5UTC",
+    "CO2Emission",
+    CO2EmisRecord,
 )
 DAYAHEADPRICES_DATASET = DatasetUnderTest(
     "DayAheadPrices",

@@ -13,11 +13,14 @@ TAG = '<script src="report-notes.js"></script>'
 
 
 def inject(report_dir: Path) -> None:
-    """Copy the script into the report and load it from index.html; running it twice changes nothing more."""
+    """Copy the script into the report and load it from index.html; running it twice changes nothing
+    more."""
     index = report_dir / "index.html"
     html = index.read_text(encoding="utf-8")
     if "</body>" not in html:
-        raise ValueError(f"{index} has no </body>; the report layout has changed and the note cannot be added")
+        raise ValueError(
+            f"{index} has no </body>; the report layout has changed and the note cannot be added"
+        )
     shutil.copyfile(SCRIPT, report_dir / "report-notes.js")
     if TAG not in html:
         index.write_text(html.replace("</body>", f"    {TAG}\n</body>", 1), encoding="utf-8")

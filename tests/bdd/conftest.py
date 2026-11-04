@@ -1,6 +1,7 @@
 """Step definitions shared by the Gherkin scenarios in `features/`.
 
-Steps reuse the project's API objects, `requests-mock` and the scripted local HTTP server, so a scenario reads as a
+Steps reuse the project's API objects, `requests-mock` and the scripted local HTTP server, so a
+scenario reads as a
 specification while the checks run through the same code as the other tests.
 """
 
@@ -99,21 +100,21 @@ def no_request_sent(requests_mock):
 # --- resilience (scripted local HTTP server) ---
 
 
-@given(parsers.parse('an API that answers {first:d} with "Retry-After: {seconds:d}" and then {last:d}'))
-def api_throttles_once(world, scripted_server, monkeypatch, first, seconds, last):
+@given(
+    parsers.parse('an API that answers {first:d} with "Retry-After: {seconds:d}" and then {last:d}')
+)
+def api_throttles_once(world, scripted_server, first, seconds, last):
     world.server = scripted_server(first, last, headers={"Retry-After": str(seconds)})
-    monkeypatch.setattr("urllib3.util.retry.time.sleep", world.waits.append)
 
 
 @given(parsers.parse("an API that always answers {status:d}"))
-def api_always_answers(world, scripted_server, monkeypatch, status):
+def api_always_answers(world, scripted_server, status):
     world.server = scripted_server(status)
-    monkeypatch.setattr("urllib3.util.retry.time.sleep", world.waits.append)
 
 
 @when("I get a dataset")
 def get_a_dataset(world):
-    attempt(world, lambda: api_for(world.server, max_retries=2).get())
+    attempt(world, lambda: api_for(world.server, max_retries=2, sleep=world.waits.append).get())
 
 
 @then(parsers.parse("the client waited {seconds:d} seconds before it retried"))

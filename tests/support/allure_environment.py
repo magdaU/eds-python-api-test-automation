@@ -5,20 +5,38 @@ from pathlib import Path
 
 from client.eds_client import BASE_URL
 
-TRACKED_PACKAGES = ["pytest", "allure-pytest", "requests", "urllib3", "pydantic", "jsonschema", "hypothesis"]
+TRACKED_PACKAGES = [
+    "pytest",
+    "allure-pytest",
+    "requests",
+    "urllib3",
+    "pydantic",
+    "jsonschema",
+    "hypothesis",
+]
 # the outcomes Allure groups into failure categories
 CATEGORIZED_OUTCOMES = ("failed", "error", "skipped")
 
 
 def categories_note(categorized_tests: int) -> str:
-    """Why the Categories widgets look the way they do, so that an empty widget doesn't read as something missing."""
+    """Why the Categories widgets look the way they do, so that an empty widget doesn't read as
+    something missing."""
     if categorized_tests == 0:
-        return "none - no test failed, broke or was skipped, so Categories and Categories trend are empty by design"
-    return f"{categorized_tests} test(s) failed, broke or were skipped - see the Categories page for how they are classified"
+        return (
+            "none - no test failed, broke or was skipped, "
+            "so Categories and Categories trend are empty by design"
+        )
+    return (
+        f"{categorized_tests} test(s) failed, broke or were skipped "
+        "- see the Categories page for how they are classified"
+    )
 
 
-def build_environment(base_url: str, markexpr: str, ci_env: dict[str, str], categorized_tests: int) -> dict[str, str]:
-    """Key/value pairs for Allure's Environment widget. No host name or IP, only reproducible facts."""
+def build_environment(
+    base_url: str, markexpr: str, ci_env: dict[str, str], categorized_tests: int
+) -> dict[str, str]:
+    """Key/value pairs for Allure's Environment widget. No host name or IP, only reproducible
+    facts."""
     properties = {
         "Base.URL": base_url,
         "Test.Scope": markexpr or "all (offline + live)",
@@ -52,5 +70,7 @@ def environment_from_session(session) -> None:
     config = session.config
     directory = config.getoption("allure_report_dir", None)
     if directory:
-        properties = build_environment(BASE_URL, config.option.markexpr, dict(os.environ), count_categorized(session))
+        properties = build_environment(
+            BASE_URL, config.option.markexpr, dict(os.environ), count_categorized(session)
+        )
         write_environment(directory, properties)

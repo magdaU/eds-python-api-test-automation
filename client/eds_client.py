@@ -1,6 +1,7 @@
 import json
 import logging
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Self
 from urllib.parse import quote
@@ -39,8 +40,10 @@ DEFAULT_RETRY = RetryConfig()
 class _Session(requests.Session):
     """A `Session` that gives a dataset its own retry adapter, and only that dataset.
 
-    `Session.mount` matches a URL by prefix, so an adapter mounted for `/dataset/CO2Emis` would also serve
-    `/dataset/CO2EmisProg`. Here the URL has to be the dataset's own, with or without a query string.
+    `Session.mount` matches a URL by prefix, so an adapter mounted for `/dataset/CO2Emis` would also
+    serve
+    `/dataset/CO2EmisProg`. Here the URL has to be the dataset's own, with or without a query
+    string.
     """
 
     def __init__(self) -> None:
@@ -65,6 +68,8 @@ class EDSApiClient:
     hits rate limits more. An override replaces the instance settings as a whole.
     `timeout` (seconds) applies to each connect/read of a single attempt, not
     to the whole retry cycle, so a server-ordered `Retry-After` wait is not cut short.
+    `sleep` performs every retry wait (default `time.sleep`); a test passes a recording function to
+    avoid real waiting.
     """
 
     def __init__(
@@ -73,21 +78,24 @@ class EDSApiClient:
         retry: RetryConfig = DEFAULT_RETRY,
         dataset_overrides: dict[str, RetryConfig] | None = None,
         timeout: float = DEFAULT_TIMEOUT,
+        sleep: Callable[[float], None] = time.sleep,
     ):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
+        self._sleep = sleep
         self.session = _Session()
 
         self._mount_retry("https://", retry)
         self._mount_retry("http://", retry)
         for dataset, override in (dataset_overrides or {}).items():
-            self.session.dataset_adapters[_prepared_url(self.dataset_url(dataset))] = self._build_adapter(override)
+            self.session.dataset_adapters[_prepared_url(self.dataset_url(dataset))] = (
+                self._build_adapter(override)
+            )
 
     def _mount_retry(self, url_prefix: str, config: RetryConfig) -> None:
         self.session.mount(url_prefix, self._build_adapter(config))
 
-    @staticmethod
-    def _build_adapter(config: RetryConfig) -> HTTPAdapter:
+    def _build_adapter(self, config: RetryConfig) -> HTTPAdapter:
         if config.max_retries > SANE_MAX_RETRIES:
             logger.warning(
                 "max_retries=%s exceeds the recommended maximum of %s -- this risks "
@@ -101,6 +109,7 @@ class EDSApiClient:
             backoff_factor=config.backoff_factor,
             backoff_jitter=config.backoff_jitter,
             max_retry_after=config.max_retry_after,
+            sleep_func=self._sleep,
             status_forcelist=RETRYABLE_STATUS_CODES,
             allowed_methods=["GET"],
         )
@@ -146,7 +155,8 @@ class EDSApiClient:
         return self._get(self.dataset_url(dataset), params)
 
     def get_dataset_metadata(self, dataset: str) -> requests.Response:
-        """GET /meta/dataset/<name>: title, update frequency and whether EDS still publishes the dataset."""
+        """GET /meta/dataset/<name>: title, update frequency and whether EDS still publishes the
+        dataset."""
         return self._get(f"{self.base_url}/meta/dataset/{_path_segment(dataset)}", {})
 
     def get_news(self, path: str = "", params: dict[str, Any] | None = None) -> requests.Response:
@@ -157,7 +167,9 @@ class EDSApiClient:
         return f"{self.base_url}/dataset/{_path_segment(dataset)}"
 
     def news_url(self, path: str = "") -> str:
-        return "/".join(part for part in (f"{self.base_url}/News", _path_segment(path.strip("/"))) if part)
+        return "/".join(
+            part for part in (f"{self.base_url}/News", _path_segment(path.strip("/"))) if part
+        )
 
     def _get(self, url: str, params: dict[str, Any]) -> requests.Response:
         started = time.perf_counter()
@@ -169,22 +181,39 @@ class EDSApiClient:
         except requests.exceptions.RetryError as error:
             # Retryable statuses never reach the caller as a response: urllib3 retries them and,
             # once the budget is spent, raises. This is where that would otherwise go unnoticed.
-            logger.warning("Giving up on %s after retries, %.0f ms: %s", url, _milliseconds_since(started), error)
+            logger.warning(
+                "Giving up on %s after retries, %.0f ms: %s",
+                url,
+                _milliseconds_since(started),
+                error,
+            )
             raise
         except requests.exceptions.RequestException as error:
-            # a refused connection or a timeout never produces a response, so nothing else would log it
-            logger.warning("Request failed: GET %s params=%s after %.0f ms: %s", url, params, _milliseconds_since(started), error)
+            # a refused connection or a timeout never produces a response, so nothing else would log
+            # it
+            logger.warning(
+                "Request failed: GET %s params=%s after %.0f ms: %s",
+                url,
+                params,
+                _milliseconds_since(started),
+                error,
+            )
             raise
         self._log_response(url, params, response, started)
         return response
 
     @staticmethod
-    def _log_response(url: str, params: dict[str, Any], response: requests.Response, started: float) -> None:
-        """One line per request: what was asked, the status and how long it took (waits for retries included).
+    def _log_response(
+        url: str, params: dict[str, Any], response: requests.Response, started: float
+    ) -> None:
+        """One line per request: what was asked, the status and how long it took (waits for retries
+        included).
 
-        An error response also gets the start of its body, which is where the API says what was wrong.
+        An error response also gets the start of its body, which is where the API says what was
+        wrong.
         """
-        line = f"GET {url} params={params} -> {response.status_code} in {_milliseconds_since(started):.0f} ms"
+        took = f"{_milliseconds_since(started):.0f} ms"
+        line = f"GET {url} params={params} -> {response.status_code} in {took}"
         if response.ok:
             logger.info(line)
         else:
@@ -196,10 +225,12 @@ def _milliseconds_since(started: float) -> float:
 
 
 def _prepared_url(url: str) -> str:
-    """The URL as `requests` sends it (lower-case host and so on), which is how the session looks an adapter up."""
+    """The URL as `requests` sends it (lower-case host and so on), which is how the session looks an
+    adapter up."""
     return str(requests.Request("GET", url).prepare().url)
 
 
 def _path_segment(value: str) -> str:
-    """Encode `value` as one URL path segment, so a `/`, `?` or `#` in it cannot change what is requested."""
+    """Encode `value` as one URL path segment, so a `/`, `?` or `#` in it cannot change what is
+    requested."""
     return quote(value, safe="")

@@ -32,7 +32,7 @@ Source: [`tests/test_allure_environment.py`](../tests/test_allure_environment.py
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
 | TC-002 | CI environment | Building environment | Every field is mapped | 1 | Offline |
-| TC-003 | No marker expression and no CI | Building environment | Scope is all and CI fields are absent | 1 | Offline |
+| TC-003 | No marker and no CI | Building environment | Scope is all and CI fields are absent | 1 | Offline |
 | TC-004 | Properties | Writing environment | File has one key value per line | 1 | Offline |
 | TC-005 | Failed error and skipped reports | Counting categorized | All three are counted | 1 | Offline |
 
@@ -196,7 +196,7 @@ Source: [`tests/test_openapi_drift.py`](../tests/test_openapi_drift.py) | Level:
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-076 | - | Comparing with the published specification | Every operation the client uses is still documented | 1 | Live |
+| TC-076 | - | Comparing with the published specification | Every operation the client uses is documented | 1 | Live |
 | TC-077 | Specification without a path and a parameter | Looking for drift | Both are reported | 1 | Offline |
 
 ### Dataset API: Parameter combinations
@@ -239,7 +239,7 @@ Source: [`tests/test_retry_after_cap.py`](../tests/test_retry_after_cap.py) | Le
 | TC-088 | Retry after above the limit | Server throttles | Client fails fast without waiting | 1 | Offline |
 | TC-089 | Retry after at the limit | Server throttles | Client waits and succeeds | 1 | Offline |
 | TC-090 | Retry after just above the limit | Server throttles | Client refuses to wait | 1 | Offline |
-| TC-091 | Retry after as HTTP date above the limit | Server throttles | Client fails fast without waiting | 1 | Offline |
+| TC-091 | Retry after as HTTP date above limit | Server throttles | Client fails fast without waiting | 1 | Offline |
 | TC-092 | Retry after as HTTP date below the limit | Server throttles | Client waits until that time | 1 | Offline |
 | TC-093 | No limit | Server asks for a long wait | Client still waits | 1 | Offline |
 | TC-094 | An allowed wait | The next wait is too long | Client gives up at the second one | 1 | Offline |
@@ -308,5 +308,5 @@ Source: [`tests/test_url_building.py`](../tests/test_url_building.py) | Level: C
 | TC-122 | Base URL with trailing slash | Building dataset URL | No double slash | 1 | Offline |
 | TC-123 | News path | Building news URL | Slashes are normalized | 2 | Offline |
 | TC-124 | News path with special characters | Building news URL | It stays one encoded path segment | 3 | Offline |
-| TC-125 | Dataset name with special characters | Building dataset URL | It stays one encoded path segment | 3 | Offline |
+| TC-125 | Dataset name with special characters | Building dataset URL | It stays one encoded segment | 3 | Offline |
 | TC-126 | Dataset name with slash | Getting dataset | Request path keeps the encoded slash | 1 | Offline |

@@ -18,7 +18,14 @@ def test_givenModel_whenGettingRecords_thenTypedRecordsAreReturned(co2_api, requ
     requests_mock.get(
         co2_api.url,
         json=records_response(
-            [{"Minutes5UTC": "2024-05-06T07:08:00", "Minutes5DK": "2024-05-06T09:10:00", "PriceArea": "DK2", "CO2Emission": 98.7}]
+            [
+                {
+                    "Minutes5UTC": "2024-05-06T07:08:00",
+                    "Minutes5DK": "2024-05-06T09:10:00",
+                    "PriceArea": "DK2",
+                    "CO2Emission": 98.7,
+                }
+            ]
         ),
     )
 
@@ -34,9 +41,13 @@ def test_givenModel_whenGettingRecords_thenTypedRecordsAreReturned(co2_api, requ
     assert records[0].CO2Emission == 98.7
 
 
-def test_givenQueryParameters_whenGettingRecords_thenTheyReachTheApi(co2_api_answering_empty, requests_mock):
+def test_givenQueryParameters_whenGettingRecords_thenTheyReachTheApi(
+    co2_api_answering_empty, requests_mock
+):
     # act
-    co2_api_answering_empty.records(limit=3, offset=6, sort="Minutes5UTC desc", filters={"PriceArea": "DK1"})
+    co2_api_answering_empty.records(
+        limit=3, offset=6, sort="Minutes5UTC desc", filters={"PriceArea": "DK1"}
+    )
 
     # assert
     assert sent_query(requests_mock) == {
@@ -67,7 +78,9 @@ def test_givenErrorStatus_whenGettingRecords_thenHttpErrorIsRaised(co2_api, requ
         co2_api.records(offset=-1)
 
 
-def test_givenBodyThatIsNotJson_whenGettingRecords_thenInvalidResponseErrorIsRaised(co2_api, requests_mock):
+def test_givenBodyThatIsNotJson_whenGettingRecords_thenInvalidResponseErrorIsRaised(
+    co2_api, requests_mock
+):
     # arrange
     requests_mock.get(co2_api.url, text="<html>maintenance</html>")
 
@@ -76,10 +89,15 @@ def test_givenBodyThatIsNotJson_whenGettingRecords_thenInvalidResponseErrorIsRai
         co2_api.records()
 
 
-def test_givenUnknownPriceArea_whenGettingRecords_thenValidationErrorIsRaised(co2_api, requests_mock):
+def test_givenUnknownPriceArea_whenGettingRecords_thenValidationErrorIsRaised(
+    co2_api, requests_mock
+):
     # arrange
     requests_mock.get(
-        co2_api.url, json=records_response([{"Minutes5UTC": "2024-05-06T07:08:00", "PriceArea": "DK3", "CO2Emission": 98.7}])
+        co2_api.url,
+        json=records_response(
+            [{"Minutes5UTC": "2024-05-06T07:08:00", "PriceArea": "DK3", "CO2Emission": 98.7}]
+        ),
     )
 
     # act / assert

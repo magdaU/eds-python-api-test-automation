@@ -10,7 +10,8 @@ from client.eds_client import EDSApiClient, RetryConfig
 class ScriptedServer:
     """Answers each request with the next scripted status; the last one repeats.
 
-    `headers` is one dict for every response, or a list with one dict per response (the last one repeats).
+    `headers` is one dict for every response, or a list with one dict per response (the last one
+    repeats).
     `delay` is how many seconds the server waits before it answers.
     """
 
@@ -22,6 +23,8 @@ class ScriptedServer:
         outer = self
 
         class Handler(BaseHTTPRequestHandler):
+            """Answers a GET with the next scripted status, headers and an empty JSON body."""
+
             def do_GET(self):
                 index = min(outer.request_count, len(outer.statuses) - 1)
                 outer.request_count += 1
@@ -31,7 +34,11 @@ class ScriptedServer:
                 self.send_response(outer.statuses[index])
                 self.send_header("Content-Type", "application/json")
                 self.send_header("Content-Length", str(len(body)))
-                headers = outer.headers[min(index, len(outer.headers) - 1)] if isinstance(outer.headers, list) else outer.headers
+                headers = (
+                    outer.headers[min(index, len(outer.headers) - 1)]
+                    if isinstance(outer.headers, list)
+                    else outer.headers
+                )
                 for name, value in headers.items():
                     self.send_header(name, value)
                 self.end_headers()
@@ -49,10 +56,10 @@ class ScriptedServer:
         self.httpd.server_close()
 
 
-def client_for(server, max_retries=2, **retry_options):
+def client_for(server, max_retries=2, sleep=time.sleep, **retry_options):
     retry = RetryConfig(max_retries=max_retries, backoff_factor=0, **retry_options)
-    return EDSApiClient(base_url=server.url, retry=retry)
+    return EDSApiClient(base_url=server.url, retry=retry, sleep=sleep)
 
 
-def api_for(server, max_retries=2, **retry_options):
-    return DatasetApi(client_for(server, max_retries, **retry_options), "CO2Emis")
+def api_for(server, max_retries=2, sleep=time.sleep, **retry_options):
+    return DatasetApi(client_for(server, max_retries, sleep, **retry_options), "CO2Emis")

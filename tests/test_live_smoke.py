@@ -16,7 +16,8 @@ pytestmark = [
 ]
 
 
-# ISO 8601 duration such as PT5M or P1D; EDS writes "N/A" for a dataset that is no longer updated (as for Elspotprices)
+# ISO 8601 duration such as PT5M or P1D; EDS writes "N/A" for a dataset that is no longer updated
+# (as for Elspotprices)
 UPDATE_INTERVAL = re.compile(r"P(?=\d|T\d)(\d+[YMWD])*(T(\d+[HMS])+)?")
 
 
@@ -33,7 +34,9 @@ def test_whenGettingDatasetMetadata_thenTheDatasetIsStillPublishedAndUpdated(dat
     assert metadata["datasetName"] == dataset.name
     assert metadata["active"] is True
     assert "discontinued" not in metadata["title"].lower(), metadata["title"]
-    assert UPDATE_INTERVAL.fullmatch(metadata["updateFrequency"]), f"update frequency is {metadata['updateFrequency']!r}"
+    assert UPDATE_INTERVAL.fullmatch(metadata["updateFrequency"]), (
+        f"update frequency is {metadata['updateFrequency']!r}"
+    )
 
 
 @allure.feature("CO2Emis")
@@ -47,9 +50,12 @@ def test_whenGettingRecords_thenTheyAreTypedModelObjects(co2_api):
 
 
 @allure.feature("CO2Emis")
-def test_givenOldestFirstSort_whenGettingConsecutivePages_thenTogetherTheyEqualOneLargerPage(co2_api):
+def test_givenOldestFirstSort_whenGettingConsecutivePages_thenTogetherTheyEqualOneLargerPage(
+    co2_api,
+):
     # arrange
-    # the oldest records never change, so unlike the newest ones the pages cannot shift between the calls
+    # the oldest records never change, so unlike the newest ones the pages cannot shift between the
+    # calls
     oldest_first = {"sort": "Minutes5UTC asc, PriceArea asc"}
 
     # act
@@ -85,19 +91,24 @@ def test_givenUnknownDataset_whenGettingIt_thenNotFoundNamesTheDataset(eds_clien
     ],
     ids=["one-value", "two-values-are-or"],
 )
-def test_givenPriceAreaFilter_whenGettingCo2Emis_thenOnlyTheRequestedAreasAreReturned(co2_api, filters, expected_areas):
+def test_givenPriceAreaFilter_whenGettingCo2Emis_thenOnlyTheRequestedAreasAreReturned(
+    co2_api, filters, expected_areas
+):
     # act
     response = co2_api.get(limit=50, filters=filters)
 
     # assert
     assert response.status_code == 200
     areas = {record["PriceArea"] for record in response.json()["records"]}
-    # 50 records span many timestamps, so a late-publishing area still appears; a filter on two areas must return both
+    # 50 records span many timestamps, so a late-publishing area still appears; a filter on two
+    # areas must return both
     assert areas == expected_areas
 
 
 @allure.feature("DayAheadPrices")
-def test_givenDescendingSort_whenGettingDayAheadPrices_thenPricesAreDescending(dayaheadprices_latest):
+def test_givenDescendingSort_whenGettingDayAheadPrices_thenPricesAreDescending(
+    dayaheadprices_latest,
+):
     # act
     response = dayaheadprices_latest
 
@@ -116,7 +127,8 @@ def test_whenGettingLiveNews_thenEveryItemMatchesSchema(news_api):
     # assert
     assert response.status_code == 200
     assert isinstance(response.json(), list)
-    # /News lists only current news and may legitimately be empty, so it can't use the helper that rejects an empty list;
+    # /News lists only current news and may legitimately be empty, so it can't use the helper that
+    # rejects an empty list;
     # the archive test below validates the same schema against real items
     for item in response.json():
         assert_matches_schema(item, "news_schema.json")

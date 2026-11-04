@@ -48,7 +48,9 @@ def test_givenNewsPath_whenBuildingNewsUrl_thenSlashesAreNormalized(path, expect
     ],
     ids=["path-traversal", "query", "space"],
 )
-def test_givenNewsPathWithSpecialCharacters_whenBuildingNewsUrl_thenItStaysOneEncodedPathSegment(path, encoded):
+def test_givenNewsPathWithSpecialCharacters_whenBuildingNewsUrl_thenItStaysOneEncodedPathSegment(
+    path, encoded
+):
     # arrange
     client = EDSApiClient(base_url=BASE)
 
@@ -68,7 +70,9 @@ def test_givenNewsPathWithSpecialCharacters_whenBuildingNewsUrl_thenItStaysOneEn
     ],
     ids=["path-traversal", "space", "query-and-fragment"],
 )
-def test_givenDatasetNameWithSpecialCharacters_whenBuildingDatasetUrl_thenItStaysOneEncodedPathSegment(dataset, encoded):
+def test_givenDatasetNameWithSpecialCharacters_whenBuildingDatasetUrl_thenItStaysOneEncodedSegment(
+    dataset, encoded
+):
     # arrange
     client = EDSApiClient(base_url=BASE)
 
@@ -79,7 +83,9 @@ def test_givenDatasetNameWithSpecialCharacters_whenBuildingDatasetUrl_thenItStay
     assert url == f"{BASE}/dataset/{encoded}"
 
 
-def test_givenDatasetNameWithSlash_whenGettingDataset_thenRequestPathKeepsTheEncodedSlash(requests_mock):
+def test_givenDatasetNameWithSlash_whenGettingDataset_thenRequestPathKeepsTheEncodedSlash(
+    requests_mock,
+):
     # arrange
     api = DatasetApi(EDSApiClient(base_url=BASE), "../News")
     requests_mock.get(api.url, json={"records": [], "total": 0})

@@ -15,8 +15,18 @@ def test_givenValidJson_whenParsingRecords_thenTypedModelsAreReturned():
     # arrange
     response_json = {
         "records": [
-            {"Minutes5UTC": "2024-01-01T00:00:00", "Minutes5DK": "2024-01-01T01:05:00", "PriceArea": "DK1", "CO2Emission": 123.4},
-            {"Minutes5UTC": "2024-01-02T03:10:00", "Minutes5DK": "2024-01-02T04:15:00", "PriceArea": "DK2", "CO2Emission": 234.5},
+            {
+                "Minutes5UTC": "2024-01-01T00:00:00",
+                "Minutes5DK": "2024-01-01T01:05:00",
+                "PriceArea": "DK1",
+                "CO2Emission": 123.4,
+            },
+            {
+                "Minutes5UTC": "2024-01-02T03:10:00",
+                "Minutes5DK": "2024-01-02T04:15:00",
+                "PriceArea": "DK2",
+                "CO2Emission": 234.5,
+            },
         ],
         "total": 2,
     }
@@ -76,7 +86,14 @@ def test_givenEmptyRecords_whenParsingRecords_thenEmptyListIsReturned():
 def test_givenUnknownExtraField_whenParsingRecords_thenItIsIgnored():
     # arrange
     response_json = {
-        "records": [{"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK1", "CO2Emission": 123.4, "NewField": "x"}],
+        "records": [
+            {
+                "Minutes5UTC": "2024-01-01T00:00:00",
+                "PriceArea": "DK1",
+                "CO2Emission": 123.4,
+                "NewField": "x",
+            }
+        ],
         "total": 1,
     }
 
@@ -102,7 +119,9 @@ def test_givenUnexpectedBody_whenParsingRecords_thenInvalidResponseErrorIsRaised
 def test_givenValidDayAheadPricesJson_whenParsingRecords_thenEveryFieldIsMapped():
     # arrange
     response_json = {
-        "records": [{"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "SE3", "DayAheadPriceDKK": 567.8}],
+        "records": [
+            {"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "SE3", "DayAheadPriceDKK": 567.8}
+        ],
         "total": 1,
     }
 

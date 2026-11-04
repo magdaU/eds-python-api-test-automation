@@ -32,10 +32,14 @@ def test_givenCustomTimeout_whenGettingDataset_thenItIsPassedToTheRequest(reques
     assert requests_mock.last_request.timeout == 3
 
 
-def test_givenServerSlowerThanTheTimeout_whenGettingDataset_thenConnectionErrorNamesTheReadTimeout(scripted_server):
+def test_givenServerSlowerThanTheTimeout_whenGettingDataset_thenConnectionErrorNamesTheReadTimeout(
+    scripted_server,
+):
     # arrange
     server = scripted_server(200, delay=0.5)
-    client = EDSApiClient(base_url=server.url, timeout=0.1, retry=RetryConfig(max_retries=0, backoff_factor=0))
+    client = EDSApiClient(
+        base_url=server.url, timeout=0.1, retry=RetryConfig(max_retries=0, backoff_factor=0)
+    )
 
     # act / assert
     with pytest.raises(requests.exceptions.ConnectionError, match="Read timed out"):

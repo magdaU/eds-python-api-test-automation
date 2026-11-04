@@ -47,7 +47,8 @@ def dayaheadprices_api(eds_client):
 
 @pytest.fixture
 def co2_api_answering_empty(co2_api, requests_mock):
-    """`co2_api` whose dataset URL is mocked to answer with no records, for tests that inspect the request."""
+    """`co2_api` whose dataset URL is mocked to answer with no records, for tests that inspect the
+    request."""
     requests_mock.get(co2_api.url, json=records_response([]))
     return co2_api
 
@@ -80,5 +81,6 @@ def co2_response(co2_api):
 
 @pytest.fixture(scope="session")
 def dayaheadprices_latest(eds_client):
-    """The only live query a test run sends to DayAheadPrices, shared by every live test that needs its data."""
+    """The only live query a test run sends to DayAheadPrices, shared by every live test that needs
+    its data."""
     return DatasetApi(eds_client, DAYAHEADPRICES_DATASET.name).get(**DAYAHEADPRICES_LIVE_QUERY)

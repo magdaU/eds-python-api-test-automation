@@ -1,4 +1,5 @@
-"""The client relies on part of the public OpenAPI specification; this notices when EDS stops documenting it."""
+"""The client relies on part of the public OpenAPI specification; this notices when EDS stops
+documenting it."""
 
 import pytest
 import requests
@@ -15,9 +16,12 @@ pytestmark = labels("Dataset API", "API specification drift", "critical")
 @pytest.mark.live
 @pytest.mark.flaky(reruns=1, reruns_delay=5, only_rerun=TRANSIENT_NETWORK_ERRORS)
 @allure.epic("Live API")
-def test_whenComparingWithThePublishedSpecification_thenEveryOperationTheClientUsesIsStillDocumented(eds_client):
+def test_whenComparingWithThePublishedSpecification_thenEveryOperationTheClientUsesIsDocumented(
+    eds_client,
+):
     # arrange
-    # plain requests on purpose: the client's retry and parsing would hide a specification that changed
+    # plain requests on purpose: the client's retry and parsing would hide a specification that
+    # changed
     response = requests.get(f"{eds_client.base_url}{SPEC_PATH}", timeout=DEFAULT_TIMEOUT)
     response.raise_for_status()
 
@@ -33,12 +37,20 @@ def test_givenSpecificationWithoutAPathAndAParameter_whenLookingForDrift_thenBot
     spec = {
         "paths": {
             "/dataset/{datasetName}": {
-                "get": {"parameters": [{"name": "datasetName"}, {"name": "limit", "schema": {"type": "string"}}]}
+                "get": {
+                    "parameters": [
+                        {"name": "datasetName"},
+                        {"name": "limit", "schema": {"type": "string"}},
+                    ]
+                }
             },
             "/meta/dataset/{datasetName}": {"get": {"parameters": [{"name": "datasetName"}]}},
         }
     }
-    used = {key: USED_OPERATIONS[key] for key in ("/dataset/{datasetName}", "/meta/Dataset/{datasetName}", "/News/calendar")}
+    used = {
+        key: USED_OPERATIONS[key]
+        for key in ("/dataset/{datasetName}", "/meta/Dataset/{datasetName}", "/News/calendar")
+    }
 
     # act
     problems = find_drift(spec, used)
