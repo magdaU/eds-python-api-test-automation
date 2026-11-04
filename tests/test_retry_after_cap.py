@@ -48,24 +48,28 @@ def test_givenRetryAfterAboveTheLimit_whenServerThrottles_thenClientFailsFastWit
     assert "60 s" in str(error.value)
 
 
-@pytest.mark.parametrize(("seconds", "gives_up"), [(60, False), (61, True)], ids=["at-the-limit", "just-above-the-limit"])
-def test_givenRetryAfterAroundTheLimit_whenServerThrottles_thenOnlyAboveTheLimitIsRefused(
-    scripted_server, waits, seconds, gives_up
-):
+def test_givenRetryAfterAtTheLimit_whenServerThrottles_thenClientWaitsAndSucceeds(scripted_server, waits):
     # arrange
-    server = scripted_server(429, 200, headers={"Retry-After": str(seconds)})
-    api = api_for(server)
+    server = scripted_server(429, 200, headers={"Retry-After": str(int(DEFAULT_MAX_RETRY_AFTER))})
 
     # act
-    if gives_up:
-        with pytest.raises(RetryAfterTooLongError):
-            api.get()
-    else:
-        response = api.get()
+    response = api_for(server).get()
 
     # assert
-    assert waits == ([] if gives_up else [seconds])
-    assert gives_up or response.status_code == 200
+    assert waits == [DEFAULT_MAX_RETRY_AFTER]
+    assert response.status_code == 200
+
+
+def test_givenRetryAfterJustAboveTheLimit_whenServerThrottles_thenClientRefusesToWait(scripted_server, waits):
+    # arrange
+    server = scripted_server(429, 200, headers={"Retry-After": str(int(DEFAULT_MAX_RETRY_AFTER) + 1)})
+
+    # act
+    with pytest.raises(RetryAfterTooLongError):
+        api_for(server).get()
+
+    # assert
+    assert waits == []
 
 
 def http_date(seconds_from_now):

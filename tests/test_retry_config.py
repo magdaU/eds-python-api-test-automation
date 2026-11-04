@@ -67,7 +67,10 @@ def test_givenExcessiveMaxRetries_whenCreatingClient_thenWarningIsLogged(caplog)
         EDSApiClient(retry=RetryConfig(max_retries=SANE_MAX_RETRIES + 1))
 
     # assert
-    assert any(record.levelname == "WARNING" for record in caplog.records)
+    assert set(caplog.messages) == {
+        f"max_retries={SANE_MAX_RETRIES + 1} exceeds the recommended maximum of {SANE_MAX_RETRIES}"
+        " -- this risks hammering the public EDS API during an outage or rate limit"
+    }
 
 
 def test_givenDatasetOverrideWithExcessiveMaxRetries_whenCreatingClient_thenWarningIsLogged(caplog):
@@ -76,7 +79,10 @@ def test_givenDatasetOverrideWithExcessiveMaxRetries_whenCreatingClient_thenWarn
         EDSApiClient(dataset_overrides={"DayAheadPrices": RetryConfig(max_retries=SANE_MAX_RETRIES + 1)})
 
     # assert
-    assert any(record.levelname == "WARNING" for record in caplog.records)
+    assert set(caplog.messages) == {
+        f"max_retries={SANE_MAX_RETRIES + 1} exceeds the recommended maximum of {SANE_MAX_RETRIES}"
+        " -- this risks hammering the public EDS API during an outage or rate limit"
+    }
 
 
 def test_givenDatasetOverride_whenResolvingDatasetWithLongerName_thenOverrideDoesNotApply():
