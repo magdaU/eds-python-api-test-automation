@@ -1,0 +1,2 @@
+WARNING  client.retry:retry.py:93 Retrying in 55.0 s because the server sent Retry-After (status 429)
+INFO     client.eds_client:eds_client.py:230 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 1, 'offset': 100000000} -> 200 in 56462 ms
