@@ -4,9 +4,14 @@ from client.dataset_api import DatasetApi
 from client.eds_client import EDSApiClient
 from client.news_api import NewsApi
 from tests.support.allure_environment import environment_from_session
-from tests.support.datasets import ALL_DATASETS, CO2EMIS_DATASET, DAYAHEADPRICES_DATASET
+from tests.support.datasets import (
+    ALL_DATASETS,
+    CO2EMIS_DATASET,
+    DAYAHEADPRICES_DATASET,
+    api_for_dataset,
+)
+from tests.support.fake_eds import FakeEds
 from tests.support.live import DAYAHEADPRICES_LIVE_QUERY
-from tests.support.mocks import records_response
 from tests.support.scripted_server import ScriptedServer
 
 
@@ -37,26 +42,14 @@ def eds_client():
 
 @pytest.fixture
 def co2_api(eds_client):
-    return DatasetApi(eds_client, CO2EMIS_DATASET.name, CO2EMIS_DATASET.model)
+    """For the tests that are about CO2Emis specifically; the others take `dataset_api`."""
+    return api_for_dataset(eds_client, CO2EMIS_DATASET)
 
 
 @pytest.fixture
-def dayaheadprices_api(eds_client):
-    return DatasetApi(eds_client, DAYAHEADPRICES_DATASET.name, DAYAHEADPRICES_DATASET.model)
-
-
-@pytest.fixture
-def co2_api_answering_empty(co2_api, requests_mock):
-    """`co2_api` whose dataset URL is mocked to answer with no records, for tests that inspect the
-    request."""
-    requests_mock.get(co2_api.url, json=records_response([]))
-    return co2_api
-
-
-@pytest.fixture
-def dayaheadprices_api_answering_empty(dayaheadprices_api, requests_mock):
-    requests_mock.get(dayaheadprices_api.url, json=records_response([]))
-    return dayaheadprices_api
+def eds(requests_mock, eds_client):
+    """The EDS API replaced by a fake: register what it answers, read what the client sent."""
+    return FakeEds(requests_mock, eds_client)
 
 
 @pytest.fixture
@@ -71,7 +64,7 @@ def dataset(request):
 
 @pytest.fixture
 def dataset_api(eds_client, dataset):
-    return DatasetApi(eds_client, dataset.name, dataset.model)
+    return api_for_dataset(eds_client, dataset)
 
 
 @pytest.fixture

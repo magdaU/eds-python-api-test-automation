@@ -3,7 +3,6 @@ import pytest
 from client.dataset_api import DatasetApi
 from client.eds_client import EDSApiClient
 from tests.support.allure_labels import labels
-from tests.support.mocks import sent_path
 
 pytestmark = labels("Client library", "URL building")
 
@@ -84,14 +83,14 @@ def test_givenDatasetNameWithSpecialCharacters_whenBuildingDatasetUrl_thenItStay
 
 
 def test_givenDatasetNameWithSlash_whenGettingDataset_thenRequestPathKeepsTheEncodedSlash(
-    requests_mock,
+    eds, eds_client
 ):
     # arrange
-    api = DatasetApi(EDSApiClient(base_url=BASE), "../News")
-    requests_mock.get(api.url, json={"records": [], "total": 0})
+    api = DatasetApi(eds_client, "../News")
+    eds.dataset("../News").answers()
 
     # act
     api.get()
 
     # assert
-    assert sent_path(requests_mock) == "/dataset/..%2FNews"
+    assert eds.last_request.path == "/dataset/..%2FNews"

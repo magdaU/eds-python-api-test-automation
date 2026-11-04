@@ -2,7 +2,6 @@
 examples."""
 
 import json
-from urllib.parse import parse_qs, urlparse
 
 import pytest
 import requests_mock
@@ -11,6 +10,7 @@ from hypothesis import strategies as st
 
 from client.eds_client import EDSApiClient
 from tests.support.allure_labels import labels
+from tests.support.fake_eds import FakeEds
 
 pytestmark = labels("Client library", "Property-based")
 
@@ -27,9 +27,10 @@ settings.load_profile("default")
 def get_sent_query(**arguments):
     client = EDSApiClient(base_url=BASE)
     with requests_mock.Mocker() as mocker:
-        mocker.get(client.dataset_url("CO2Emis"), json={"records": [], "total": 0})
+        eds = FakeEds(mocker, client)
+        eds.dataset("CO2Emis").answers()
         client.get_dataset("CO2Emis", **arguments)
-        return parse_qs(urlparse(mocker.last_request.url).query)
+        return eds.last_request.query
 
 
 @given(

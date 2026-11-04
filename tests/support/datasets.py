@@ -2,6 +2,8 @@ from dataclasses import dataclass
 
 from pydantic import BaseModel
 
+from client.dataset_api import DatasetApi
+from client.eds_client import EDSApiClient
 from models.co2emis import CO2EmisRecord
 from models.dayaheadprices import DayAheadPricesRecord
 
@@ -38,3 +40,8 @@ DAYAHEADPRICES_DATASET = DatasetUnderTest(
     DayAheadPricesRecord,
 )
 ALL_DATASETS = [CO2EMIS_DATASET, DAYAHEADPRICES_DATASET]
+
+
+def api_for_dataset(client: EDSApiClient, dataset: DatasetUnderTest) -> DatasetApi:
+    """The single place where a `DatasetApi` is built from a dataset under test."""
+    return DatasetApi(client, dataset.name, dataset.model)

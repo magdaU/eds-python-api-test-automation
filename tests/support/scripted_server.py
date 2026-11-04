@@ -6,6 +6,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from client.dataset_api import DatasetApi
 from client.eds_client import EDSApiClient, RetryConfig
 
+# the scripted server answers every path alike, so which dataset the requests name does not matter
+SCRIPTED_DATASET = "CO2Emis"
+
 
 class ScriptedServer:
     """Answers each request with the next scripted status; the last one repeats.
@@ -57,9 +60,12 @@ class ScriptedServer:
 
 
 def client_for(server, max_retries=2, sleep=time.sleep, **retry_options):
+    """A client for `server` whose retries do not back off (`backoff_factor=0`), so a test only
+    waits when the server orders it with `Retry-After`."""
     retry = RetryConfig(max_retries=max_retries, backoff_factor=0, **retry_options)
     return EDSApiClient(base_url=server.url, retry=retry, sleep=sleep)
 
 
 def api_for(server, max_retries=2, sleep=time.sleep, **retry_options):
-    return DatasetApi(client_for(server, max_retries, sleep, **retry_options), "CO2Emis")
+    """A `SCRIPTED_DATASET` API object on a `client_for(server, ...)` client."""
+    return DatasetApi(client_for(server, max_retries, sleep, **retry_options), SCRIPTED_DATASET)

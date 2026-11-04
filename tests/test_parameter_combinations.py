@@ -1,23 +1,23 @@
 import pytest
 
 from tests.support.allure_labels import labels
-from tests.support.mocks import sent_query
 
 pytestmark = labels("Dataset API", "Parameter combinations")
 
 # Decision table over the four optional parameters: each row is one rule,
 # the expected value says which query parameters must reach the API.
+# PriceArea is a column of every dataset under test, so the rows hold for each of them.
 COMBINATIONS = [
     (
         {"offset": 10, "filters": {"PriceArea": "DK1"}},
         {"offset": ["10"], "filter": ['{"PriceArea":"DK1"}']},
     ),
     (
-        {"limit": 7, "offset": 3, "sort": "Minutes5UTC", "filters": {"PriceArea": "DK2"}},
+        {"limit": 7, "offset": 3, "sort": "PriceArea", "filters": {"PriceArea": "DK2"}},
         {
             "limit": ["7"],
             "offset": ["3"],
-            "sort": ["Minutes5UTC"],
+            "sort": ["PriceArea"],
             "filter": ['{"PriceArea":"DK2"}'],
         },
     ),
@@ -26,10 +26,13 @@ COMBINATIONS = [
 
 @pytest.mark.parametrize(("arguments", "expected_query"), COMBINATIONS)
 def test_givenParameterCombination_whenGettingDataset_thenExactlyThoseParametersAreSent(
-    co2_api_answering_empty, requests_mock, arguments, expected_query
+    eds, dataset, dataset_api, arguments, expected_query
 ):
+    # arrange
+    eds.dataset(dataset.name).answers()
+
     # act
-    co2_api_answering_empty.get(**arguments)
+    dataset_api.get(**arguments)
 
     # assert
-    assert sent_query(requests_mock) == expected_query
+    assert eds.last_request.query == expected_query

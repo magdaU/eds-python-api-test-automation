@@ -8,25 +8,21 @@ from client.dataset_api import DatasetApi
 from client.parsers import InvalidResponseError
 from models.co2emis import CO2EmisRecord
 from tests.support.allure_labels import labels
-from tests.support.mocks import records_response, sent_query
 
 pytestmark = labels("Dataset API", "Typed records", "critical")
 
 
-def test_givenModel_whenGettingRecords_thenTypedRecordsAreReturned(co2_api, requests_mock):
+def test_givenModel_whenGettingRecords_thenTypedRecordsAreReturned(eds, co2_api):
     # arrange
-    requests_mock.get(
-        co2_api.url,
-        json=records_response(
-            [
-                {
-                    "Minutes5UTC": "2024-05-06T07:08:00",
-                    "Minutes5DK": "2024-05-06T09:10:00",
-                    "PriceArea": "DK2",
-                    "CO2Emission": 98.7,
-                }
-            ]
-        ),
+    eds.dataset("CO2Emis").answers(
+        records=[
+            {
+                "Minutes5UTC": "2024-05-06T07:08:00",
+                "Minutes5DK": "2024-05-06T09:10:00",
+                "PriceArea": "DK2",
+                "CO2Emission": 98.7,
+            }
+        ]
     )
 
     # act
@@ -41,63 +37,59 @@ def test_givenModel_whenGettingRecords_thenTypedRecordsAreReturned(co2_api, requ
     assert records[0].CO2Emission == 98.7
 
 
-def test_givenQueryParameters_whenGettingRecords_thenTheyReachTheApi(
-    co2_api_answering_empty, requests_mock
-):
+def test_givenQueryParameters_whenGettingRecords_thenTheyReachTheApi(eds, dataset, dataset_api):
+    # arrange
+    eds.dataset(dataset.name).answers()
+
     # act
-    co2_api_answering_empty.records(
-        limit=3, offset=6, sort="Minutes5UTC desc", filters={"PriceArea": "DK1"}
+    dataset_api.records(
+        limit=3, offset=6, sort=f"{dataset.required_field} desc", filters={"PriceArea": "DK1"}
     )
 
     # assert
-    assert sent_query(requests_mock) == {
+    assert eds.last_request.query == {
         "limit": ["3"],
         "offset": ["6"],
-        "sort": ["Minutes5UTC desc"],
+        "sort": [f"{dataset.required_field} desc"],
         "filter": ['{"PriceArea":"DK1"}'],
     }
 
 
-def test_givenNoModel_whenGettingRecords_thenTypeErrorSaysSo(eds_client, requests_mock):
+def test_givenNoModel_whenGettingRecords_thenTypeErrorSaysSo(eds, eds_client, dataset):
     # arrange
-    api = DatasetApi(eds_client, "CO2Emis")
-    requests_mock.get(api.url, json=records_response([]))
+    api = DatasetApi(eds_client, dataset.name)
+    eds.dataset(dataset.name).answers()
 
     # act / assert
     with pytest.raises(TypeError, match="no model"):
         api.records()
-    assert requests_mock.call_count == 0
+    assert eds.request_count == 0
 
 
-def test_givenErrorStatus_whenGettingRecords_thenHttpErrorIsRaised(co2_api, requests_mock):
+def test_givenErrorStatus_whenGettingRecords_thenHttpErrorIsRaised(eds, dataset, dataset_api):
     # arrange
-    requests_mock.get(co2_api.url, status_code=400, json={"error": "invalid offset"})
+    eds.dataset(dataset.name).answers(status=400, json={"error": "invalid offset"})
 
     # act / assert
     with pytest.raises(requests.exceptions.HTTPError):
-        co2_api.records(offset=-1)
+        dataset_api.records(offset=-1)
 
 
 def test_givenBodyThatIsNotJson_whenGettingRecords_thenInvalidResponseErrorIsRaised(
-    co2_api, requests_mock
+    eds, dataset, dataset_api
 ):
     # arrange
-    requests_mock.get(co2_api.url, text="<html>maintenance</html>")
+    eds.dataset(dataset.name).answers(text="<html>maintenance</html>")
 
     # act / assert
     with pytest.raises(InvalidResponseError, match="did not return JSON"):
-        co2_api.records()
+        dataset_api.records()
 
 
-def test_givenUnknownPriceArea_whenGettingRecords_thenValidationErrorIsRaised(
-    co2_api, requests_mock
-):
+def test_givenUnknownPriceArea_whenGettingRecords_thenValidationErrorIsRaised(eds, co2_api):
     # arrange
-    requests_mock.get(
-        co2_api.url,
-        json=records_response(
-            [{"Minutes5UTC": "2024-05-06T07:08:00", "PriceArea": "DK3", "CO2Emission": 98.7}]
-        ),
+    eds.dataset("CO2Emis").answers(
+        records=[{"Minutes5UTC": "2024-05-06T07:08:00", "PriceArea": "DK3", "CO2Emission": 98.7}]
     )
 
     # act / assert
