@@ -12,31 +12,50 @@ logger = logging.getLogger(__name__)
 
 class RetryAfterTooLongError(requests.exceptions.RetryError):
     """The server asked for a longer wait than the client allows, so it gave up instead of
-    waiting."""
+    waiting.
+
+    `requested_seconds` is the wait the server asked for and `allowed_seconds` the limit it
+    exceeded; both are `None` when the error is raised without them.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        requested_seconds: float | None = None,
+        allowed_seconds: float | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.requested_seconds = requested_seconds
+        self.allowed_seconds = allowed_seconds
 
 
 class RetryAfterTooLong(Exception):
-    """Raised inside the retry logic. Not an `OSError` on purpose: `requests` turns every `OSError`
-    raised there into a
+    """Raised inside the retry logic.
+
+    Not an `OSError` on purpose: `requests` turns every `OSError` raised there into a
     `ConnectionError`, which would hide the reason. `EDSApiClient` converts it into
-    `RetryAfterTooLongError`."""
+    `RetryAfterTooLongError`, keeping the seconds.
+    """
+
+    def __init__(self, message: str, *, requested_seconds: float, allowed_seconds: float) -> None:
+        super().__init__(message)
+        self.requested_seconds = requested_seconds
+        self.allowed_seconds = allowed_seconds
 
 
 class LoggingRetry(Retry):
-    """`Retry` that logs how long it is about to wait and why, and refuses a `Retry-After` that is
-    too long.
+    """`Retry` that logs how long it is about to wait and why, and refuses a `Retry-After` that
+    is too long.
 
     A server-ordered `Retry-After` can be minutes long and is spent inside the HTTP stack, so
-    without this a slow run
-    looks like a hang. With `max_retry_after` set, a longer wait ends the request at once with
-    `RetryAfterTooLongError`.
+    without this a slow run looks like a hang. With `max_retry_after` set, a longer wait ends the
+    request at once with `RetryAfterTooLongError`.
 
     Every wait goes through `sleep_func` (default `time.sleep`). A test passes its own function,
-    which records the
-    seconds instead of waiting. That is why tests do not patch `time.sleep`: urllib3 uses the global
-    `time` module, so
-    such a patch would replace `time.sleep` everywhere for as long as the test runs, test code
-    included.
+    which records the seconds instead of waiting. That is why tests do not patch `time.sleep`:
+    urllib3 uses the global `time` module, so such a patch would replace `time.sleep` everywhere
+    for as long as the test runs, test code included.
     """
 
     def __init__(
@@ -66,7 +85,9 @@ class LoggingRetry(Retry):
         if retry_after and self.max_retry_after is not None and retry_after > self.max_retry_after:
             raise RetryAfterTooLong(
                 f"The server asked to wait {retry_after:.0f} s (Retry-After, {reason}), "
-                f"more than the {self.max_retry_after:.0f} s allowed; not waiting"
+                f"more than the {self.max_retry_after:.0f} s allowed; not waiting",
+                requested_seconds=retry_after,
+                allowed_seconds=self.max_retry_after,
             )
         if retry_after:
             logger.warning(
