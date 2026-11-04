@@ -1,5 +1,6 @@
 import logging
 
+import pytest
 import requests
 
 from client.eds_client import SANE_MAX_RETRIES, EDSApiClient, RetryConfig
@@ -148,3 +149,35 @@ def test_givenBaseUrlWithUpperCaseHost_whenResolvingOverriddenDataset_thenOverri
     # assert
     assert prepared_url.startswith("https://api.energidataservice.dk/")
     assert overridden.total == 5
+
+
+@pytest.mark.parametrize(
+    "field", ["max_retries", "backoff_factor", "backoff_jitter", "max_retry_after"]
+)
+def test_givenNegativeValue_whenCreatingRetryConfig_thenValueErrorNamesField(field):
+    # arrange
+    settings = {field: -1}
+
+    # act
+    with pytest.raises(ValueError, match=field) as error:
+        RetryConfig(**settings)
+
+    # assert
+    assert f"{field} must not be negative, got -1" in str(error.value)
+
+
+def test_givenNoneForMaxRetryAfter_whenCreatingRetryConfig_thenNoErrorIsRaised():
+    # act
+    config = RetryConfig(max_retry_after=None)
+
+    # assert
+    assert config.max_retry_after is None
+
+
+def test_givenZeroTimeout_whenCreatingClient_thenValueErrorNamesTimeout():
+    # act
+    with pytest.raises(ValueError, match="timeout") as error:
+        EDSApiClient(timeout=0)
+
+    # assert
+    assert str(error.value) == "timeout must be positive, got 0"
