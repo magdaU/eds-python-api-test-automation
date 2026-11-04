@@ -6,6 +6,7 @@ import pytest
 
 import allure
 from models.co2emis import CO2EmisRecord
+from tests.support.assertions import describe_response
 from tests.support.live import TRANSIENT_NETWORK_ERRORS
 from tests.support.schema import assert_all_match_schema, assert_matches_schema
 
@@ -29,13 +30,13 @@ def test_whenGettingDatasetMetadata_thenTheDatasetIsStillPublishedAndUpdated(dat
     response = dataset_api.metadata()
 
     # assert
-    assert response.status_code == 200
+    assert response.status_code == 200, describe_response(response)
     metadata = response.json()
-    assert metadata["datasetName"] == dataset.name
-    assert metadata["active"] is True
-    assert "discontinued" not in metadata["title"].lower(), metadata["title"]
+    assert metadata["datasetName"] == dataset.name, describe_response(response)
+    assert metadata["active"] is True, describe_response(response)
+    assert "discontinued" not in metadata["title"].lower(), describe_response(response)
     assert UPDATE_INTERVAL.fullmatch(metadata["updateFrequency"]), (
-        f"update frequency is {metadata['updateFrequency']!r}"
+        f"update frequency is {metadata['updateFrequency']!r}; {describe_response(response)}"
     )
 
 
@@ -66,10 +67,12 @@ def test_givenOldestFirstSort_whenGettingConsecutivePages_thenTogetherTheyEqualO
     ]
 
     # assert
-    assert [response.status_code for response in responses] == [200, 200, 200]
+    assert [response.status_code for response in responses] == [200, 200, 200], [
+        describe_response(response) for response in responses
+    ]
     first_page, second_page, one_page = (response.json()["records"] for response in responses)
-    assert len(one_page) == 10
-    assert first_page + second_page == one_page
+    assert len(one_page) == 10, describe_response(responses[2])
+    assert first_page + second_page == one_page, describe_response(responses[2])
 
 
 @allure.feature("CO2Emis")
@@ -78,8 +81,8 @@ def test_givenUnknownDataset_whenGettingIt_thenNotFoundNamesTheDataset(eds_clien
     response = eds_client.get_dataset("NotARealDataset")
 
     # assert
-    assert response.status_code == 404
-    assert "NotARealDataset" in response.text
+    assert response.status_code == 404, describe_response(response)
+    assert "NotARealDataset" in response.text, describe_response(response)
 
 
 @allure.feature("CO2Emis")
@@ -98,11 +101,11 @@ def test_givenPriceAreaFilter_whenGettingCo2Emis_thenOnlyTheRequestedAreasAreRet
     response = co2_api.get(limit=50, filters=filters)
 
     # assert
-    assert response.status_code == 200
+    assert response.status_code == 200, describe_response(response)
     areas = {record["PriceArea"] for record in response.json()["records"]}
     # 50 records span many timestamps, so a late-publishing area still appears; a filter on two
     # areas must return both
-    assert areas == expected_areas
+    assert areas == expected_areas, describe_response(response)
 
 
 @allure.feature("DayAheadPrices")
@@ -113,10 +116,10 @@ def test_givenDescendingSort_whenGettingDayAheadPrices_thenPricesAreDescending(
     response = dayaheadprices_latest
 
     # assert
-    assert response.status_code == 200
+    assert response.status_code == 200, describe_response(response)
     prices = [record["DayAheadPriceDKK"] for record in response.json()["records"]]
-    assert len(prices) == 5
-    assert prices == sorted(prices, reverse=True)
+    assert len(prices) == 5, describe_response(response)
+    assert prices == sorted(prices, reverse=True), describe_response(response)
 
 
 @allure.feature("News")
@@ -125,8 +128,8 @@ def test_whenGettingLiveNews_thenEveryItemMatchesSchema(news_api):
     response = news_api.list()
 
     # assert
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    assert response.status_code == 200, describe_response(response)
+    assert isinstance(response.json(), list), describe_response(response)
     # /News lists only current news and may legitimately be empty, so it can't use the helper that
     # rejects an empty list;
     # the archive test below validates the same schema against real items
@@ -138,19 +141,23 @@ def test_whenGettingLiveNews_thenEveryItemMatchesSchema(news_api):
 def test_whenGettingLiveCalendar_thenEveryEntryMatchesSchemaAndArchiveAgrees(news_api):
     # arrange
     calendar_response = news_api.calendar()
-    assert calendar_response.status_code == 200
+    assert calendar_response.status_code == 200, describe_response(calendar_response)
     calendar = calendar_response.json()
     years_with_news = [entry for entry in calendar if entry["numberOfNewsStories"] > 0]
-    assert years_with_news, "the calendar must list a year with news to compare"
+    assert years_with_news, (
+        f"the calendar must list a year with news; {describe_response(calendar_response)}"
+    )
     latest = max(years_with_news, key=lambda entry: entry["dateString"])
 
     # act
     archived_response = news_api.archived(date=f"{latest['dateString']}-01-01")
 
     # assert
-    assert archived_response.status_code == 200
+    assert archived_response.status_code == 200, describe_response(archived_response)
     archived = archived_response.json()
     assert_all_match_schema(calendar, "news_calendar_schema.json")
     assert_all_match_schema(archived, "news_schema.json")
-    assert len(archived) == latest["numberOfNewsStories"]
-    assert all(item["validFrom"].startswith(latest["dateString"]) for item in archived)
+    assert len(archived) == latest["numberOfNewsStories"], describe_response(archived_response)
+    assert all(item["validFrom"].startswith(latest["dateString"]) for item in archived), (
+        describe_response(archived_response)
+    )

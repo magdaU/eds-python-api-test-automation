@@ -21,6 +21,7 @@ from client.dataset_api import DatasetApi
 from client.parsers import parse_records
 from models.co2emis import CO2EmisRecord
 from models.dayaheadprices import DayAheadPricesRecord
+from tests.support.assertions import describe_response
 from tests.support.live import TRANSIENT_NETWORK_ERRORS
 
 pytestmark = [
@@ -81,9 +82,9 @@ DAYAHEADPRICES = Series(
 def series_records(request, eds_client):
     series = request.param
     response = DatasetApi(eds_client, series.dataset).get(limit=RECENT_RECORDS)
-    assert response.status_code == 200
+    assert response.status_code == 200, describe_response(response)
     records = response.json()["records"]
-    assert records, f"no {series.dataset} records to check"
+    assert records, f"no {series.dataset} records to check; {describe_response(response)}"
     return series, records
 
 
