@@ -1,0 +1,6 @@
+WARNING  client.retry:retry.py:72 Retrying in 60.0 s because the server sent Retry-After (status 429)
+INFO     client.eds_client:eds_client.py:218 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 5, 'offset': 0, 'sort': 'Minutes5UTC asc, PriceArea asc'} -> 200 in 60783 ms
+WARNING  client.retry:retry.py:72 Retrying in 60.0 s because the server sent Retry-After (status 429)
+INFO     client.eds_client:eds_client.py:218 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 5, 'offset': 5, 'sort': 'Minutes5UTC asc, PriceArea asc'} -> 200 in 60730 ms
+WARNING  client.retry:retry.py:72 Retrying in 60.0 s because the server sent Retry-After (status 429)
+INFO     client.eds_client:eds_client.py:218 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 10, 'offset': 0, 'sort': 'Minutes5UTC asc, PriceArea asc'} -> 200 in 60880 ms
