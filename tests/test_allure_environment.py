@@ -38,11 +38,20 @@ def test_givenCiEnvironment_whenBuildingEnvironment_thenEveryFieldIsMapped():
     for package in TRACKED_PACKAGES:
         assert properties[package] == version(package)
     assert properties["Categories"] == categories_note(0)
-    expected_keys = {"Base.URL", "Test.Scope", "Python", "OS", "Categories", "CI.Branch", "CI.Commit", "CI.Run"}
+    expected_keys = {
+        "Base.URL",
+        "Test.Scope",
+        "Python",
+        "OS",
+        "Categories",
+        "CI.Branch",
+        "CI.Commit",
+        "CI.Run",
+    }
     assert set(properties) == expected_keys | set(TRACKED_PACKAGES)
 
 
-def test_givenNoMarkerExpressionAndNoCi_whenBuildingEnvironment_thenScopeIsAllAndCiFieldsAreAbsent():
+def test_givenNoMarkerAndNoCi_whenBuildingEnvironment_thenScopeIsAllAndCiFieldsAreAbsent():
     # act
     properties = build_environment("https://eds.example", "", {}, categorized_tests=0)
 
@@ -66,7 +75,13 @@ def test_givenProperties_whenWritingEnvironment_thenFileHasOneKeyValuePerLine(tm
 def test_givenFailedErrorAndSkippedReports_whenCountingCategorized_thenAllThreeAreCounted():
     # arrange
     class Reporter:
-        stats = {"passed": ["a", "b", "c", "d"], "failed": ["e", "f"], "error": ["g"], "skipped": ["h"], "rerun": ["i"]}
+        stats = {
+            "passed": ["a", "b", "c", "d"],
+            "failed": ["e", "f"],
+            "error": ["g"],
+            "skipped": ["h"],
+            "rerun": ["i"],
+        }
 
     class PluginManager:
         def get_plugin(self, name):

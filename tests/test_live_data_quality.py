@@ -1,7 +1,9 @@
 """Data-quality checks on the newest records of the real EDS API, for the nightly run.
 
-Each series is queried once (the 100 newest records) and shared by all checks. The checks do not compare values with an
-authoritative source; they catch data that stopped arriving, has holes, is out of range or is labelled with the wrong time.
+Each series is queried once (the 100 newest records) and shared by all checks. The checks do not
+compare values with an
+authoritative source; they catch data that stopped arriving, has holes, is out of range or is
+labelled with the wrong time.
 """
 
 import datetime as dt
@@ -45,7 +47,8 @@ class Series:
     model: type[BaseModel]
 
 
-# Emissions in g/kWh: 0 to 1000 is far wider than anything observed (39 to 139), so only corrupt values fall outside it.
+# Emissions in g/kWh: 0 to 1000 is far wider than anything observed (39 to 139), so only corrupt
+# values fall outside it.
 CO2EMIS = Series(
     "CO2Emis",
     "Minutes5UTC",
@@ -56,8 +59,10 @@ CO2EMIS = Series(
     (0, 1000),
     CO2EmisRecord,
 )
-# Day-ahead prices are published for the next day, so the newest record lies in the future (lag 0). The market limits are
-# about -500 to 4000 EUR/MWh; the bounds are wider on purpose, to catch corrupt values and not market events.
+# Day-ahead prices are published for the next day, so the newest record lies in the future (lag 0).
+# The market limits are
+# about -500 to 4000 EUR/MWh; the bounds are wider on purpose, to catch corrupt values and not
+# market events.
 DAYAHEADPRICES = Series(
     "DayAheadPrices",
     "TimeUTC",
@@ -98,7 +103,9 @@ def test_whenCheckingFreshness_thenTheNewestRecordIsRecentEnough(series_records)
     newest = max(utc_time(record, series) for record in records)
 
     # assert
-    assert newest >= oldest_acceptable, f"newest {series.time_field} is {newest}, older than {oldest_acceptable}"
+    assert newest >= oldest_acceptable, (
+        f"newest {series.time_field} is {newest}, older than {oldest_acceptable}"
+    )
 
 
 def test_whenCheckingCompleteness_thenEveryAreaHasEveryStepWithoutGaps(series_records):
@@ -110,7 +117,11 @@ def test_whenCheckingCompleteness_thenEveryAreaHasEveryStepWithoutGaps(series_re
 
     # act
     irregular_steps = {
-        area: [(earlier, later) for earlier, later in pairwise(sorted(times)) if later - earlier != series.step]
+        area: [
+            (earlier, later)
+            for earlier, later in pairwise(sorted(times))
+            if later - earlier != series.step
+        ]
         for area, times in times_by_area.items()
     }
 
@@ -154,7 +165,10 @@ def test_whenCheckingValues_thenTheyAreFiniteNumbersWithinThePlausibleRange(seri
     implausible = [
         value
         for value in (record[series.value_field] for record in records)
-        if isinstance(value, bool) or not isinstance(value, int | float) or not math.isfinite(value) or not low <= value <= high
+        if isinstance(value, bool)
+        or not isinstance(value, int | float)
+        or not math.isfinite(value)
+        or not low <= value <= high
     ]
 
     # assert

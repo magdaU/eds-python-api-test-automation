@@ -6,11 +6,18 @@ from tests.support.schema import assert_all_match_schema
 
 pytestmark = labels("News API", "News")
 
-NEWS_ENDPOINTS = {"list": "/News", "actual": "/News/actual", "calendar": "/News/calendar", "archived": "/News/archived"}
+NEWS_ENDPOINTS = {
+    "list": "/News",
+    "actual": "/News/actual",
+    "calendar": "/News/calendar",
+    "archived": "/News/archived",
+}
 
 
 @pytest.mark.parametrize(("method", "expected_path"), NEWS_ENDPOINTS.items())
-def test_whenCallingNewsApiMethod_thenRequestGoesToItsEndpointPath(news_api, requests_mock, method, expected_path):
+def test_whenCallingNewsApiMethod_thenRequestGoesToItsEndpointPath(
+    news_api, requests_mock, method, expected_path
+):
     # arrange
     requests_mock.get(news_api.url(expected_path.removeprefix("/News")), json=[])
 
@@ -31,7 +38,9 @@ def test_whenCallingNewsApiMethod_thenRequestGoesToItsEndpointPath(news_api, req
     ],
     ids=["list", "actual", "calendar"],
 )
-def test_givenNewsSample_whenValidatingAgainstSchema_thenSchemaIsSatisfied(sample_file, schema_file, wrap_in_list):
+def test_givenNewsSample_whenValidatingAgainstSchema_thenSchemaIsSatisfied(
+    sample_file, schema_file, wrap_in_list
+):
     # arrange
     sample = load_mock(sample_file)
     items = [sample] if wrap_in_list else sample
@@ -40,7 +49,9 @@ def test_givenNewsSample_whenValidatingAgainstSchema_thenSchemaIsSatisfied(sampl
     assert_all_match_schema(items, schema_file)
 
 
-def test_givenNoCategory_whenGettingActualNews_thenNoCategoryParameterIsSent(news_api, requests_mock):
+def test_givenNoCategory_whenGettingActualNews_thenNoCategoryParameterIsSent(
+    news_api, requests_mock
+):
     # arrange
     requests_mock.get(news_api.url("actual"), json=load_mock("news_actual_sample.json"))
 

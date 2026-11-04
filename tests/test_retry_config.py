@@ -76,7 +76,9 @@ def test_givenExcessiveMaxRetries_whenCreatingClient_thenWarningIsLogged(caplog)
 def test_givenDatasetOverrideWithExcessiveMaxRetries_whenCreatingClient_thenWarningIsLogged(caplog):
     # act
     with caplog.at_level(logging.WARNING):
-        EDSApiClient(dataset_overrides={"DayAheadPrices": RetryConfig(max_retries=SANE_MAX_RETRIES + 1)})
+        EDSApiClient(
+            dataset_overrides={"DayAheadPrices": RetryConfig(max_retries=SANE_MAX_RETRIES + 1)}
+        )
 
     # assert
     assert set(caplog.messages) == {
@@ -109,7 +111,9 @@ def test_givenDatasetOverride_whenRequestHasQueryString_thenOverrideStillApplies
     )
 
     # act
-    retry = client.session.get_adapter(client.dataset_url("DayAheadPrices") + "?limit=5&offset=10").max_retries
+    retry = client.session.get_adapter(
+        client.dataset_url("DayAheadPrices") + "?limit=5&offset=10"
+    ).max_retries
 
     # assert
     assert retry.total == 5

@@ -10,7 +10,8 @@ from client.parsers import InvalidResponseError, parse_records
 class DatasetApi[ModelT: BaseModel]:
     """API object for one EDS dataset: knows its URL, hides the transport.
 
-    `get` returns the raw response. With a `model`, `records` returns the records of a page as typed objects.
+    `get` returns the raw response. With a `model`, `records` returns the records of a page as typed
+    objects.
     The query arguments are keyword-only, in the same order as `EDSApiClient.get_dataset`.
     """
 
@@ -34,7 +35,9 @@ class DatasetApi[ModelT: BaseModel]:
         sort: str | None = None,
         filters: dict[str, Any] | None = None,
     ) -> requests.Response:
-        return self.client.get_dataset(self.dataset, limit=limit, offset=offset, sort=sort, filters=filters)
+        return self.client.get_dataset(
+            self.dataset, limit=limit, offset=offset, sort=sort, filters=filters
+        )
 
     def records(
         self,

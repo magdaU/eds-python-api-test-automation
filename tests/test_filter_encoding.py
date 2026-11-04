@@ -22,7 +22,9 @@ def test_givenNonAsciiFilter_whenGettingDataset_thenFilterRoundTripsThroughJson(
     assert sent_filter(requests_mock) == filters
 
 
-def test_givenEmptyFilters_whenGettingDataset_thenEmptyJsonObjectIsSent(dayaheadprices_api_answering_empty, requests_mock):
+def test_givenEmptyFilters_whenGettingDataset_thenEmptyJsonObjectIsSent(
+    dayaheadprices_api_answering_empty, requests_mock
+):
     # act
     dayaheadprices_api_answering_empty.get(filters={})
 
@@ -30,7 +32,9 @@ def test_givenEmptyFilters_whenGettingDataset_thenEmptyJsonObjectIsSent(dayahead
     assert sent_query(requests_mock)["filter"] == ["{}"]
 
 
-def test_givenNumericFilterValue_whenGettingDataset_thenItIsSentAsJsonNumber(dayaheadprices_api_answering_empty, requests_mock):
+def test_givenNumericFilterValue_whenGettingDataset_thenItIsSentAsJsonNumber(
+    dayaheadprices_api_answering_empty, requests_mock
+):
     # act
     dayaheadprices_api_answering_empty.get(filters={"DayAheadPriceDKK": 12})
 

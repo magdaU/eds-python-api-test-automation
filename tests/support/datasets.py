@@ -18,7 +18,13 @@ class DatasetUnderTest:
 
 
 CO2EMIS_DATASET = DatasetUnderTest(
-    "CO2Emis", "co2emis_sample.json", "co2emis_schema.json", "Minutes5DK", "Minutes5UTC", "CO2Emission", CO2EmisRecord
+    "CO2Emis",
+    "co2emis_sample.json",
+    "co2emis_schema.json",
+    "Minutes5DK",
+    "Minutes5UTC",
+    "CO2Emission",
+    CO2EmisRecord,
 )
 DAYAHEADPRICES_DATASET = DatasetUnderTest(
     "DayAheadPrices",

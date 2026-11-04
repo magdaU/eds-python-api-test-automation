@@ -1,4 +1,5 @@
-"""Property-based tests (hypothesis): invariants that must hold for any input, not just chosen examples."""
+"""Property-based tests (hypothesis): invariants that must hold for any input, not just chosen
+examples."""
 
 import json
 from urllib.parse import parse_qs, urlparse
@@ -31,8 +32,15 @@ def get_sent_query(**arguments):
         return parse_qs(urlparse(mocker.last_request.url).query)
 
 
-@given(limit=non_negative_ints, offset=non_negative_ints, sort=st.text(min_size=1), filters=filter_dicts)
-def test_givenAnyValidParameters_whenGettingDataset_thenEveryParameterSurvivesTheUrl(limit, offset, sort, filters):
+@given(
+    limit=non_negative_ints,
+    offset=non_negative_ints,
+    sort=st.text(min_size=1),
+    filters=filter_dicts,
+)
+def test_givenAnyValidParameters_whenGettingDataset_thenEveryParameterSurvivesTheUrl(
+    limit, offset, sort, filters
+):
     # act
     query = get_sent_query(limit=limit, offset=offset, sort=sort, filters=filters)
 
@@ -56,9 +64,12 @@ def test_givenAnyNegativeLimit_whenGettingDataset_thenValueErrorIsRaisedBeforeSe
 
 
 @given(
-    path=st.text(alphabet=st.characters(whitelist_categories=("Ll", "Lu", "Nd")), max_size=20), padding=st.sampled_from(["", "/"])
+    path=st.text(alphabet=st.characters(whitelist_categories=("Ll", "Lu", "Nd")), max_size=20),
+    padding=st.sampled_from(["", "/"]),
 )
-def test_givenAnyPathWithOptionalSlashes_whenBuildingNewsUrl_thenThereIsNoDoubleSlash(path, padding):
+def test_givenAnyPathWithOptionalSlashes_whenBuildingNewsUrl_thenThereIsNoDoubleSlash(
+    path, padding
+):
     # arrange
     client = EDSApiClient(base_url=BASE + padding)
 

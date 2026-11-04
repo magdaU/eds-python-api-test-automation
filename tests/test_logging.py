@@ -10,7 +10,9 @@ from tests.support.scripted_server import api_for
 pytestmark = labels("Client library", "Logging", "minor")
 
 
-def test_givenRetryableStatusPersists_whenRetriesAreExhausted_thenWarningIsLogged(scripted_server, caplog):
+def test_givenRetryableStatusPersists_whenRetriesAreExhausted_thenWarningIsLogged(
+    scripted_server, caplog
+):
     # arrange
     server = scripted_server(429)
 
@@ -19,13 +21,17 @@ def test_givenRetryableStatusPersists_whenRetriesAreExhausted_thenWarningIsLogge
         api_for(server).get()
 
     # assert
-    gave_up = [record.getMessage() for record in caplog.records if "Giving up" in record.getMessage()]
+    gave_up = [
+        record.getMessage() for record in caplog.records if "Giving up" in record.getMessage()
+    ]
     assert len(gave_up) == 1
     assert server.url in gave_up[0]
     assert "too many 429 error responses" in gave_up[0]
 
 
-def test_givenSuccessfulResponse_whenGettingDataset_thenOneLineLogsRequestStatusAndDuration(scripted_server, caplog):
+def test_givenSuccessfulResponse_whenGettingDataset_thenOneLineLogsRequestStatusAndDuration(
+    scripted_server, caplog
+):
     # arrange
     server = scripted_server(200)
 
@@ -36,7 +42,10 @@ def test_givenSuccessfulResponse_whenGettingDataset_thenOneLineLogsRequestStatus
     # assert
     messages = [record.getMessage() for record in caplog.records]
     assert len(messages) == 1
-    assert re.fullmatch(rf"GET {re.escape(server.url)}/dataset/CO2Emis params=\{{'limit': 1\}} -> 200 in \d+ ms", messages[0])
+    assert re.fullmatch(
+        rf"GET {re.escape(server.url)}/dataset/CO2Emis params=\{{'limit': 1\}} -> 200 in \d+ ms",
+        messages[0],
+    )
 
 
 def test_givenErrorResponse_whenGettingDataset_thenBodyPreviewIsLogged(scripted_server, caplog):
@@ -54,7 +63,9 @@ def test_givenErrorResponse_whenGettingDataset_thenBodyPreviewIsLogged(scripted_
     assert messages[0].endswith('body={"records": [], "total": 0}')
 
 
-def test_givenRetryAfterHeader_whenServerThrottles_thenWaitAndReasonAreLogged(scripted_server, caplog):
+def test_givenRetryAfterHeader_whenServerThrottles_thenWaitAndReasonAreLogged(
+    scripted_server, caplog
+):
     # arrange
     server = scripted_server(429, 200, headers={"Retry-After": "2"})
     waits = []
@@ -70,7 +81,9 @@ def test_givenRetryAfterHeader_whenServerThrottles_thenWaitAndReasonAreLogged(sc
     ]
 
 
-def test_givenServerErrorWithoutRetryAfter_whenRetrying_thenBackoffWaitIsLogged(scripted_server, caplog):
+def test_givenServerErrorWithoutRetryAfter_whenRetrying_thenBackoffWaitIsLogged(
+    scripted_server, caplog
+):
     # arrange
     server = scripted_server(503, 200)
 
@@ -79,10 +92,14 @@ def test_givenServerErrorWithoutRetryAfter_whenRetrying_thenBackoffWaitIsLogged(
         api_for(server, sleep=lambda seconds: None).get()
 
     # assert
-    assert [record.getMessage() for record in caplog.records] == ["Retrying in 0.0 s, backoff (status 503)"]
+    assert [record.getMessage() for record in caplog.records] == [
+        "Retrying in 0.0 s, backoff (status 503)"
+    ]
 
 
-def test_givenBackoffWithJitter_whenRetrying_thenLoggedWaitIsTheWaitThatHappened(scripted_server, caplog):
+def test_givenBackoffWithJitter_whenRetrying_thenLoggedWaitIsTheWaitThatHappened(
+    scripted_server, caplog
+):
     # arrange
     server = scripted_server(503, 503, 200)
     waits = []
@@ -93,12 +110,17 @@ def test_givenBackoffWithJitter_whenRetrying_thenLoggedWaitIsTheWaitThatHappened
 
     # assert
     # the first retry has no backoff, so only the second one waits (and adds jitter)
-    logged = [float(re.search(r"Retrying in ([\d.]+) s", record.getMessage()).group(1)) for record in caplog.records]
+    logged = [
+        float(re.search(r"Retrying in ([\d.]+) s", record.getMessage()).group(1))
+        for record in caplog.records
+    ]
     assert len(waits) == 1
     assert logged == [0.0, round(waits[0], 1)]
 
 
-def test_givenNothingListening_whenGettingDataset_thenFailureWithUrlAndDurationIsLogged(scripted_server, caplog):
+def test_givenNothingListening_whenGettingDataset_thenFailureWithUrlAndDurationIsLogged(
+    scripted_server, caplog
+):
     # arrange
     server = scripted_server(200)
     api = api_for(server, max_retries=0)
@@ -109,7 +131,9 @@ def test_givenNothingListening_whenGettingDataset_thenFailureWithUrlAndDurationI
         api.get(limit=1)
 
     # assert
-    failures = [record.getMessage() for record in caplog.records if "Request failed" in record.getMessage()]
+    failures = [
+        record.getMessage() for record in caplog.records if "Request failed" in record.getMessage()
+    ]
     assert len(failures) == 1
     assert f"{server.url}/dataset/CO2Emis" in failures[0]
     assert "params={'limit': 1}" in failures[0]

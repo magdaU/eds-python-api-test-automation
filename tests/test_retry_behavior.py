@@ -28,7 +28,9 @@ def test_givenThrottledOnce_whenGettingDataset_thenFinalSuccessIsReturned(script
     assert server.request_count == 2
 
 
-def test_givenPersistentServerError_whenGettingDataset_thenRetriesStopAfterMaxRetries(scripted_server):
+def test_givenPersistentServerError_whenGettingDataset_thenRetriesStopAfterMaxRetries(
+    scripted_server,
+):
     # arrange
     server = scripted_server(503)
 
@@ -64,11 +66,16 @@ def test_givenNothingListening_whenGettingDataset_thenConnectionErrorIsRaisedAft
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         free_port = probe.getsockname()[1]
-    client = EDSApiClient(base_url=f"http://127.0.0.1:{free_port}", retry=RetryConfig(max_retries=1, backoff_factor=0))
+    client = EDSApiClient(
+        base_url=f"http://127.0.0.1:{free_port}", retry=RetryConfig(max_retries=1, backoff_factor=0)
+    )
     api = DatasetApi(client, "CO2Emis")
 
     # act
-    with caplog.at_level(logging.WARNING, logger="client.retry"), pytest.raises(requests.exceptions.ConnectionError):
+    with (
+        caplog.at_level(logging.WARNING, logger="client.retry"),
+        pytest.raises(requests.exceptions.ConnectionError),
+    ):
         api.get()
 
     # assert

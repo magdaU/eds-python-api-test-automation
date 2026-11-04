@@ -1,6 +1,7 @@
 """Step definitions shared by the Gherkin scenarios in `features/`.
 
-Steps reuse the project's API objects, `requests-mock` and the scripted local HTTP server, so a scenario reads as a
+Steps reuse the project's API objects, `requests-mock` and the scripted local HTTP server, so a
+scenario reads as a
 specification while the checks run through the same code as the other tests.
 """
 
@@ -99,7 +100,9 @@ def no_request_sent(requests_mock):
 # --- resilience (scripted local HTTP server) ---
 
 
-@given(parsers.parse('an API that answers {first:d} with "Retry-After: {seconds:d}" and then {last:d}'))
+@given(
+    parsers.parse('an API that answers {first:d} with "Retry-After: {seconds:d}" and then {last:d}')
+)
 def api_throttles_once(world, scripted_server, first, seconds, last):
     world.server = scripted_server(first, last, headers={"Retry-After": str(seconds)})
 

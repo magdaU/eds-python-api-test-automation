@@ -28,7 +28,9 @@ def test_givenLimitAndFilter_whenGettingDataset_thenRequestTargetsTheDatasetWith
     assert sent_query(requests_mock) == {"limit": ["3"], "filter": ['{"PriceArea":"DK2"}']}
 
 
-def test_givenDataset_whenGettingMetadata_thenRequestGoesToItsMetaPathWithoutParameters(co2_api, requests_mock):
+def test_givenDataset_whenGettingMetadata_thenRequestGoesToItsMetaPathWithoutParameters(
+    co2_api, requests_mock
+):
     # arrange
     requests_mock.get(f"{co2_api.client.base_url}/meta/dataset/{CO2EMIS_DATASET.name}", json={})
 
@@ -40,7 +42,9 @@ def test_givenDataset_whenGettingMetadata_thenRequestGoesToItsMetaPathWithoutPar
     assert sent_query(requests_mock) == {}
 
 
-def test_givenSuccessfulResponse_whenGettingDataset_thenStatusJsonContentTypeAndBodyArriveUnchanged(scripted_server):
+def test_givenSuccessfulResponse_whenGettingDataset_thenStatusJsonContentTypeAndBodyArriveUnchanged(
+    scripted_server,
+):
     # arrange
     server = scripted_server(200)
 

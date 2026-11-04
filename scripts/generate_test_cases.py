@@ -1,7 +1,9 @@
 """Generate docs/test-cases.md from the pytest suite.
 
-Test names follow `givenX_whenY_thenZ`, so each one reads as a test case: precondition, action, expected result.
-Counts and execution mode come from pytest's own collection; labels come from the test modules' Allure markers.
+Test names follow `givenX_whenY_thenZ`, so each one reads as a test case: precondition, action,
+expected result.
+Counts and execution mode come from pytest's own collection; labels come from the test modules'
+Allure markers.
 
 Usage (from the repository root): python scripts/generate_test_cases.py
 """
@@ -16,13 +18,22 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs" / "test-cases.md"
 
-# module -> (test level, environment / test double, main test design technique); a new module must be classified here
+# module -> (test level, environment / test double, main test design technique); a new module must
+# be classified here
 MODULES = {
-    "test_allure_categories": ("Component", "none", "Equivalence partitioning, configuration checks"),
+    "test_allure_categories": (
+        "Component",
+        "none",
+        "Equivalence partitioning, configuration checks",
+    ),
     "test_allure_environment": ("Component", "none", "Equivalence partitioning"),
     "test_boundary_values": ("Component", "mocked HTTP", "Boundary value analysis"),
     "test_dataset_queries": ("Component", "mocked HTTP", "Executable specification (Gherkin)"),
-    "test_dataset_contract": ("Component", "mocked HTTP, local HTTP server", "Contract and request verification"),
+    "test_dataset_contract": (
+        "Component",
+        "mocked HTTP, local HTTP server",
+        "Contract and request verification",
+    ),
     "test_eds_client": ("Component", "none", "Configuration checks"),
     "test_filter_encoding": ("Component", "mocked HTTP", "Equivalence partitioning"),
     "test_live_data_quality": ("System", "public EDS API", "Data quality checks"),
@@ -36,7 +47,11 @@ MODULES = {
     "test_parameter_combinations": ("Component", "mocked HTTP", "Decision table"),
     "test_properties": ("Component", "mocked HTTP", "Property-based testing"),
     "test_resilience": ("Integration", "local HTTP server", "Executable specification (Gherkin)"),
-    "test_retry_after_cap": ("Integration", "local HTTP server", "Boundary value analysis, state-based testing"),
+    "test_retry_after_cap": (
+        "Integration",
+        "local HTTP server",
+        "Boundary value analysis, state-based testing",
+    ),
     "test_retry_behavior": ("Integration", "local HTTP server", "State-based, negative testing"),
     "test_retry_config": ("Component", "none", "Configuration checks"),
     "test_schema_validation": (
@@ -49,8 +64,13 @@ MODULES = {
 }
 LEVELS = ["Component", "Integration", "System"]
 
-# BDD modules: test module -> Gherkin feature file in tests/bdd/features (their rows come from the scenarios)
-BDD_FEATURES = {"test_dataset_queries": "dataset_queries", "test_resilience": "resilience", "test_news": "news"}
+# BDD modules: test module -> Gherkin feature file in tests/bdd/features (their rows come from the
+# scenarios)
+BDD_FEATURES = {
+    "test_dataset_queries": "dataset_queries",
+    "test_resilience": "resilience",
+    "test_news": "news",
+}
 FEATURES_DIR = ROOT / "tests" / "bdd" / "features"
 
 WORDS = {
@@ -69,7 +89,8 @@ WORDS = {
 def collect(*pytest_args: str) -> Counter[tuple[str, str]]:
     """Variants per (module, test function), from `pytest --collect-only`.
 
-    Random ordering is off so the test case IDs follow the source order and do not change between runs."""
+    Random ordering is off so the test case IDs follow the source order and do not change between
+    runs."""
     command = [
         sys.executable,
         "-m",
@@ -92,13 +113,20 @@ def collect(*pytest_args: str) -> Counter[tuple[str, str]]:
 
 
 def label_calls(node: ast.AST) -> list[tuple[str, list[str]]]:
-    """(function name, string arguments) of every `labels(...)`, `allure.epic(...)` and `allure.feature(...)` call below node."""
+    """(function name, string arguments) of every `labels(...)`, `allure.epic(...)` and
+    `allure.feature(...)` call below node."""
     found = []
     for call in ast.walk(node):
         if isinstance(call, ast.Call):
-            name = call.func.attr if isinstance(call.func, ast.Attribute) else getattr(call.func, "id", "")
+            name = (
+                call.func.attr
+                if isinstance(call.func, ast.Attribute)
+                else getattr(call.func, "id", "")
+            )
             if name in {"labels", "epic", "feature"}:
-                found.append((name, [arg.value for arg in call.args if isinstance(arg, ast.Constant)]))
+                found.append(
+                    (name, [arg.value for arg in call.args if isinstance(arg, ast.Constant)])
+                )
     return found
 
 
@@ -107,11 +135,14 @@ def module_path(module: str) -> Path:
 
 
 def read_labels(module: str) -> tuple[dict[str, tuple[str, str]], tuple[str, str]]:
-    """Allure (epic, feature) per test function and the module default, from `pytestmark` and `allure.feature`."""
+    """Allure (epic, feature) per test function and the module default, from `pytestmark` and
+    `allure.feature`."""
     tree = ast.parse(module_path(module).read_text(encoding="utf-8"))
     epic = feature = ""
     for node in tree.body:
-        if isinstance(node, ast.Assign) and any(getattr(target, "id", "") == "pytestmark" for target in node.targets):
+        if isinstance(node, ast.Assign) and any(
+            getattr(target, "id", "") == "pytestmark" for target in node.targets
+        ):
             for name, args in label_calls(node.value):
                 if name == "labels":
                     epic, feature = args[:2]  # the optional third argument is the severity
@@ -120,13 +151,19 @@ def read_labels(module: str) -> tuple[dict[str, tuple[str, str]], tuple[str, str
     per_test = {}
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and node.name.startswith("test_"):
-            own = [args[0] for decorator in node.decorator_list for name, args in label_calls(decorator) if name == "feature"]
+            own = [
+                args[0]
+                for decorator in node.decorator_list
+                for name, args in label_calls(decorator)
+                if name == "feature"
+            ]
             per_test[node.name] = (epic, own[0] if own else feature)
     return per_test, (epic, feature)
 
 
 def read_scenarios(feature: str) -> list[dict]:
-    """Scenarios of a `.feature` file: title, steps by Given/When/Then and the number of runs (example rows, or 1)."""
+    """Scenarios of a `.feature` file: title, steps by Given/When/Then and the number of runs
+    (example rows, or 1)."""
     scenarios: list[dict] = []
     current: dict | None = None
     phase = ""
@@ -134,7 +171,13 @@ def read_scenarios(feature: str) -> list[dict]:
     for raw in (FEATURES_DIR / f"{feature}.feature").read_text(encoding="utf-8").splitlines():
         line = raw.strip()
         if line.startswith(("Scenario Outline:", "Scenario:")):
-            current = {"title": line.split(":", 1)[1].strip(), "Given": [], "When": [], "Then": [], "runs": 1}
+            current = {
+                "title": line.split(":", 1)[1].strip(),
+                "Given": [],
+                "When": [],
+                "Then": [],
+                "runs": 1,
+            }
             scenarios.append(current)
             in_examples = header_seen = False
             phase = ""
@@ -145,7 +188,13 @@ def read_scenarios(feature: str) -> list[dict]:
             if header_seen:
                 current["runs"] += 1
             header_seen = True
-        elif current is not None and line.split(" ", 1)[0] in {"Given", "When", "Then", "And", "But"}:
+        elif current is not None and line.split(" ", 1)[0] in {
+            "Given",
+            "When",
+            "Then",
+            "And",
+            "But",
+        }:
             keyword, text = line.split(" ", 1)
             phase = keyword if keyword in {"Given", "When", "Then"} else phase
             current[phase].append(text)
@@ -187,39 +236,55 @@ def render() -> str:
         names = [name for (mod, name) in everything if mod == module]
         level, environment, technique = MODULES[module]
         epic = default_labels[0] if module in BDD_FEATURES else per_test[names[0]][0]
-        features = {default_labels[1]} if module in BDD_FEATURES else {per_test[name][1] for name in names}
+        features = (
+            {default_labels[1]} if module in BDD_FEATURES else {per_test[name][1] for name in names}
+        )
         feature_column = len(features) > 1
         source = (
-            f"[`tests/bdd/features/{BDD_FEATURES[module]}.feature`](../tests/bdd/features/{BDD_FEATURES[module]}.feature)"
+            f"[`tests/bdd/features/{BDD_FEATURES[module]}.feature`]"
+            f"(../tests/bdd/features/{BDD_FEATURES[module]}.feature)"
             if module in BDD_FEATURES
             else f"[`tests/{module}.py`](../tests/{module}.py)"
         )
         lines = [
             f"### {epic} ({module})" if feature_column else f"### {epic}: {next(iter(features))}",
             "",
-            f"Source: {source} | Level: {level} | Environment: {environment} | Technique: {technique}",
+            f"Source: {source} | Level: {level} | Environment: {environment} "
+            f"| Technique: {technique}",
             "",
             *(
-                ["| ID | Scenario | Given | When | Then | Variants | Mode |", "| --- | --- | --- | --- | --- | ---: | --- |"]
+                [
+                    "| ID | Scenario | Given | When | Then | Variants | Mode |",
+                    "| --- | --- | --- | --- | --- | ---: | --- |",
+                ]
                 if module in BDD_FEATURES
                 else [
                     "| ID |"
                     + (" Feature |" if feature_column else "")
-                    + " Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |",
-                    "| --- |" + (" --- |" if feature_column else "") + " --- | --- | --- | ---: | --- |",
+                    + " Precondition (given) | Action (when) | Expected result (then)"
+                    " | Variants | Mode |",
+                    "| --- |"
+                    + (" --- |" if feature_column else "")
+                    + " --- | --- | --- | ---: | --- |",
                 ]
             ),
         ]
         if module in BDD_FEATURES:
             scenarios = read_scenarios(BDD_FEATURES[module])
             collected = sum(everything[(module, name)] for name in names)
-            if sum(scenario["runs"] for scenario in scenarios) != collected or any((module, n) in live for n in names):
-                raise SystemExit(f"{module}: the feature file and the collected tests disagree (or a scenario is live)")
+            if sum(scenario["runs"] for scenario in scenarios) != collected or any(
+                (module, n) in live for n in names
+            ):
+                raise SystemExit(
+                    f"{module}: the feature file and the collected tests disagree "
+                    "(or a scenario is live)"
+                )
             for scenario in scenarios:
                 functions += 1
                 executed[level, "Offline"] += scenario["runs"]
                 lines.append(
-                    f"| TC-{functions:03d} | {scenario['title']} | {cell(scenario['Given'])} | {cell(scenario['When'])} "
+                    f"| TC-{functions:03d} | {scenario['title']} | {cell(scenario['Given'])} "
+                    f"| {cell(scenario['When'])} "
                     f"| {cell(scenario['Then'])} | {scenario['runs']} | Offline |"
                 )
             sections.append("\n".join(lines))
@@ -231,7 +296,8 @@ def render() -> str:
             executed["System" if mode == "Live" else level, mode] += everything[(module, name)]
             feature_cell = f" {per_test[name][1]} |" if feature_column else ""
             lines.append(
-                f"| TC-{functions:03d} |{feature_cell} {given} | {when} | {then} | {everything[(module, name)]} | {mode} |"
+                f"| TC-{functions:03d} |{feature_cell} {given} | {when} | {then} "
+                f"| {everything[(module, name)]} | {mode} |"
             )
         sections.append("\n".join(lines))
 
@@ -241,17 +307,23 @@ def render() -> str:
         summary.append(f"| {level} | {offline} | {live_count} | {offline + live_count} |")
     all_offline = sum(count for (_, mode), count in executed.items() if mode == "Offline")
     all_live = sum(count for (_, mode), count in executed.items() if mode == "Live")
-    summary.append(f"| **Total** | **{all_offline}** | **{all_live}** | **{all_offline + all_live}** |")
+    summary.append(
+        f"| **Total** | **{all_offline}** | **{all_live}** | **{all_offline + all_live}** |"
+    )
 
     header = (
         "# Test cases\n\n"
-        "> Generated by `scripts/generate_test_cases.py` from the pytest suite - do not edit by hand.\n"
-        "> Regenerate after adding, renaming or removing tests. IDs are sequential and are **not stable** between\n"
+        "> Generated by `scripts/generate_test_cases.py` from the pytest suite "
+        "- do not edit by hand.\n"
+        "> Regenerate after adding, renaming or removing tests. IDs are sequential and are "
+        "**not stable** between\n"
         "> regenerations, so refer to a test by its module and name.\n\n"
         f"{functions} test functions expand to {all_offline + all_live} executed test cases "
-        "(*Variants* counts parametrized runs). Each test name reads `given<precondition>_when<action>_then<expected result>`; "
-        "the columns below are that name, split. Tests that call the public EDS API count as *System* level whichever "
-        "module they live in. See the [test strategy](test-strategy.md) for how the levels are used.\n\n"
+        "(*Variants* counts parametrized runs). Each test name reads "
+        "`given<precondition>_when<action>_then<expected result>`; "
+        "the columns below are that name, split. Tests that call the public EDS API count as "
+        "*System* level whichever module they live in. "
+        "See the [test strategy](test-strategy.md) for how the levels are used.\n\n"
         "## Summary by test level\n\n" + "\n".join(summary) + "\n\n## Test cases\n"
     )
     return header + "\n" + "\n\n".join(sections) + "\n"

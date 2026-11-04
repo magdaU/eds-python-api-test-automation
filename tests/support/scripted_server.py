@@ -10,7 +10,8 @@ from client.eds_client import EDSApiClient, RetryConfig
 class ScriptedServer:
     """Answers each request with the next scripted status; the last one repeats.
 
-    `headers` is one dict for every response, or a list with one dict per response (the last one repeats).
+    `headers` is one dict for every response, or a list with one dict per response (the last one
+    repeats).
     `delay` is how many seconds the server waits before it answers.
     """
 
@@ -31,7 +32,11 @@ class ScriptedServer:
                 self.send_response(outer.statuses[index])
                 self.send_header("Content-Type", "application/json")
                 self.send_header("Content-Length", str(len(body)))
-                headers = outer.headers[min(index, len(outer.headers) - 1)] if isinstance(outer.headers, list) else outer.headers
+                headers = (
+                    outer.headers[min(index, len(outer.headers) - 1)]
+                    if isinstance(outer.headers, list)
+                    else outer.headers
+                )
                 for name, value in headers.items():
                     self.send_header(name, value)
                 self.end_headers()
