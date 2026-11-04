@@ -5,6 +5,8 @@ from pydantic import BaseModel
 
 
 class DayAheadPricesRecord(BaseModel):
+    """One price record of the `DayAheadPrices` dataset: time, price area and price in DKK."""
+
     # optional on purpose: a record without a time is a data-quality finding (live data-quality
     # tests), not a parsing failure
     TimeUTC: datetime | None = None

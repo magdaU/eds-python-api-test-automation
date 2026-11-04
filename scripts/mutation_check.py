@@ -45,6 +45,8 @@ PARSERS = "client/parsers.py"
 
 @dataclass(frozen=True)
 class Mutation:
+    """A deliberate breakage of the client: replace `old` with `new` in `path` and run the tests."""
+
     name: str
     path: str
     old: str  # one line of the source that occurs exactly once in `path`

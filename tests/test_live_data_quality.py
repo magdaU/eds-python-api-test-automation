@@ -37,6 +37,8 @@ REQUIRED_AREAS = {"DK1", "DK2"}
 
 @dataclass(frozen=True)
 class Series:
+    """How one dataset is checked: its time fields, step, allowed lag, value field and range."""
+
     dataset: str
     time_field: str  # UTC timestamp of the record
     local_time_field: str  # the same moment in Danish time

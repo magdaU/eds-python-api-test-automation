@@ -23,6 +23,8 @@ class ScriptedServer:
         outer = self
 
         class Handler(BaseHTTPRequestHandler):
+            """Answers a GET with the next scripted status, headers and an empty JSON body."""
+
             def do_GET(self):
                 index = min(outer.request_count, len(outer.statuses) - 1)
                 outer.request_count += 1

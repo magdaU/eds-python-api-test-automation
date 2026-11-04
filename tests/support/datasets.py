@@ -8,6 +8,8 @@ from models.dayaheadprices import DayAheadPricesRecord
 
 @dataclass(frozen=True)
 class DatasetUnderTest:
+    """What the shared dataset tests need to know about one dataset: sample, schema, fields."""
+
     name: str
     sample_response_file: str
     schema_file: str

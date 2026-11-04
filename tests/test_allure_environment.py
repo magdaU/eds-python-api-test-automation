@@ -75,6 +75,8 @@ def test_givenProperties_whenWritingEnvironment_thenFileHasOneKeyValuePerLine(tm
 def test_givenFailedErrorAndSkippedReports_whenCountingCategorized_thenAllThreeAreCounted():
     # arrange
     class Reporter:
+        """Stands in for pytest's terminal reporter, which holds the outcome counts."""
+
         stats = {
             "passed": ["a", "b", "c", "d"],
             "failed": ["e", "f"],
@@ -84,13 +86,19 @@ def test_givenFailedErrorAndSkippedReports_whenCountingCategorized_thenAllThreeA
         }
 
     class PluginManager:
+        """Stands in for pytest's plugin manager; it only knows the terminal reporter."""
+
         def get_plugin(self, name):
             return Reporter() if name == "terminalreporter" else None
 
     class Config:
+        """Stands in for pytest's config."""
+
         pluginmanager = PluginManager()
 
     class Session:
+        """Stands in for the pytest session passed to `count_categorized`."""
+
         config = Config()
 
     # act
