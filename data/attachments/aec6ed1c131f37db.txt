@@ -1,9 +1,0 @@
-  File "/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/http/server.py", line 440, in handle
-    self.handle_one_request()
-  File "/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/http/server.py", line 428, in handle_one_request
-    method()
-  File "/home/runner/work/eds-python-api-test-automation/eds-python-api-test-automation/tests/support/scripted_server.py", line 48, in do_GET
-    self.wfile.write(body)
-  File "/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/socketserver.py", line 845, in write
-    self._sock.sendall(b)
-BrokenPipeError: [Errno 32] Broken pipe
