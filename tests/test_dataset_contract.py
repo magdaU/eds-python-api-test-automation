@@ -1,7 +1,6 @@
 import allure
 from tests.support.allure_labels import labels
-from tests.support.datasets import CO2EMIS_DATASET
-from tests.support.mocks import load_mock, sent_path, sent_query
+from tests.support.mocks import load_mock
 from tests.support.schema import assert_matches_schema
 from tests.support.scripted_server import api_for
 
@@ -18,28 +17,31 @@ def test_givenSampleResponse_whenValidatingAgainstSchema_thenSchemaIsSatisfied(d
 
 
 def test_givenLimitAndFilter_whenGettingDataset_thenRequestTargetsTheDatasetWithThoseParameters(
-    co2_api_answering_empty, requests_mock
+    eds, dataset, dataset_api
 ):
+    # arrange
+    eds.dataset(dataset.name).answers()
+
     # act
-    co2_api_answering_empty.get(limit=3, filters={"PriceArea": "DK2"})
+    dataset_api.get(limit=3, filters={"PriceArea": "DK2"})
 
     # assert
-    assert sent_path(requests_mock) == f"/dataset/{CO2EMIS_DATASET.name}"
-    assert sent_query(requests_mock) == {"limit": ["3"], "filter": ['{"PriceArea":"DK2"}']}
+    assert eds.last_request.path == f"/dataset/{dataset.name}"
+    assert eds.last_request.query == {"limit": ["3"], "filter": ['{"PriceArea":"DK2"}']}
 
 
 def test_givenDataset_whenGettingMetadata_thenRequestGoesToItsMetaPathWithoutParameters(
-    co2_api, requests_mock
+    eds, dataset, dataset_api
 ):
     # arrange
-    requests_mock.get(f"{co2_api.client.base_url}/meta/dataset/{CO2EMIS_DATASET.name}", json={})
+    eds.metadata(dataset.name).answers(json={})
 
     # act
-    co2_api.metadata()
+    dataset_api.metadata()
 
     # assert
-    assert sent_path(requests_mock) == f"/meta/dataset/{CO2EMIS_DATASET.name}"
-    assert sent_query(requests_mock) == {}
+    assert eds.last_request.path == f"/meta/dataset/{dataset.name}"
+    assert eds.last_request.query == {}
 
 
 def test_givenSuccessfulResponse_whenGettingDataset_thenStatusJsonContentTypeAndBodyArriveUnchanged(

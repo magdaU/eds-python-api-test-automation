@@ -10,6 +10,11 @@ import time
 import pytest
 
 import allure
+from tests.support.assertions import (
+    assert_bad_request_mentioning,
+    assert_bad_request_naming_parameter,
+    assert_no_records,
+)
 from tests.support.live import TRANSIENT_NETWORK_ERRORS
 
 pytestmark = [
@@ -30,8 +35,7 @@ def test_givenNegativeOffset_whenGettingDataset_thenBadRequestMentionsOffset(co2
     response = co2_api.get(limit=1, offset=-1)
 
     # assert
-    assert response.status_code == 400
-    assert "offset" in response.text.lower()
+    assert_bad_request_mentioning(response, "offset")
 
 
 @allure.feature("CO2Emis")
@@ -40,8 +44,7 @@ def test_givenUnknownSortColumn_whenGettingDataset_thenBadRequestMentionsSort(co
     response = co2_api.get(limit=1, sort="NoSuchColumn")
 
     # assert
-    assert response.status_code == 400
-    assert "sort" in response.text.lower()
+    assert_bad_request_mentioning(response, "sort")
 
 
 @allure.feature("CO2Emis")
@@ -50,8 +53,7 @@ def test_givenUnknownFilterColumn_whenGettingDataset_thenBadRequestMentionsColum
     response = co2_api.get(limit=1, filters={"NoSuchColumn": "x"})
 
     # assert
-    assert response.status_code == 400
-    assert "column" in response.text.lower()
+    assert_bad_request_mentioning(response, "column")
 
 
 @allure.feature("CO2Emis")
@@ -60,9 +62,8 @@ def test_givenFilterMatchingNothing_whenGettingDataset_thenResultIsEmptyAndFilte
     response = co2_api.get(limit=1, filters={"PriceArea": "ZZ9"})
 
     # assert
-    assert response.status_code == 200
+    assert_no_records(response)
     body = response.json()
-    assert body["records"] == []
     assert body["total"] == 0
     assert body["filters"] == '{"PriceArea":"ZZ9"}'
 
@@ -73,8 +74,7 @@ def test_givenOffsetFarBeyondData_whenGettingDataset_thenResultIsEmpty(co2_api):
     response = co2_api.get(limit=1, offset=100_000_000)
 
     # assert
-    assert response.status_code == 200
-    assert response.json()["records"] == []
+    assert_no_records(response)
 
 
 @allure.feature("News")
@@ -93,8 +93,7 @@ def test_givenNoCategory_whenGettingActualNews_thenBadRequestNamesCategory(news_
     response = news_api.actual()
 
     # assert
-    assert response.status_code == 400
-    assert "category" in response.json()["errors"]
+    assert_bad_request_naming_parameter(response, "category")
 
 
 @allure.feature("News")
@@ -103,8 +102,7 @@ def test_givenInvalidDate_whenGettingArchivedNews_thenBadRequestNamesDate(news_a
     response = news_api.archived(date="bogus")
 
     # assert
-    assert response.status_code == 400
-    assert "date" in response.json()["errors"]
+    assert_bad_request_naming_parameter(response, "date")
 
 
 @allure.feature("News")

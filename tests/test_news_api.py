@@ -1,7 +1,7 @@
 import pytest
 
 from tests.support.allure_labels import labels
-from tests.support.mocks import load_mock, sent_path, sent_query
+from tests.support.mocks import load_mock
 from tests.support.schema import assert_all_match_schema
 
 pytestmark = labels("News API", "News")
@@ -16,17 +16,17 @@ NEWS_ENDPOINTS = {
 
 @pytest.mark.parametrize(("method", "expected_path"), NEWS_ENDPOINTS.items())
 def test_whenCallingNewsApiMethod_thenRequestGoesToItsEndpointPath(
-    news_api, requests_mock, method, expected_path
+    eds, news_api, method, expected_path
 ):
     # arrange
-    requests_mock.get(news_api.url(expected_path.removeprefix("/News")), json=[])
+    eds.news(expected_path.removeprefix("/News")).answers(json=[])
 
     # act
     getattr(news_api, method)()
 
     # assert
-    assert sent_path(requests_mock) == expected_path
-    assert sent_query(requests_mock) == {}
+    assert eds.last_request.path == expected_path
+    assert eds.last_request.query == {}
 
 
 @pytest.mark.parametrize(
@@ -49,25 +49,23 @@ def test_givenNewsSample_whenValidatingAgainstSchema_thenSchemaIsSatisfied(
     assert_all_match_schema(items, schema_file)
 
 
-def test_givenNoCategory_whenGettingActualNews_thenNoCategoryParameterIsSent(
-    news_api, requests_mock
-):
+def test_givenNoCategory_whenGettingActualNews_thenNoCategoryParameterIsSent(eds, news_api):
     # arrange
-    requests_mock.get(news_api.url("actual"), json=load_mock("news_actual_sample.json"))
+    eds.news("actual").answers(json=load_mock("news_actual_sample.json"))
 
     # act
     news_api.actual()
 
     # assert
-    assert sent_query(requests_mock) == {}
+    assert eds.last_request.query == {}
 
 
-def test_givenDate_whenGettingArchivedNews_thenDateIsSent(news_api, requests_mock):
+def test_givenDate_whenGettingArchivedNews_thenDateIsSent(eds, news_api):
     # arrange
-    requests_mock.get(news_api.url("archived"), json=[])
+    eds.news("archived").answers(json=[])
 
     # act
     news_api.archived(date="2026-01-01")
 
     # assert
-    assert sent_query(requests_mock) == {"date": ["2026-01-01"]}
+    assert eds.last_request.query == {"date": ["2026-01-01"]}

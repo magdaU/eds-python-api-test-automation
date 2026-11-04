@@ -1,8 +1,7 @@
 """Step definitions shared by the Gherkin scenarios in `features/`.
 
-Steps reuse the project's API objects, `requests-mock` and the scripted local HTTP server, so a
-scenario reads as a
-specification while the checks run through the same code as the other tests.
+Steps reuse the project's API objects, the fake EDS server and the scripted local HTTP server, so a
+scenario reads as a specification while the checks run through the same code as the other tests.
 """
 
 from dataclasses import dataclass, field
@@ -14,7 +13,7 @@ from pytest_bdd import given, parsers, then, when
 
 from client.dataset_api import DatasetApi
 from client.retry import RetryAfterTooLongError
-from tests.support.mocks import load_mock, records_response, sent_query
+from tests.support.mocks import load_mock
 from tests.support.scripted_server import api_for
 
 
@@ -46,9 +45,9 @@ def attempt(world, request):
 
 
 @given(parsers.parse("the {dataset} dataset answers with an empty result"))
-def dataset_answers_empty(world, eds_client, requests_mock, dataset):
+def dataset_answers_empty(world, eds, eds_client, dataset):
     world.api = DatasetApi(eds_client, dataset)
-    requests_mock.get(world.api.url, json=records_response([]))
+    eds.dataset(dataset).answers()
 
 
 @when(parsers.parse("I get the dataset with limit {limit:d} and offset {offset:d}"))
@@ -72,18 +71,18 @@ def get_filtered(world, area):
 
 
 @then(parsers.parse('the request carries limit "{limit}" and offset "{offset}"'))
-def request_has_limit_and_offset(requests_mock, limit, offset):
-    assert sent_query(requests_mock) == {"limit": [limit], "offset": [offset]}
+def request_has_limit_and_offset(eds, limit, offset):
+    assert eds.last_request.query == {"limit": [limit], "offset": [offset]}
 
 
 @then(parsers.parse('the request carries sort "{sort}"'))
-def request_has_sort(requests_mock, sort):
-    assert sent_query(requests_mock) == {"sort": [sort]}
+def request_has_sort(eds, sort):
+    assert eds.last_request.query == {"sort": [sort]}
 
 
 @then(parsers.parse("the request carries the filter '{filter_json}'"))
-def request_has_filter(requests_mock, filter_json):
-    assert sent_query(requests_mock) == {"filter": [filter_json]}
+def request_has_filter(eds, filter_json):
+    assert eds.last_request.query == {"filter": [filter_json]}
 
 
 @then("the client refuses the request and names the limit")
@@ -93,8 +92,8 @@ def client_refuses_naming_limit(world):
 
 
 @then("no request was sent")
-def no_request_sent(requests_mock):
-    assert requests_mock.call_count == 0
+def no_request_sent(eds):
+    assert eds.request_count == 0
 
 
 # --- resilience (scripted local HTTP server) ---
@@ -153,15 +152,15 @@ def api_received_requests(world, count):
 
 
 @given("the news API answers with an actual item")
-def news_answers_actual(world, news_api, requests_mock):
+def news_answers_actual(world, eds, news_api):
     world.api = news_api
-    requests_mock.get(news_api.url("actual"), json=load_mock("news_actual_sample.json"))
+    eds.news("actual").answers(json=load_mock("news_actual_sample.json"))
 
 
 @given("the news API answers with an empty archive")
-def news_answers_empty_archive(world, news_api, requests_mock):
+def news_answers_empty_archive(world, eds, news_api):
     world.api = news_api
-    requests_mock.get(news_api.url("archived"), json=[])
+    eds.news("archived").answers(json=[])
 
 
 @when(parsers.parse('I ask for the actual news of category "{category}"'))
@@ -175,10 +174,10 @@ def ask_archive_without_date(world):
 
 
 @then(parsers.parse('the request carries only category "{category}"'))
-def request_has_only_category(requests_mock, category):
-    assert sent_query(requests_mock) == {"category": [category]}
+def request_has_only_category(eds, category):
+    assert eds.last_request.query == {"category": [category]}
 
 
 @then("the request carries no parameters")
-def request_has_no_parameters(requests_mock):
-    assert sent_query(requests_mock) == {}
+def request_has_no_parameters(eds):
+    assert eds.last_request.query == {}

@@ -8,28 +8,28 @@ from tests.support.allure_labels import labels
 pytestmark = labels("Client library", "Client configuration")
 
 
-def test_whenCreatingClientWithDefaults_thenDefaultTimeoutIsUsedPerRequest(requests_mock):
+def test_whenCreatingClientWithDefaults_thenDefaultTimeoutIsUsedPerRequest(eds):
     # arrange
     client = EDSApiClient()
-    requests_mock.get(client.dataset_url("CO2Emis"), json={"records": []})
+    eds.dataset("CO2Emis").answers()
 
     # act
     client.get_dataset("CO2Emis")
 
     # assert
-    assert requests_mock.last_request.timeout == DEFAULT_TIMEOUT
+    assert eds.last_request.timeout == DEFAULT_TIMEOUT
 
 
-def test_givenCustomTimeout_whenGettingDataset_thenItIsPassedToTheRequest(requests_mock):
+def test_givenCustomTimeout_whenGettingDataset_thenItIsPassedToTheRequest(eds):
     # arrange
     client = EDSApiClient(timeout=3)
-    requests_mock.get(client.dataset_url("CO2Emis"), json={"records": []})
+    eds.dataset("CO2Emis").answers()
 
     # act
     client.get_dataset("CO2Emis")
 
     # assert
-    assert requests_mock.last_request.timeout == 3
+    assert eds.last_request.timeout == 3
 
 
 def test_givenServerSlowerThanTheTimeout_whenGettingDataset_thenConnectionErrorNamesTheReadTimeout(

@@ -4,16 +4,16 @@
 > Regenerate after adding, renaming or removing tests. IDs are sequential and are **not stable** between
 > regenerations, so refer to a test by its module and name.
 
-126 test functions expand to 168 executed test cases (*Variants* counts parametrized runs). Each test name reads `given<precondition>_when<action>_then<expected result>`; the columns below are that name, split. Tests that call the public EDS API count as *System* level whichever module they live in. See the [test strategy](test-strategy.md) for how the levels are used.
+126 test functions expand to 184 executed test cases (*Variants* counts parametrized runs). Each test name reads `given<precondition>_when<action>_then<expected result>`; the columns below are that name, split. Tests that call the public EDS API count as *System* level whichever module they live in. See the [test strategy](test-strategy.md) for how the levels are used.
 
 ## Summary by test level
 
 | Test level | Offline | Live | Total |
 | --- | ---: | ---: | ---: |
-| Component | 102 | 0 | 102 |
+| Component | 118 | 0 | 118 |
 | Integration | 27 | 0 | 27 |
 | System | 1 | 38 | 39 |
-| **Total** | **130** | **38** | **168** |
+| **Total** | **146** | **38** | **184** |
 
 ## Test cases
 
@@ -42,10 +42,10 @@ Source: [`tests/test_boundary_values.py`](../tests/test_boundary_values.py) | Le
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-006 | Limit at boundary | Getting dataset | Limit is sent unchanged | 2 | Offline |
-| TC-007 | Zero offset | Getting dataset | Offset is sent unchanged | 1 | Offline |
-| TC-008 | No parameters | Getting dataset | No query string is sent | 1 | Offline |
-| TC-009 | Negative offset | Getting dataset | Value is sent and server rejection is returned | 1 | Offline |
+| TC-006 | Limit at boundary | Getting dataset | Limit is sent unchanged | 4 | Offline |
+| TC-007 | Zero offset | Getting dataset | Offset is sent unchanged | 2 | Offline |
+| TC-008 | No parameters | Getting dataset | No query string is sent | 2 | Offline |
+| TC-009 | Negative offset | Getting dataset | Value is sent and server rejection is returned | 2 | Offline |
 
 ### Dataset API: Response contract
 
@@ -54,8 +54,8 @@ Source: [`tests/test_dataset_contract.py`](../tests/test_dataset_contract.py) | 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
 | TC-010 | Sample response | Validating against schema | Schema is satisfied | 2 | Offline |
-| TC-011 | Limit and filter | Getting dataset | Request targets the dataset with those parameters | 1 | Offline |
-| TC-012 | Dataset | Getting metadata | Request goes to its meta path without parameters | 1 | Offline |
+| TC-011 | Limit and filter | Getting dataset | Request targets the dataset with those parameters | 2 | Offline |
+| TC-012 | Dataset | Getting metadata | Request goes to its meta path without parameters | 2 | Offline |
 | TC-013 | Successful response | Getting dataset | Status JSON content type and body arrive unchanged | 1 | Offline |
 
 ### BDD scenarios: Dataset queries
@@ -87,9 +87,9 @@ Source: [`tests/test_filter_encoding.py`](../tests/test_filter_encoding.py) | Le
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-023 | Non ascii filter | Getting dataset | Filter round trips through JSON | 1 | Offline |
-| TC-024 | Empty filters | Getting dataset | Empty JSON object is sent | 1 | Offline |
-| TC-025 | Numeric filter value | Getting dataset | It is sent as JSON number | 1 | Offline |
+| TC-023 | Non ascii filter | Getting dataset | Filter round trips through JSON | 2 | Offline |
+| TC-024 | Empty filters | Getting dataset | Empty JSON object is sent | 2 | Offline |
+| TC-025 | Numeric filter value | Getting dataset | It is sent as JSON number | 2 | Offline |
 
 ### Data quality: 
 
@@ -205,7 +205,7 @@ Source: [`tests/test_parameter_combinations.py`](../tests/test_parameter_combina
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-078 | Parameter combination | Getting dataset | Exactly those parameters are sent | 2 | Offline |
+| TC-078 | Parameter combination | Getting dataset | Exactly those parameters are sent | 4 | Offline |
 
 ### Client library: Property-based
 
@@ -293,10 +293,10 @@ Source: [`tests/test_typed_records.py`](../tests/test_typed_records.py) | Level:
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
 | TC-116 | Model | Getting records | Typed records are returned | 1 | Offline |
-| TC-117 | Query parameters | Getting records | They reach the API | 1 | Offline |
-| TC-118 | No model | Getting records | Type error says so | 1 | Offline |
-| TC-119 | Error status | Getting records | HTTP error is raised | 1 | Offline |
-| TC-120 | Body that is not JSON | Getting records | Invalid response error is raised | 1 | Offline |
+| TC-117 | Query parameters | Getting records | They reach the API | 2 | Offline |
+| TC-118 | No model | Getting records | Type error says so | 2 | Offline |
+| TC-119 | Error status | Getting records | HTTP error is raised | 2 | Offline |
+| TC-120 | Body that is not JSON | Getting records | Invalid response error is raised | 2 | Offline |
 | TC-121 | Unknown price area | Getting records | Validation error is raised | 1 | Offline |
 
 ### Client library: URL building
