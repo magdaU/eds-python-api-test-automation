@@ -1,0 +1,1 @@
+INFO     client.eds_client:eds_client.py:227 GET https://api.energidataservice.dk/dataset/DayAheadPrices params={'offset': 0} -> 200 in 1 ms
