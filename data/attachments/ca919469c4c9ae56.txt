@@ -1,2 +1,0 @@
-WARNING  client.retry:retry.py:72 Retrying in 57.0 s because the server sent Retry-After (status 429)
-INFO     client.eds_client:eds_client.py:220 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 1, 'offset': -1} -> 400 in 57331 ms body=The offset specified in a OFFSET clause may not be negative.
