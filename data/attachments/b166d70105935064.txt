@@ -1,0 +1,1 @@
+INFO     client.eds_client:eds_client.py:220 GET https://api.energidataservice.dk/News/archived params={'date': 'bogus'} -> 400 in 109 ms body={"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"date":["The value 'bogus' is not valid."]},"traceId":"|f9592822-4154773941a75d01.f9592823_82bdea04_"}

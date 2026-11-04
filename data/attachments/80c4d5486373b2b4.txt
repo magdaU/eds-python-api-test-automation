@@ -1,1 +1,0 @@
-INFO     client.eds_client:eds_client.py:220 GET https://api.energidataservice.dk/News/actual params={} -> 400 in 179 ms body={"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"category":["The category field is required."]},"traceId":"|f9588f3e-4154773941a75d01.f9588f3f_5c855433_"}
