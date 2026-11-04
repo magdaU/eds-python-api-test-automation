@@ -7,7 +7,7 @@
   {
     "name": "Contract drift (schema or model mismatch)",
     "matchedStatuses": ["broken", "failed"],
-    "messageRegex": ".*(ValidationError|jsonschema|KeyError).*"
+    "messageRegex": ".*(ValidationError|jsonschema).*"
   },
   {
     "name": "Product defects",

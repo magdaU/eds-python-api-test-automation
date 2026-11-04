@@ -43,7 +43,8 @@ def category_of(status, message):
             INFRASTRUCTURE,
         ),
         ("failed", "AssertionError: assert 'a' == 'b' at port 42951", "Product defects"),
-        ("broken", "KeyError: 4290", CONTRACT_DRIFT),
+        ("broken", "KeyError: 4290", "Test defects"),
+        ("broken", "KeyError: 'Minutes5UTC'", "Test defects"),
         (
             "failed",
             "jsonschema.exceptions.ValidationError: 'Minutes5UTC' is a required property",
@@ -56,6 +57,7 @@ def category_of(status, message):
         "retry-after-too-long",
         "digits-of-a-port-are-not-429",
         "digits-in-key-error-are-not-429",
+        "key-error-is-not-contract-drift",
         "schema-violation",
     ],
 )
