@@ -200,6 +200,13 @@ MUTATIONS = [
     ),
     Mutation("max-retries-ignored", EDS_CLIENT, "total=config.max_retries,", "total=3,"),
     Mutation(
+        "negative-retry-setting-allowed",
+        EDS_CLIENT,
+        "if value is not None and value < 0:",
+        "if False:",
+    ),
+    Mutation("zero-timeout-allowed", EDS_CLIENT, "if timeout <= 0:", "if False:"),
+    Mutation(
         "model-co2-area-any-text",
         "models/co2emis.py",
         'PriceArea: Literal["DK1", "DK2"]',

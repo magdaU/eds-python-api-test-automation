@@ -26,12 +26,19 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class RetryConfig:
-    """Retry/backoff settings. A misspelled setting raises `TypeError` instead of being ignored."""
+    """Retry/backoff settings. A misspelled setting raises `TypeError` and an invalid value
+    (a negative number) raises `ValueError`, instead of either being ignored."""
 
     max_retries: int = DEFAULT_MAX_RETRIES
     backoff_factor: float = DEFAULT_BACKOFF_FACTOR
     backoff_jitter: float = DEFAULT_BACKOFF_JITTER
     max_retry_after: float | None = DEFAULT_MAX_RETRY_AFTER
+
+    def __post_init__(self) -> None:
+        for name in ("max_retries", "backoff_factor", "backoff_jitter", "max_retry_after"):
+            value = getattr(self, name)
+            if value is not None and value < 0:
+                raise ValueError(f"{name} must not be negative, got {value}")
 
 
 DEFAULT_RETRY = RetryConfig()
@@ -80,6 +87,8 @@ class EDSApiClient:
         timeout: float = DEFAULT_TIMEOUT,
         sleep: Callable[[float], None] = time.sleep,
     ):
+        if timeout <= 0:
+            raise ValueError(f"timeout must be positive, got {timeout}")
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
         self._sleep = sleep
