@@ -139,9 +139,12 @@ Python 3.12 (local, Docker `python:3.12-slim`, CI on `ubuntu-latest`). `pytest` 
 
 **Entry:** the change is on a feature branch and a pull request is open.
 
-**Exit (may be merged), enforced by CI:** `Tests` and `Quality` pass; `ruff` and `mypy --strict` report nothing; `Security`
+**Exit (may be merged):** `Tests` and `Quality` pass; `ruff` and `mypy --strict` report nothing; `Security`
 reports no known vulnerability and no committed secret; coverage of `client/` and `models/` is at least 90% (currently 100%
 line and branch). By convention: no test is skipped or marked as an expected failure to make a run pass (none is today).
+CI runs these checks on every pull request. It blocks a merge only where branch protection on `main` requires them.
+
+> **TODO (owner):** set branch protection on `main` to require `Tests`, `Quality` and `Security`. Until then a failing check does not stop a merge.
 
 **Exit (`main` is healthy):** the full run on `main` and the nightly live run pass, and the Allure report shows no failed or broken test.
 
