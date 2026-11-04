@@ -6,9 +6,9 @@ Related: [test strategy](test-strategy.md) · [test plan](test-plan.md) · [test
 
 ## 1. Summary and recommendation
 
-The suite has 181 automated test cases: 143 offline and 38 against the live EDS API. Build #225 (commit `939c552`, 2026-11-04) ran the 156 tests that run on every push to `main` (all except the data-quality checks), and all passed. The suite has changed since then, so section 3 says which figures come from build #225, which from the first analysis of 2026-10-30 (build #218, 152 tests), and which from local runs. The other 12 are data-quality checks that run in the nightly job only (not in
+The suite has 195 automated test cases: 157 offline and 38 against the live EDS API. Build #225 (commit `939c552`, 2026-11-04) ran the 156 tests that run on every push to `main` (all except the data-quality checks), and all passed. The suite has changed since then, so section 3 says which figures come from build #225, which from the first analysis of 2026-10-30 (build #218, 152 tests), and which from local runs. The other 12 are data-quality checks that run in the nightly job only (not in
 the Allure report) and passed in the nightly run of 2026-10-30, the first to include them. Static analysis, the dependency
-audit and the secret scan are clean, coverage of the client is 100% (statements and branches), all 49 mutations are killed
+audit and the secret scan are clean, coverage of the client is 100% (statements and branches), all 55 mutations are killed
 (local run), and the nightly live run passed on each of its seven executions (2026-10-24 to 2026-10-30). **Every exit criterion
 in the [test strategy](test-strategy.md#9-entry-and-exit-criteria) is met, and the suite is fit for its purpose: gating
 changes to the client and detecting drift in the EDS API.**
@@ -28,7 +28,7 @@ vulnerabilities and secrets.
 | Check | Result | Evidence |
 | --- | --- | --- |
 | CI build #225 (commit `939c552`) | 156 passed, 0 failed, 0 broken, 0 skipped; scope excludes the data-quality checks | [test results](test-results.md) |
-| Offline tests (143 now; 130 in build #218, first analysis) | 143 passed locally on `test/remove-redundant-cases` (`d34f3cce`), in random order (plugin active); 130 passed in build #218 | [test results](test-results.md) |
+| Offline tests (157 now; 130 in build #218, first analysis) | 143 passed locally on `test/remove-redundant-cases` (`d34f3cce`), in random order (plugin active); 130 passed in build #218 | [test results](test-results.md) |
 | Live tests on `main` (26 now; 22 in build #218, first analysis) | 22 passed in build #218; the 4 News tests added later have passed locally against the real API (2026-11-04) | [test results](test-results.md) |
 | Data-quality checks (12, nightly only) | 12 passed in the nightly runs of 2026-11-02 and 2026-11-03 (commit `887be33`, current dependency pins) | `Live nightly` workflow |
 | Failed, broken or skipped tests | 0 | [test results](test-results.md) |
@@ -39,7 +39,7 @@ vulnerabilities and secrets.
 | Nightly live run, 2026-10-24 to 2026-10-30 | 7 of 7 passed | `Live nightly` workflow history |
 | Performance plan (JMeter), latest run 2026-11-02 | passed (scheduled run on commit `887be33`, with the `DayAheadPrices` endpoint and percentiles in the job summary; the percentiles are not limits yet) | `Performance` workflow, artifact `jmeter-report` |
 
-The Allure report of build #225 holds its 156 tests; the next run on `main` should show 169 (143 offline and 26 live). Live report with history: <https://magdau.github.io/eds-python-api-test-automation/>.
+The Allure report of build #225 holds its 156 tests; the next run on `main` should show 183 (157 offline and 26 live). Live report with history: <https://magdau.github.io/eds-python-api-test-automation/>.
 
 ## 4. Test cases by level
 
@@ -48,7 +48,7 @@ The Allure report of build #225 holds its 156 tests; the next run on `main` shou
 | Component | 118 | 0 | 118 |
 | Integration | 24 | 0 | 24 |
 | System | 1 | 38 | 39 |
-| **Total** | **143** | **38** | **181** |
+| **Total** | **157** | **38** | **195** |
 
 The 38 live cases are 26 that run on every push to `main` (22 in build #218) and the 12 nightly data-quality checks. The one offline System case
 proves the OpenAPI drift detector can fail. The suite has 125 test functions and BDD scenarios; the difference is parametrized runs.

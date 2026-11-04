@@ -208,6 +208,18 @@ MUTATIONS = [
     Mutation("zero-timeout-allowed", EDS_CLIENT, "if timeout <= 0:", "if False:"),
     Mutation("wait-budget-not-enforced", RETRY, "if seconds > remaining:", "if False:"),
     Mutation(
+        "sleep-function-lost-between-attempts",
+        RETRY,
+        "retry.sleep_func = self.sleep_func",
+        "retry.sleep_func = time.sleep",
+    ),
+    Mutation(
+        "sleep-function-not-passed",
+        EDS_CLIENT,
+        "sleep_func=self._wait,",
+        "sleep_func=time.sleep,",
+    ),
+    Mutation(
         "wait-budget-not-wired",
         EDS_CLIENT,
         "self._wait = sleep if self.wait_budget is None else self.wait_budget.sleep",
