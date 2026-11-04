@@ -1,4 +1,5 @@
 import pytest
+from hypothesis import settings
 
 from client.dataset_api import DatasetApi
 from client.eds_client import EDSApiClient
@@ -77,3 +78,8 @@ def dayaheadprices_latest(eds_client):
     """The only live query a test run sends to DayAheadPrices, shared by every live test that needs
     its data."""
     return DatasetApi(eds_client, DAYAHEADPRICES_DATASET.name).get(**DAYAHEADPRICES_LIVE_QUERY)
+
+
+# Hypothesis settings for every property-based test: 100 examples, no per-example deadline.
+settings.register_profile("default", max_examples=100, deadline=None)
+settings.load_profile("default")
