@@ -2,6 +2,7 @@ import jsonschema
 import pytest
 
 from tests.support.allure_labels import labels
+from tests.support.assertions import describe_response
 from tests.support.datasets import CO2EMIS_DATASET, DAYAHEADPRICES_DATASET
 from tests.support.live import TRANSIENT_NETWORK_ERRORS
 from tests.support.mocks import load_mock
@@ -14,9 +15,11 @@ pytestmark = labels("Dataset API", "Schema validation", "critical")
 @pytest.mark.flaky(reruns=1, reruns_delay=5, only_rerun=TRANSIENT_NETWORK_ERRORS)
 def test_whenGettingCo2Emis_thenResponseMatchesSchema(co2_response):
     # assert
-    assert co2_response.status_code == 200
+    assert co2_response.status_code == 200, describe_response(co2_response)
     body = co2_response.json()
-    assert body["records"], "no records returned, so the schema was not exercised on any record"
+    assert body["records"], (
+        f"no records returned, so the schema was not exercised; {describe_response(co2_response)}"
+    )
     assert_matches_schema(body, CO2EMIS_DATASET.schema_file)
 
 
@@ -24,9 +27,12 @@ def test_whenGettingCo2Emis_thenResponseMatchesSchema(co2_response):
 @pytest.mark.flaky(reruns=1, reruns_delay=5, only_rerun=TRANSIENT_NETWORK_ERRORS)
 def test_whenGettingDayAheadPrices_thenResponseMatchesSchema(dayaheadprices_latest):
     # assert
-    assert dayaheadprices_latest.status_code == 200
+    assert dayaheadprices_latest.status_code == 200, describe_response(dayaheadprices_latest)
     body = dayaheadprices_latest.json()
-    assert body["records"], "no records returned, so the schema was not exercised on any record"
+    assert body["records"], (
+        f"no records returned, so the schema was not exercised; "
+        f"{describe_response(dayaheadprices_latest)}"
+    )
     assert_matches_schema(body, DAYAHEADPRICES_DATASET.schema_file)
 
 

@@ -14,6 +14,7 @@ from tests.support.assertions import (
     assert_bad_request_mentioning,
     assert_bad_request_naming_parameter,
     assert_no_records,
+    describe_response,
 )
 from tests.support.live import TRANSIENT_NETWORK_ERRORS
 
@@ -64,8 +65,8 @@ def test_givenFilterMatchingNothing_whenGettingDataset_thenResultIsEmptyAndFilte
     # assert
     assert_no_records(response)
     body = response.json()
-    assert body["total"] == 0
-    assert body["filters"] == '{"PriceArea":"ZZ9"}'
+    assert body["total"] == 0, describe_response(response)
+    assert body["filters"] == '{"PriceArea":"ZZ9"}', describe_response(response)
 
 
 @allure.feature("CO2Emis")
@@ -83,8 +84,8 @@ def test_givenUnknownCategory_whenGettingActualNews_thenNoContentIsReturned(news
     response = news_api.actual(category="NOT_A_CATEGORY")
 
     # assert
-    assert response.status_code == 204
-    assert response.text == ""
+    assert response.status_code == 204, describe_response(response)
+    assert response.text == "", describe_response(response)
 
 
 @allure.feature("News")
@@ -111,7 +112,7 @@ def test_givenUnknownNewsPath_whenGettingNews_thenNotFoundIsReturned(news_api):
     response = news_api.get("nosuchpath")
 
     # assert
-    assert response.status_code == 404
+    assert response.status_code == 404, describe_response(response)
 
 
 @allure.feature("News")
@@ -120,7 +121,7 @@ def test_givenSubPathBelowCalendar_whenGettingNews_thenNotFoundIsReturned(news_a
     response = news_api.get("calendar/extra")
 
     # assert
-    assert response.status_code == 404
+    assert response.status_code == 404, describe_response(response)
 
 
 @allure.feature("News")
@@ -129,10 +130,10 @@ def test_givenUnknownParameter_whenGettingCalendar_thenItIsIgnored(news_api):
     response = news_api.get("calendar", {"bogus": "1"})
 
     # assert
-    assert response.status_code == 200
+    assert response.status_code == 200, describe_response(response)
     body = response.json()
-    assert body
-    assert set(body[0]) == {"dateString", "numberOfNewsStories"}
+    assert body, describe_response(response)
+    assert set(body[0]) == {"dateString", "numberOfNewsStories"}, describe_response(response)
 
 
 @allure.feature("News")
@@ -141,8 +142,8 @@ def test_givenUnknownParameter_whenGettingNewsList_thenItIsIgnored(news_api):
     response = news_api.get(params={"bogus": "1"})
 
     # assert
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)
+    assert response.status_code == 200, describe_response(response)
+    assert isinstance(response.json(), list), describe_response(response)
 
 
 @allure.feature("News")
@@ -151,5 +152,5 @@ def test_givenDifferentCase_whenGettingCalendar_thenPathIsStillResolved(news_api
     response = news_api.get("Calendar")
 
     # assert
-    assert response.status_code == 200
-    assert response.json()[0]["dateString"]
+    assert response.status_code == 200, describe_response(response)
+    assert response.json()[0]["dateString"], describe_response(response)
