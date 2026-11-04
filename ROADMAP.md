@@ -258,6 +258,12 @@ server (`tests/support/scripted_server.py`, `tests/test_retry_behavior.py`); the
 - [x] Decide whether `test_openapi_drift.py` goes through the client: it keeps plain `requests`, so the client's retry and parsing do not hide a changed specification.
 - [x] Make the Dockerfile default to `-m "not live"` and run as a non-root user.
 
+## 15. Follow-ups (not yet planned)
+
+- [ ] **Total retry budget in the client.** Live tests already share a budget of 120 s per run (`RetryBudget` in `tests/support/live.py`), but it lives in the test support code. Move it into the client, so that a sequence of requests in production code (paging, retries of several datasets) is bounded too.
+
+---
+
 ## Resolved questions
 
 1. **Allure publishing target (item 7):** the report is also published to GitHub Pages (`gh-pages` branch), not only uploaded as a CI artifact.

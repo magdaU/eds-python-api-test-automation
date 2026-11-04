@@ -22,7 +22,7 @@ from client.parsers import parse_records
 from models.co2emis import CO2EmisRecord
 from models.dayaheadprices import DayAheadPricesRecord
 from tests.support.assertions import describe_response
-from tests.support.live import TRANSIENT_NETWORK_ERRORS
+from tests.support.live import TRANSIENT_NETWORK_ERRORS, live_eds_client  # noqa: F401
 
 pytestmark = [
     pytest.mark.live,

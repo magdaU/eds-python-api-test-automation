@@ -7,7 +7,10 @@ import requests
 import allure
 from client.eds_client import DEFAULT_TIMEOUT
 from tests.support.allure_labels import labels
-from tests.support.live import TRANSIENT_NETWORK_ERRORS
+from tests.support.live import (
+    TRANSIENT_NETWORK_ERRORS,
+    live_eds_client,  # noqa: F401
+)
 from tests.support.openapi import SPEC_PATH, USED_OPERATIONS, find_drift
 
 pytestmark = labels("Dataset API", "API specification drift", "critical")

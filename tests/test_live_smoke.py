@@ -7,7 +7,7 @@ import pytest
 import allure
 from models.co2emis import CO2EmisRecord
 from tests.support.assertions import describe_response
-from tests.support.live import TRANSIENT_NETWORK_ERRORS
+from tests.support.live import TRANSIENT_NETWORK_ERRORS, live_eds_client  # noqa: F401
 from tests.support.schema import assert_all_match_schema, assert_matches_schema
 
 pytestmark = [

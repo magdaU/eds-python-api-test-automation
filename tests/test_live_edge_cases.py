@@ -16,7 +16,10 @@ from tests.support.assertions import (
     assert_no_records,
     describe_response,
 )
-from tests.support.live import TRANSIENT_NETWORK_ERRORS
+from tests.support.live import (
+    TRANSIENT_NETWORK_ERRORS,
+    live_eds_client,  # noqa: F401
+)
 
 pytestmark = [
     pytest.mark.live,
