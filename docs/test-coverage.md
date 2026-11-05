@@ -19,12 +19,12 @@ Command: `pytest -m "not live" --cov` (branch measurement is switched on in `pyp
 
 ## 2. Why coverage alone is not trusted
 
-**Current state** (figures from commands, 2026-11-04): 49 of 49 mutations killed (`python scripts/mutation_check.py`); 143 offline tests (`pytest --collect-only -q -m "not live"`) and 38 live tests, 12 of them data-quality checks (`pytest --collect-only -q -m live`, `-m data_quality`); 100% statement and branch coverage of `client/` and `models/`. The 2026-10-30 figures below (40 mutations, 121 tests) are the first analysis and are labelled as such.
+**Current state** (figures from commands, 2026-11-04): 55 of 55 mutations killed (`python scripts/mutation_check.py`); 157 offline tests (`pytest --collect-only -q -m "not live"`) and 38 live tests, 12 of them data-quality checks (`pytest --collect-only -q -m live`, `-m data_quality`); 100% statement and branch coverage of `client/` and `models/`. The 2026-10-30 figures below (40 mutations, 121 tests) are the first analysis and are labelled as such.
 
 Coverage shows which lines ran, not whether a test would fail if the line were wrong. An earlier version of the suite had
 100% coverage and still contained tests that only repeated what the mock returned. The suite is therefore also checked by
-mutations: one line of the client is changed or removed and the offline suite is run. Since 2026-10-29 a catalogue of 49
-mutations (client, models and schemas) runs weekly (`scripts/mutation_check.py`, `Mutation checks` workflow). On 2026-10-30
+mutations: one line of the client is changed or removed and the offline suite is run. Since 2026-10-29 a catalogue of mutations
+(client, models and schemas; 49 on 2026-10-30, 55 on 2026-11-04) runs weekly (`scripts/mutation_check.py`, `Mutation checks` workflow). On 2026-10-30
 all of them were killed: 43 after three changes (typed records, closable session, invalid responses), 45 after the
 per-dataset override fix, 46 after the News path was encoded, 49 after the review fixes.
 
