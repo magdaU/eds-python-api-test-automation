@@ -44,10 +44,25 @@ MODULES = {
     "test_models": ("Component", "none", "Equivalence partitioning, negative testing"),
     "test_news": ("Component", "mocked HTTP", "Executable specification (Gherkin)"),
     "test_news_api": ("Component", "mocked HTTP", "Request verification, schema validation"),
+    "test_model_schema_agreement": (
+        "Component",
+        "none, JSON Schema",
+        "Equivalence partitioning, contract comparison",
+    ),
+    "test_openapi_parameter_drift": (
+        "Component",
+        "in-memory OpenAPI specification",
+        "Contract testing, regression test",
+    ),
     "test_parameter_combinations": ("Component", "mocked HTTP", "Decision table"),
     "test_properties": ("Component", "mocked HTTP", "Property-based testing"),
     "test_resilience": ("Integration", "local HTTP server", "Executable specification (Gherkin)"),
     "test_retry_after_cap": (
+        "Integration",
+        "local HTTP server",
+        "Boundary value analysis, state-based testing",
+    ),
+    "test_retry_after_header": (
         "Integration",
         "local HTTP server",
         "Boundary value analysis, state-based testing",
@@ -61,6 +76,8 @@ MODULES = {
     ),
     "test_typed_records": ("Component", "mocked HTTP", "Contract and request verification"),
     "test_url_building": ("Component", "none", "Equivalence partitioning"),
+    "test_utc_time": ("Component", "none", "Equivalence partitioning, negative testing"),
+    "test_wait_budget": ("Integration", "local HTTP server", "State-based testing"),
 }
 LEVELS = ["Component", "Integration", "System"]
 

@@ -1,6 +1,6 @@
 # Test coverage
 
-What the tests cover and what they do not. Current figures are at the start of section 2 (2026-11-04); the first analysis was on 2026-10-30. Python 3.12. Related:
+What the tests cover and what they do not. Current figures are at the start of section 2 (measured on `main` at `cc140d39`, 2026-11-05); the first analysis was on 2026-10-30. Python 3.12. Related:
 [test strategy](test-strategy.md) · [test cases](test-cases.md) · [test results](test-results.md) · [test report](test-report.md).
 
 ## 1. Code coverage
@@ -9,9 +9,11 @@ Command: `pytest -m "not live" --cov` (branch measurement is switched on in `pyp
 
 | Package | Statements | Missed | Branches | Missed branches | Coverage |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `client/` | 192 | 0 | 28 | 0 | 100% |
+| `client/` | 228 | 0 | 38 | 0 | 100% |
 | `models/` | 15 | 0 | 0 | 0 | 100% |
-| **Total** | **207** | **0** | **28** | **0** | **100%** |
+| **Total** | **243** | **0** | **38** | **0** | **100%** |
+
+Measured 2026-11-05 at `cc140d39` (`pytest -m "not live" --cov`: 205 passed; 100.00% total).
 
 - Scope is `client/` and `models/` (the code under test); test helpers and scripts are not measured.
 - Offline tests alone reach 100%; live tests add confidence in the real API, not coverage.
@@ -19,12 +21,12 @@ Command: `pytest -m "not live" --cov` (branch measurement is switched on in `pyp
 
 ## 2. Why coverage alone is not trusted
 
-**Current state** (figures from commands, 2026-11-04): 55 of 55 mutations killed (`python scripts/mutation_check.py`); 157 offline tests (`pytest --collect-only -q -m "not live"`) and 38 live tests, 12 of them data-quality checks (`pytest --collect-only -q -m live`, `-m data_quality`); 100% statement and branch coverage of `client/` and `models/`. The 2026-10-30 figures below (40 mutations, 121 tests) are the first analysis and are labelled as such.
+**Current state** (figures from commands, measured on `main` at `cc140d39`, 2026-11-05): 55 of 56 mutations killed (`python scripts/mutation_check.py`; one entry, `retry-after-limit-disabled`, is reported STALE because the client line it names changed in `f778f9c3`, so it is not counted as killed); 205 offline tests (`pytest --collect-only -q -m "not live"`) and 38 live tests, 12 of them data-quality checks (`pytest --collect-only -q -m live`, `-m data_quality`); 100% statement and branch coverage of `client/` and `models/`. On 2026-11-04 the figures were 157 offline and 38 live tests and 55 of 55 mutations. The 2026-10-30 figures below (40 mutations, 121 tests) are the first analysis and are labelled as such.
 
 Coverage shows which lines ran, not whether a test would fail if the line were wrong. An earlier version of the suite had
 100% coverage and still contained tests that only repeated what the mock returned. The suite is therefore also checked by
 mutations: one line of the client is changed or removed and the offline suite is run. Since 2026-10-29 a catalogue of mutations
-(client, models and schemas; 49 on 2026-10-30, 55 on 2026-11-04) runs weekly (`scripts/mutation_check.py`, `Mutation checks` workflow). On 2026-10-30
+(client, models and schemas; 49 on 2026-10-30, 55 on 2026-11-04, 56 on 2026-11-05 with 55 killed and one STALE) runs weekly (`scripts/mutation_check.py`, `Mutation checks` workflow). On 2026-10-30
 all of them were killed: 43 after three changes (typed records, closable session, invalid responses), 45 after the
 per-dataset override fix, 46 after the News path was encoded, 49 after the review fixes.
 
@@ -57,9 +59,9 @@ Modules are `tests/test_*.py`; BDD scenarios are in `tests/bdd/features/`.
 | Dataset status | Still published and updated (metadata: `active`, title, update interval); would have caught the discontinued `Elspotprices` | `live_smoke`, `dataset_contract` | System, Component |
 | Data quality | Newest `CO2Emis` and `DayAheadPrices` records: fresh, no gaps, DK1 and DK2, Danish time matching UTC, plausible values, fit the models | `live_data_quality` | System |
 | Contract | JSON Schema of samples and live responses (datasets require `records`, `total`, `limit`, `dataset`); Pydantic parsing (timestamps as `datetime`, price area as `Literal`; valid, missing field, bad time, unknown area, extra field, empty); a body that is not the expected JSON raises `InvalidResponseError` | `schema_validation`, `dataset_contract`, `news_api`, `live_smoke`, `models`, `typed_records` | Component, System |
-| | OpenAPI drift: operations and parameters the client uses are still documented; the detector reports a missing path, parameter and wrong type | `openapi_drift` | System, Component |
-| Client robustness | Retry on 429 then success, exhaustion (503, News), zero retries, refused connection, `Retry-After` as seconds and as an HTTP date; no retry on 400, 401, 404 | `retry_behavior`, BDD `resilience` | Integration |
-| | A `Retry-After` above 60 s ends the request at once, at the limit it is waited, no limit waits any time, the limit survives retries | `retry_after_cap`, BDD `resilience` | Integration |
+| | OpenAPI drift: operations and parameters the client uses are still documented; the detector reports a missing path, parameter and wrong type | `openapi_drift`, `openapi_parameter_drift` | System, Component |
+| Client robustness | Retry on 429 then success, exhaustion (503, News), zero retries, refused connection, `Retry-After` as seconds and as an HTTP date; no retry on 400, 401, 404 | `retry_behavior`, `retry_after_header`, BDD `resilience` | Integration |
+| | A `Retry-After` above 60 s ends the request at once, at the limit it is waited, no limit waits any time, the limit survives retries; the total wait budget is shared and refused when exceeded | `retry_after_cap`, `wait_budget`, BDD `resilience` | Integration |
 | | Retry, backoff, jitter and per-dataset overrides (an override serves its dataset only, also with a query string, and is closed with the client); warning above 10 retries | `retry_config`, `eds_client` | Component |
 | | Log lines (request, error body preview, retry wait and reason, exhaustion); timeout passed on, read timeout surfaces as `ConnectionError`, session closed by `close()` and `with`; real JSON round-trip over HTTP | `logging`, `eds_client`, `dataset_contract` | Integration, Component |
 | Test infrastructure | Allure environment properties (incl. the empty-Categories note) and failure categories. Not tested on purpose: loading mocks from another directory and injecting the note into a report (removed 2026-10-30 as low value) | `allure_environment`, `allure_categories` | Component |

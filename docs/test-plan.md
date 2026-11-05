@@ -41,7 +41,7 @@ behaviour, a few bounded live tests for the real API, JMeter for a latency basel
 | Every push to `main` | Full suite including live tests (not data quality), `ruff`, `mypy`, coverage gate, `Security`, Allure report published |
 | Daily, cron 02:00 UTC | Live tests only, including data quality. GitHub starts scheduled runs late: the last seven began between 06:57 and 08:14 UTC |
 | Monday 03:00 UTC | JMeter performance plan |
-| Monday 04:00 UTC | Mutation checks (49 deliberate breakages, offline); report in the job summary |
+| Monday 04:00 UTC | Mutation checks (56 deliberate breakages, offline; 49 before 2026-11-05); report in the job summary |
 | Monday 05:00 UTC | `Security`: advisories published after the last change |
 | After a defect fix | Regression test added in the fix, then the normal triggers |
 
