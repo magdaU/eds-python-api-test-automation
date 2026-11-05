@@ -1,0 +1,3 @@
+WARNING  client.retry:retry.py:137 Retrying in 30.0 s because the server sent Retry-After (status 429)
+WARNING  client.retry:retry.py:137 Retrying in 30.0 s because the server sent Retry-After (status 429)
+WARNING  client.eds_client:eds_client.py:192 Giving up on http://127.0.0.1:40507/dataset/CO2Emis: the wait budget of 40 s for this client is used up (30 s spent); the next wait of 30 s is not taken
