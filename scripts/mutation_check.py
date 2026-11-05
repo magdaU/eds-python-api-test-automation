@@ -207,6 +207,13 @@ MUTATIONS = [
     ),
     Mutation("zero-timeout-allowed", EDS_CLIENT, "if timeout <= 0:", "if False:"),
     Mutation("wait-budget-not-enforced", RETRY, "if seconds > remaining:", "if False:"),
+    # the Retry-After: 0 bug: a zero wait counted as "no header" and fell back to backoff
+    Mutation(
+        "retry-after-zero-treated-as-absent",
+        RETRY,
+        "if retry_after is not None:",
+        "if retry_after:",
+    ),
     Mutation(
         "sleep-function-lost-between-attempts",
         RETRY,
