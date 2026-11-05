@@ -21,12 +21,12 @@ Measured 2026-11-05 at `cc140d39` (`pytest -m "not live" --cov`: 205 passed; 100
 
 ## 2. Why coverage alone is not trusted
 
-**Current state** (figures from commands, measured on `main` at `cc140d39`, 2026-11-05): 55 of 56 mutations killed (`python scripts/mutation_check.py`; one entry, `retry-after-limit-disabled`, is reported STALE because the client line it names changed in `f778f9c3`, so it is not counted as killed); 205 offline tests (`pytest --collect-only -q -m "not live"`) and 38 live tests, 12 of them data-quality checks (`pytest --collect-only -q -m live`, `-m data_quality`); 100% statement and branch coverage of `client/` and `models/`. On 2026-11-04 the figures were 157 offline and 38 live tests and 55 of 55 mutations. The 2026-10-30 figures below (40 mutations, 121 tests) are the first analysis and are labelled as such.
+**Current state** (figures from commands, measured on `main` at `cc140d39`, 2026-11-05): 56 of 56 mutations killed, no problems (2026-11-05 full run on fix/mutant-retry-limit-pattern, merged in PR #141) (`python scripts/mutation_check.py`); 205 offline tests (`pytest --collect-only -q -m "not live"`) and 38 live tests, 12 of them data-quality checks (`pytest --collect-only -q -m live`, `-m data_quality`); 100% statement and branch coverage of `client/` and `models/`. On 2026-11-04 the figures were 157 offline and 38 live tests and 55 of 55 mutations. The 2026-10-30 figures below (40 mutations, 121 tests) are the first analysis and are labelled as such.
 
 Coverage shows which lines ran, not whether a test would fail if the line were wrong. An earlier version of the suite had
 100% coverage and still contained tests that only repeated what the mock returned. The suite is therefore also checked by
 mutations: one line of the client is changed or removed and the offline suite is run. Since 2026-10-29 a catalogue of mutations
-(client, models and schemas; 49 on 2026-10-30, 55 on 2026-11-04, 56 on 2026-11-05 with 55 killed and one STALE) runs weekly (`scripts/mutation_check.py`, `Mutation checks` workflow). On 2026-10-30
+(client, models and schemas; 49 on 2026-10-30, 55 on 2026-11-04, 56 on 2026-11-05 with all 56 killed) runs weekly (`scripts/mutation_check.py`, `Mutation checks` workflow). On 2026-10-30
 all of them were killed: 43 after three changes (typed records, closable session, invalid responses), 45 after the
 per-dataset override fix, 46 after the News path was encoded, 49 after the review fixes.
 

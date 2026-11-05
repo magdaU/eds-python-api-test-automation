@@ -8,8 +8,8 @@ Related: [test strategy](test-strategy.md) · [test plan](test-plan.md) · [test
 
 The suite has 243 automated test cases: 205 offline and 38 against the live EDS API (counted on `main` at `cc140d39`, 2026-11-05; section 4). Build #225 (commit `939c552`, 2026-11-04) ran the 156 tests that run on every push to `main` (all except the data-quality checks), and all passed. The suite has changed since then, so section 3 says which figures come from build #225, which from the first analysis of 2026-10-30 (build #218, 152 tests), and which from local runs. The other 12 are data-quality checks that run in the nightly job only (not in
 the Allure report) and passed in the nightly run of 2026-10-30, the first to include them. Static analysis, the dependency
-audit and the secret scan are clean, coverage of the client is 100% (statements and branches), 55 of 56 mutations are killed
-(local run on 2026-11-05; the 56th is a STALE catalogue entry, see section 3), and the nightly live run passed on each of its seven executions (2026-10-24 to 2026-10-30). **Every exit criterion
+audit and the secret scan are clean, coverage of the client is 100% (statements and branches), 56 of 56 mutations killed, no problems
+(2026-11-05 full run on fix/mutant-retry-limit-pattern, merged in PR #141), and the nightly live run passed on each of its seven executions (2026-10-24 to 2026-10-30). **Every exit criterion
 in the [test strategy](test-strategy.md#9-entry-and-exit-criteria) is met, and the suite is fit for its purpose: gating
 changes to the client and detecting drift in the EDS API.**
 
@@ -34,7 +34,7 @@ vulnerabilities and secrets.
 | Failed, broken or skipped tests | 0 | [test results](test-results.md) |
 | `ruff` (with the `PT` rules), `mypy` (strict) | no findings | `Quality` workflow |
 | Statement / branch coverage of `client/` and `models/` | 100% (243 statements, 38 of 38 branches; measured 2026-11-05 at `cc140d39`; 207 and 28 on 2026-11-04); gate 90% | [test coverage](test-coverage.md#1-code-coverage) |
-| Mutation checks | 55 of 56 killed (local run on 2026-11-05 at `cc140d39`): `retry-after-limit-disabled` is STALE (its client line changed in `f778f9c3`), so the run reports a problem; 49 of 49 killed on 2026-10-30; the scheduled run in Actions on 2026-11-02 succeeded | `scripts/mutation_check.py` |
+| Mutation checks | 56 of 56 killed, no problems (2026-11-05 full run on fix/mutant-retry-limit-pattern, merged in PR #141); 49 of 49 killed on 2026-10-30; the scheduled run in Actions on 2026-11-02 succeeded | `scripts/mutation_check.py` |
 | Known vulnerabilities, committed secrets | none (`pip-audit`, `detect-secrets`) | `Security` workflow |
 | Nightly live run, 2026-10-24 to 2026-10-30 | 7 of 7 passed | `Live nightly` workflow history |
 | Performance plan (JMeter), latest run 2026-11-02 | passed (scheduled run on commit `887be33`, with the `DayAheadPrices` endpoint and percentiles in the job summary; the percentiles are not limits yet) | `Performance` workflow, artifact `jmeter-report` |
