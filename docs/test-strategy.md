@@ -135,7 +135,7 @@ Python 3.12 (local, Docker `python:3.12-slim`, CI on `ubuntu-latest`). `pytest` 
 | `Security` | pull request, push to `main`, Monday 05:00 UTC, manual | `pip-audit` and `detect-secrets`; fails on any finding |
 | `Live nightly` | daily cron 02:00 UTC (GitHub started the last seven runs between 06:57 and 08:14 UTC), manual | Live tests only, including data quality, to catch API drift and stale or broken data. No Allure report: the result is the run itself |
 | `Performance` | Monday 03:00 UTC, manual | JMeter plan, fails on any failed sample |
-| `Mutation checks` | Monday 04:00 UTC, manual | 49 deliberate breakages of the client, models and schemas; fails when the offline tests miss one (about 7 minutes, report in the job summary) |
+| `Mutation checks` | Monday 04:00 UTC, manual | 56 deliberate breakages of the client, models and schemas (measured 2026-11-05 at `cc140d39`); fails when the offline tests miss one (about 7 minutes, report in the job summary) |
 
 ## 9. Entry and exit criteria
 
@@ -158,7 +158,7 @@ CI runs these checks on every pull request. It blocks a merge only where branch 
 | Public API rate limiting (429) | Medium | Flaky live tests, blocked client | Few and small live requests, retry with backoff, rerun on network errors only; 429 is never triggered on purpose |
 | 429 with a long `Retry-After` (up to 300 s observed; waiting it out made a full run take about 5 minutes instead of 30 seconds, see the [test report](test-report.md#7-residual-risks-and-open-items)) | High | Slow feedback; now a throttled live fixture fails fast | The client refuses a `Retry-After` above 60 s (`RetryConfig.max_retry_after`) with `RetryAfterTooLongError` (Allure: *Infrastructure problems*); waits and reasons are logged. `Elspotprices` allowed one query per ~300 s; the limit of `DayAheadPrices` is not measured, so a run sends one query to it and a second run within five minutes could fail fast. A push to `main` and `Live nightly` share the concurrency group `eds-live-api`, so two live runs never overlap; pull requests run offline tests only |
 | Retry logic is wrong but untested | Medium | Hammering the API, or silent failures | Retry behaviour tested against a real local server, not only mocks |
-| Tests pass although the client is broken | Medium | False confidence | Mutation checks (49), the kill matrix, request-based assertions; coverage is not trusted alone (see [test coverage](test-coverage.md)) |
+| Tests pass although the client is broken | Medium | False confidence | Mutation checks (56), the kill matrix, request-based assertions; coverage is not trusted alone (see [test coverage](test-coverage.md)) |
 | Report shows misleading history | Low | Wrong decisions | Publish guard in CI, Allure categories |
 | Dependency changes break the suite | Medium | Red build | Pinned versions; a changed minimum version is verified in a clean environment |
 | A pinned dependency has a known vulnerability | Medium | Vulnerable environment | `pip-audit` on every pull request and weekly. On 2026-10-30 it flagged `requests` 2.32.3 and `pytest` 8.3.3; both were bumped after the offline suite, `mypy` and coverage passed on the new versions |
@@ -180,7 +180,7 @@ summary, defects, risks: [test-report.md](test-report.md).
 - Regenerate [test-cases.md](test-cases.md) (`python scripts/generate_test_cases.py`) after changing tests, and
   [test-results.md](test-results.md) (`python scripts/generate_test_results.py`) when a new report is needed.
 - Guard against the *pesticide paradox*: when client behaviour changes, check by a quick mutation that at least one test
-  fails. `scripts/mutation_check.py` does this for 49 known changes every week; add a mutation when a new client behaviour
+  fails. `scripts/mutation_check.py` does this for 56 known changes every week (56 measured on 2026-11-05); add a mutation when a new client behaviour
   is protected by a test, and update a mutation's line when the client line it names changes (otherwise the run reports `STALE`).
 - Before removing a test, build the kill matrix (which test fails for which mutation, no `-x`, fixed order) and check what
   the test protects; do not edit tests while it runs, because the mutations change the client files.

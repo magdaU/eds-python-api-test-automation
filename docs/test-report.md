@@ -1,15 +1,15 @@
 # Test report
 
-Test summary report for the state of `main` at commit `939c552` (CI build #225, the build in [test results](test-results.md)), 2026-11-04. Figures of the first analysis (CI build #218, 2026-10-30) are labelled as such.
+Test summary report for the state of `main` at commit `939c552` (CI build #225, the build in [test results](test-results.md)), 2026-11-04. Counts, coverage and mutation figures in sections 1, 3 and 4 were re-measured on `main` at `cc140d39` on 2026-11-05. Figures of the first analysis (CI build #218, 2026-10-30) are labelled as such.
 Related: [test strategy](test-strategy.md) · [test plan](test-plan.md) · [test cases](test-cases.md) ·
 [test coverage](test-coverage.md) · [test results](test-results.md) · [test architecture](test-architecture.md).
 
 ## 1. Summary and recommendation
 
-The suite has 195 automated test cases: 157 offline and 38 against the live EDS API. Build #225 (commit `939c552`, 2026-11-04) ran the 156 tests that run on every push to `main` (all except the data-quality checks), and all passed. The suite has changed since then, so section 3 says which figures come from build #225, which from the first analysis of 2026-10-30 (build #218, 152 tests), and which from local runs. The other 12 are data-quality checks that run in the nightly job only (not in
+The suite has 243 automated test cases: 205 offline and 38 against the live EDS API (counted on `main` at `cc140d39`, 2026-11-05; section 4). Build #225 (commit `939c552`, 2026-11-04) ran the 156 tests that run on every push to `main` (all except the data-quality checks), and all passed. The suite has changed since then, so section 3 says which figures come from build #225, which from the first analysis of 2026-10-30 (build #218, 152 tests), and which from local runs. The other 12 are data-quality checks that run in the nightly job only (not in
 the Allure report) and passed in the nightly run of 2026-10-30, the first to include them. Static analysis, the dependency
-audit and the secret scan are clean, coverage of the client is 100% (statements and branches), all 55 mutations are killed
-(local run), and the nightly live run passed on each of its seven executions (2026-10-24 to 2026-10-30). **Every exit criterion
+audit and the secret scan are clean, coverage of the client is 100% (statements and branches), 55 of 56 mutations are killed
+(local run on 2026-11-05; the 56th is a STALE catalogue entry, see section 3), and the nightly live run passed on each of its seven executions (2026-10-24 to 2026-10-30). **Every exit criterion
 in the [test strategy](test-strategy.md#9-entry-and-exit-criteria) is met, and the suite is fit for its purpose: gating
 changes to the client and detecting drift in the EDS API.**
 
@@ -28,30 +28,31 @@ vulnerabilities and secrets.
 | Check | Result | Evidence |
 | --- | --- | --- |
 | CI build #225 (commit `939c552`) | 156 passed, 0 failed, 0 broken, 0 skipped; scope excludes the data-quality checks | [test results](test-results.md) |
-| Offline tests (157 now; 130 in build #218, first analysis) | 143 passed locally on `test/remove-redundant-cases` (`d34f3cce`), in random order (plugin active); 130 passed in build #218 | [test results](test-results.md) |
-| Live tests on `main` (26 now; 22 in build #218, first analysis) | 22 passed in build #218; the 4 News tests added later have passed locally against the real API (2026-11-04) | [test results](test-results.md) |
+| Offline tests (205 now; 157 on 2026-11-04; 130 in build #218, first analysis) | 205 passed locally on `main` at `cc140d39` (2026-11-05, `pytest -m "not live"`, 38 deselected); 143 passed locally on `test/remove-redundant-cases` (`d34f3cce`), in random order (plugin active); 130 passed in build #218 | [test results](test-results.md) |
+| Live tests on `main` (26 run on push, 38 with data quality; 22 in build #218, first analysis) | 38 collected on `main` at `cc140d39` (2026-11-05; collection only, not run in that check); 22 passed in build #218; the 4 News tests added later have passed locally against the real API (2026-11-04) | [test results](test-results.md) |
 | Data-quality checks (12, nightly only) | 12 passed in the nightly runs of 2026-11-02 and 2026-11-03 (commit `887be33`, current dependency pins) | `Live nightly` workflow |
 | Failed, broken or skipped tests | 0 | [test results](test-results.md) |
 | `ruff` (with the `PT` rules), `mypy` (strict) | no findings | `Quality` workflow |
-| Statement / branch coverage of `client/` and `models/` | 100% (207 statements, 28 of 28 branches); gate 90% | [test coverage](test-coverage.md#1-code-coverage) |
-| Mutation checks | 49 of 49 killed (local run on 2026-10-30); the scheduled run in Actions on 2026-11-02 succeeded | `scripts/mutation_check.py` |
+| Statement / branch coverage of `client/` and `models/` | 100% (243 statements, 38 of 38 branches; measured 2026-11-05 at `cc140d39`; 207 and 28 on 2026-11-04); gate 90% | [test coverage](test-coverage.md#1-code-coverage) |
+| Mutation checks | 55 of 56 killed (local run on 2026-11-05 at `cc140d39`): `retry-after-limit-disabled` is STALE (its client line changed in `f778f9c3`), so the run reports a problem; 49 of 49 killed on 2026-10-30; the scheduled run in Actions on 2026-11-02 succeeded | `scripts/mutation_check.py` |
 | Known vulnerabilities, committed secrets | none (`pip-audit`, `detect-secrets`) | `Security` workflow |
 | Nightly live run, 2026-10-24 to 2026-10-30 | 7 of 7 passed | `Live nightly` workflow history |
 | Performance plan (JMeter), latest run 2026-11-02 | passed (scheduled run on commit `887be33`, with the `DayAheadPrices` endpoint and percentiles in the job summary; the percentiles are not limits yet) | `Performance` workflow, artifact `jmeter-report` |
 
-The Allure report of build #225 holds its 156 tests; the next run on `main` should show 183 (157 offline and 26 live). Live report with history: <https://magdau.github.io/eds-python-api-test-automation/>.
+The Allure report of build #225 holds its 156 tests; the next run on `main` should show 231 (205 offline and 26 live), measured by collection on `cc140d39`. Live report with history: <https://magdau.github.io/eds-python-api-test-automation/>.
 
 ## 4. Test cases by level
 
 | Level | Offline | Live | Total |
 | --- | ---: | ---: | ---: |
-| Component | 118 | 0 | 118 |
-| Integration | 24 | 0 | 24 |
+| Component | 164 | 0 | 164 |
+| Integration | 40 | 0 | 40 |
 | System | 1 | 38 | 39 |
-| **Total** | **157** | **38** | **195** |
+| **Total** | **205** | **38** | **243** |
 
+Measured on `main` at `cc140d39` on 2026-11-05 by `scripts/generate_test_cases.py` (157 offline and 195 in total on 2026-11-04).
 The 38 live cases are 26 that run on every push to `main` (22 in build #218) and the 12 nightly data-quality checks. The one offline System case
-proves the OpenAPI drift detector can fail. The suite has 125 test functions and BDD scenarios; the difference is parametrized runs.
+proves the OpenAPI drift detector can fail. The suite has 184 test functions and BDD scenarios (174 `def test_` in `tests/test_*.py`, 10 Gherkin scenarios in `tests/bdd/`; 125 on 2026-11-04); the difference is parametrized runs.
 Details in [test cases](test-cases.md).
 
 ## 5. Deviations from the plan
