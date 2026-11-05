@@ -5,6 +5,7 @@ from typing import Any, Self
 
 import requests
 from urllib3 import BaseHTTPResponse
+from urllib3.exceptions import InvalidHeader
 from urllib3.util.retry import Retry
 
 logger = logging.getLogger(__name__)
@@ -103,19 +104,36 @@ class LoggingRetry(Retry):
         retry.sleep_func = self.sleep_func
         return retry
 
+    def get_retry_after(self, response: BaseHTTPResponse) -> float | None:
+        """The seconds of a `Retry-After` header, or `None` when there is no usable one.
+
+        `0` is a valid value (retry at once), so the caller must test for `None`, not for
+        truthiness. An invalid header (not a number, not a date, or negative) is logged and
+        ignored, so the request falls back to backoff instead of failing with `InvalidHeader`.
+        """
+        try:
+            return super().get_retry_after(response)
+        except InvalidHeader as error:
+            logger.warning("Ignoring an invalid Retry-After header, using backoff: %s", error)
+            return None
+
     def sleep(self, response: BaseHTTPResponse | None = None) -> None:
         retry_after = (
             self.get_retry_after(response) if response and self.respect_retry_after_header else None
         )
         reason = f"status {response.status}" if response else "no response"
-        if retry_after and self.max_retry_after is not None and retry_after > self.max_retry_after:
+        if (
+            retry_after is not None
+            and self.max_retry_after is not None
+            and retry_after > self.max_retry_after
+        ):
             raise RetryAfterTooLong(
                 f"The server asked to wait {retry_after:.0f} s (Retry-After, {reason}), "
                 f"more than the {self.max_retry_after:.0f} s allowed; not waiting",
                 requested_seconds=retry_after,
                 allowed_seconds=self.max_retry_after,
             )
-        if retry_after:
+        if retry_after is not None:
             logger.warning(
                 "Retrying in %.1f s because the server sent Retry-After (%s)", retry_after, reason
             )
