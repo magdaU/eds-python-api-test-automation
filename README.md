@@ -115,7 +115,7 @@ git clone https://github.com/magdaU/eds-python-api-test-automation.git && cd eds
 python -m venv .venv
 .venv\Scripts\activate      # Windows; use `source .venv/bin/activate` on macOS/Linux
 pip install -r requirements.txt
-pytest -v
+pytest -v -m "not live"
 ```
 
 Tests that hit the real EDS API carry the `live` marker; skip them for a fast, offline run with `pytest -v -m "not live"`.
@@ -249,7 +249,7 @@ After that every push to `main` updates the report.
 * [x] JMeter performance tests
 * [x] CI guard against empty or broken Allure reports
 
-All planned items are done. See [ROADMAP.md](ROADMAP.md) for the step-by-step plan behind each one.
+All planned items are done except step 7 ([Allure reporting](ROADMAP.md#7-allure-reporting)), which is open. See [ROADMAP.md](ROADMAP.md) for the step-by-step plan behind each one.
 
 ## 👩‍💻 About the Project
 

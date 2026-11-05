@@ -122,6 +122,8 @@ server (`tests/support/scripted_server.py`, `tests/test_retry_behavior.py`); the
 
 **Goal:** Produce rich, shareable HTML test reports for CI runs and portfolio demonstration.
 
+**Status: not done.** The annotated files named here do not exist on main, and no test uses `@allure.story` (checked 2026-11-05).
+
 **Acceptance criteria:**
 - `allure-pytest` is installed and `pytest --alluredir=allure-results` produces valid results.
 - `.github/workflows/tests.yml` is updated to generate (and ideally publish) the Allure report as a CI artifact.
