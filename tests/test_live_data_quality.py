@@ -22,6 +22,7 @@ from client.parsers import parse_records
 from models.co2emis import CO2EmisRecord
 from models.dayaheadprices import DayAheadPricesRecord
 from tests.support.assertions import describe_response
+from tests.support.data_quality import utc_time
 from tests.support.live import TRANSIENT_NETWORK_ERRORS, live_eds_client  # noqa: F401
 
 pytestmark = [
@@ -91,10 +92,6 @@ def series_records(request, eds_client):
 @pytest.fixture(autouse=True)
 def allure_feature_for_series(series_records):
     allure.dynamic.feature(series_records[0].dataset)
-
-
-def utc_time(record, series):
-    return dt.datetime.fromisoformat(record[series.time_field]).replace(tzinfo=dt.UTC)
 
 
 def test_whenCheckingFreshness_thenTheNewestRecordIsRecentEnough(series_records):
