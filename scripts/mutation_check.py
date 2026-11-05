@@ -116,9 +116,8 @@ MUTATIONS = [
     Mutation(
         "retry-after-limit-disabled",
         RETRY,
-        "if retry_after and self.max_retry_after is not None "
-        "and retry_after > self.max_retry_after:",
-        "if False:",
+        "retry_after > self.max_retry_after",
+        "False",
     ),
     Mutation(
         "retry-after-limit-lost-between-attempts",
