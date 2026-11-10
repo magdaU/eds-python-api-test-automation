@@ -298,6 +298,42 @@ MUTATIONS = [
         "raise",
     ),
     Mutation("session-not-closed", EDS_CLIENT, "self.session.close()", "pass"),
+    Mutation(
+        "model-co2-area-optional",
+        "models/co2emis.py",
+        'PriceArea: Literal["DK1", "DK2"]',
+        'PriceArea: Literal["DK1", "DK2"] | None = None',
+    ),
+    Mutation(
+        "model-co2-emission-optional",
+        "models/co2emis.py",
+        "CO2Emission: float",
+        "CO2Emission: float | None = None",
+    ),
+    Mutation(
+        "model-co2-emission-as-text",
+        "models/co2emis.py",
+        "CO2Emission: float",
+        "CO2Emission: str",
+    ),
+    Mutation(
+        "model-dap-area-optional",
+        "models/dayaheadprices.py",
+        'PriceArea: Literal["DK1", "DK2", "DE", "NO2", "SE3", "SE4"]',
+        'PriceArea: Literal["DK1", "DK2", "DE", "NO2", "SE3", "SE4"] | None = None',
+    ),
+    Mutation(
+        "model-dap-area-any-text",
+        "models/dayaheadprices.py",
+        'PriceArea: Literal["DK1", "DK2", "DE", "NO2", "SE3", "SE4"]',
+        "PriceArea: str",
+    ),
+    Mutation(
+        "model-dap-price-as-text",
+        "models/dayaheadprices.py",
+        "DayAheadPriceDKK: float",
+        "DayAheadPriceDKK: str",
+    ),
 ]
 
 

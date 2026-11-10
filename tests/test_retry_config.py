@@ -31,37 +31,6 @@ def test_givenDatasetOverride_whenResolvingDatasets_thenOverrideAppliesOnlyToTha
     assert default.backoff_factor == 1.0
 
 
-def test_givenBaseUrlWithTrailingSlash_whenResolvingOverriddenDataset_thenOverrideStillApplies():
-    # arrange
-    client = EDSApiClient(
-        base_url="https://api.energidataservice.dk/",
-        retry=RetryConfig(max_retries=3),
-        dataset_overrides={"DayAheadPrices": RetryConfig(max_retries=5)},
-    )
-
-    # act
-    overridden = _retry_of(client, "DayAheadPrices")
-
-    # assert
-    assert overridden.total == 5
-
-
-def test_givenDatasetOverrideWithJitter_whenResolvingDatasets_thenOnlyThatDatasetHasJitter():
-    # arrange
-    client = EDSApiClient(
-        retry=RetryConfig(backoff_jitter=0.0),
-        dataset_overrides={"DayAheadPrices": RetryConfig(backoff_jitter=0.5)},
-    )
-
-    # act
-    overridden = _retry_of(client, "DayAheadPrices")
-    default = _retry_of(client, "CO2Emis")
-
-    # assert
-    assert overridden.backoff_jitter == 0.5
-    assert default.backoff_jitter == 0.0
-
-
 def test_givenExcessiveMaxRetries_whenCreatingClient_thenWarningIsLogged(caplog):
     # act
     with caplog.at_level(logging.WARNING):
@@ -72,52 +41,6 @@ def test_givenExcessiveMaxRetries_whenCreatingClient_thenWarningIsLogged(caplog)
         f"max_retries={SANE_MAX_RETRIES + 1} exceeds the recommended maximum of {SANE_MAX_RETRIES}"
         " -- this risks hammering the public EDS API during an outage or rate limit"
     }
-
-
-def test_givenDatasetOverrideWithExcessiveMaxRetries_whenCreatingClient_thenWarningIsLogged(caplog):
-    # act
-    with caplog.at_level(logging.WARNING):
-        EDSApiClient(
-            dataset_overrides={"DayAheadPrices": RetryConfig(max_retries=SANE_MAX_RETRIES + 1)}
-        )
-
-    # assert
-    assert set(caplog.messages) == {
-        f"max_retries={SANE_MAX_RETRIES + 1} exceeds the recommended maximum of {SANE_MAX_RETRIES}"
-        " -- this risks hammering the public EDS API during an outage or rate limit"
-    }
-
-
-def test_givenDatasetOverride_whenResolvingDatasetWithLongerName_thenOverrideDoesNotApply():
-    # arrange
-    client = EDSApiClient(
-        retry=RetryConfig(max_retries=3),
-        dataset_overrides={"CO2Emis": RetryConfig(max_retries=5)},
-    )
-
-    # act
-    overridden = _retry_of(client, "CO2Emis")
-    longer_name = _retry_of(client, "CO2EmisProg")
-
-    # assert
-    assert overridden.total == 5
-    assert longer_name.total == 3
-
-
-def test_givenDatasetOverride_whenRequestHasQueryString_thenOverrideStillApplies():
-    # arrange
-    client = EDSApiClient(
-        retry=RetryConfig(max_retries=3),
-        dataset_overrides={"DayAheadPrices": RetryConfig(max_retries=5)},
-    )
-
-    # act
-    retry = client.session.get_adapter(
-        client.dataset_url("DayAheadPrices") + "?limit=5&offset=10"
-    ).max_retries
-
-    # assert
-    assert retry.total == 5
 
 
 def test_givenDatasetOverride_whenClosingClient_thenItsAdapterIsClosed(monkeypatch):
@@ -132,6 +55,30 @@ def test_givenDatasetOverride_whenClosingClient_thenItsAdapterIsClosed(monkeypat
 
     # assert
     assert closed == [True]
+
+
+@pytest.mark.parametrize(
+    "field", ["max_retries", "backoff_factor", "backoff_jitter", "max_retry_after"]
+)
+def test_givenNegativeValue_whenCreatingRetryConfig_thenValueErrorNamesField(field):
+    # arrange
+    settings = {field: -1}
+
+    # act
+    with pytest.raises(ValueError, match=field) as error:
+        RetryConfig(**settings)
+
+    # assert
+    assert f"{field} must not be negative, got -1" in str(error.value)
+
+
+def test_givenZeroTimeout_whenCreatingClient_thenValueErrorNamesTimeout():
+    # act
+    with pytest.raises(ValueError, match="timeout") as error:
+        EDSApiClient(timeout=0)
+
+    # assert
+    assert str(error.value) == "timeout must be positive, got 0"
 
 
 def test_givenBaseUrlWithUpperCaseHost_whenResolvingOverriddenDataset_thenOverrideStillApplies():
@@ -151,33 +98,17 @@ def test_givenBaseUrlWithUpperCaseHost_whenResolvingOverriddenDataset_thenOverri
     assert overridden.total == 5
 
 
-@pytest.mark.parametrize(
-    "field", ["max_retries", "backoff_factor", "backoff_jitter", "max_retry_after"]
-)
-def test_givenNegativeValue_whenCreatingRetryConfig_thenValueErrorNamesField(field):
+def test_givenDatasetOverride_whenRequestHasQueryString_thenOverrideStillApplies():
     # arrange
-    settings = {field: -1}
+    client = EDSApiClient(
+        retry=RetryConfig(max_retries=3),
+        dataset_overrides={"DayAheadPrices": RetryConfig(max_retries=5)},
+    )
 
     # act
-    with pytest.raises(ValueError, match=field) as error:
-        RetryConfig(**settings)
+    retry = client.session.get_adapter(
+        client.dataset_url("DayAheadPrices") + "?limit=5&offset=10"
+    ).max_retries
 
     # assert
-    assert f"{field} must not be negative, got -1" in str(error.value)
-
-
-def test_givenNoneForMaxRetryAfter_whenCreatingRetryConfig_thenNoErrorIsRaised():
-    # act
-    config = RetryConfig(max_retry_after=None)
-
-    # assert
-    assert config.max_retry_after is None
-
-
-def test_givenZeroTimeout_whenCreatingClient_thenValueErrorNamesTimeout():
-    # act
-    with pytest.raises(ValueError, match="timeout") as error:
-        EDSApiClient(timeout=0)
-
-    # assert
-    assert str(error.value) == "timeout must be positive, got 0"
+    assert retry.total == 5

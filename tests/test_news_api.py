@@ -14,21 +14,6 @@ NEWS_ENDPOINTS = {
 }
 
 
-@pytest.mark.parametrize(("method", "expected_path"), NEWS_ENDPOINTS.items())
-def test_whenCallingNewsApiMethod_thenRequestGoesToItsEndpointPath(
-    eds, news_api, method, expected_path
-):
-    # arrange
-    eds.news(expected_path.removeprefix("/News")).answers(json=[])
-
-    # act
-    getattr(news_api, method)()
-
-    # assert
-    assert eds.last_request.path == expected_path
-    assert eds.last_request.query == {}
-
-
 @pytest.mark.parametrize(
     ("sample_file", "schema_file", "wrap_in_list"),
     [
@@ -49,14 +34,18 @@ def test_givenNewsSample_whenValidatingAgainstSchema_thenSchemaIsSatisfied(
     assert_all_match_schema(items, schema_file)
 
 
-def test_givenNoCategory_whenGettingActualNews_thenNoCategoryParameterIsSent(eds, news_api):
+@pytest.mark.parametrize(("method", "expected_path"), NEWS_ENDPOINTS.items())
+def test_whenCallingNewsApiMethod_thenRequestGoesToItsEndpointPath(
+    eds, news_api, method, expected_path
+):
     # arrange
-    eds.news("actual").answers(json=load_mock("news_actual_sample.json"))
+    eds.news(expected_path.removeprefix("/News")).answers(json=[])
 
     # act
-    news_api.actual()
+    getattr(news_api, method)()
 
     # assert
+    assert eds.last_request.path == expected_path
     assert eds.last_request.query == {}
 
 

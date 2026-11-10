@@ -4,37 +4,18 @@
 > Regenerate after adding, renaming or removing tests. IDs are sequential and are **not stable** between
 > regenerations, so refer to a test by its module and name.
 
-184 test functions expand to 243 executed test cases (*Variants* counts parametrized runs). Each test name reads `given<precondition>_when<action>_then<expected result>`; the columns below are that name, split. Tests that call the public EDS API count as *System* level whichever module they live in. See the [test strategy](test-strategy.md) for how the levels are used.
+66 test functions expand to 97 executed test cases (*Variants* counts parametrized runs). Each test name reads `given<precondition>_when<action>_then<expected result>`; the columns below are that name, split. See the [test strategy](test-strategy.md) for how the levels are used.
 
 ## Summary by test level
 
 | Test level | Offline | Live | Total |
 | --- | ---: | ---: | ---: |
-| Component | 164 | 0 | 164 |
-| Integration | 40 | 0 | 40 |
-| System | 1 | 38 | 39 |
-| **Total** | **205** | **38** | **243** |
+| Component | 79 | 0 | 79 |
+| Integration | 18 | 0 | 18 |
+| System | 0 | 0 | 0 |
+| **Total** | **97** | **0** | **97** |
 
 ## Test cases
-
-### Test support: Allure categories
-
-Source: [`tests/test_allure_categories.py`](../tests/test_allure_categories.py) | Level: Component | Environment: none | Technique: Equivalence partitioning, configuration checks
-
-| ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
-| --- | --- | --- | --- | ---: | --- |
-| TC-001 | Failure message | Categorizing | Expected category is assigned | 7 | Offline |
-
-### Client library: Allure environment
-
-Source: [`tests/test_allure_environment.py`](../tests/test_allure_environment.py) | Level: Component | Environment: none | Technique: Equivalence partitioning
-
-| ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
-| --- | --- | --- | --- | ---: | --- |
-| TC-002 | CI environment | Building environment | Every field is mapped | 1 | Offline |
-| TC-003 | No marker and no CI | Building environment | Scope is all and CI fields are absent | 1 | Offline |
-| TC-004 | Properties | Writing environment | File has one key value per line | 1 | Offline |
-| TC-005 | Failed error and skipped reports | Counting categorized | All three are counted | 1 | Offline |
 
 ### Dataset API: Boundary values
 
@@ -42,10 +23,7 @@ Source: [`tests/test_boundary_values.py`](../tests/test_boundary_values.py) | Le
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-006 | Limit at boundary | Getting dataset | Limit is sent unchanged | 4 | Offline |
-| TC-007 | Zero offset | Getting dataset | Offset is sent unchanged | 2 | Offline |
-| TC-008 | No parameters | Getting dataset | No query string is sent | 2 | Offline |
-| TC-009 | Negative offset | Getting dataset | Value is sent and server rejection is returned | 2 | Offline |
+| TC-001 | Limit at boundary | Getting dataset | Limit is sent unchanged | 4 | Offline |
 
 ### Dataset API: Response contract
 
@@ -53,10 +31,8 @@ Source: [`tests/test_dataset_contract.py`](../tests/test_dataset_contract.py) | 
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-010 | Sample response | Validating against schema | Schema is satisfied | 2 | Offline |
-| TC-011 | Limit and filter | Getting dataset | Request targets the dataset with those parameters | 2 | Offline |
-| TC-012 | Dataset | Getting metadata | Request goes to its meta path without parameters | 2 | Offline |
-| TC-013 | Successful response | Getting dataset | Status JSON content type and body arrive unchanged | 1 | Offline |
+| TC-002 | Limit and filter | Getting dataset | Request targets the dataset with those parameters | 2 | Offline |
+| TC-003 | Dataset | Getting metadata | Request goes to its meta path without parameters | 2 | Offline |
 
 ### BDD scenarios: Dataset queries
 
@@ -64,22 +40,39 @@ Source: [`tests/bdd/features/dataset_queries.feature`](../tests/bdd/features/dat
 
 | ID | Scenario | Given | When | Then | Variants | Mode |
 | --- | --- | --- | --- | --- | ---: | --- |
-| TC-014 | Asking for a page of records | the CO2Emis dataset answers with an empty result | I get the dataset with limit 5 and offset 10 | the request carries limit "5" and offset "10" | 1 | Offline |
-| TC-015 | A sort expression is sent unchanged | the DayAheadPrices dataset answers with an empty result | I get the dataset sorted by "&lt;sort&gt;" | the request carries sort "&lt;sort&gt;" | 1 | Offline |
-| TC-016 | Filtering by price area | the DayAheadPrices dataset answers with an empty result | I get the dataset filtered by price area "DK1" | the request carries the filter '{"PriceArea":"DK1"}' | 1 | Offline |
-| TC-017 | A negative limit is refused before anything is sent | the CO2Emis dataset answers with an empty result | I get the dataset with limit -1 | the client refuses the request and names the limit; no request was sent | 1 | Offline |
+| TC-004 | Asking for a page of records | the CO2Emis dataset answers with an empty result | I get the dataset with limit 5 and offset 10 | the request carries limit "5" and offset "10" | 1 | Offline |
+| TC-005 | A sort expression is sent unchanged | the DayAheadPrices dataset answers with an empty result | I get the dataset sorted by "&lt;sort&gt;" | the request carries sort "&lt;sort&gt;" | 1 | Offline |
+| TC-006 | Filtering by price area | the DayAheadPrices dataset answers with an empty result | I get the dataset filtered by price area "DK1" | the request carries the filter '{"PriceArea":["DK1"]}' | 1 | Offline |
+| TC-007 | A negative limit is refused before anything is sent | the CO2Emis dataset answers with an empty result | I get the dataset with limit -1 | the client refuses the request and names the limit; no request was sent | 1 | Offline |
 
-### Client library: Client configuration
+### Dataset API: Documented rules
+
+Source: [`tests/test_documented_api_rules.py`](../tests/test_documented_api_rules.py) | Level: Component | Environment: mocked HTTP | Technique: Requirements-based testing (rules from the API guide)
+
+| ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
+| --- | --- | --- | --- | ---: | --- |
+| TC-008 | Filter value with single quote | Getting dataset | The quote is doubled | 2 | Offline |
+
+### BDD scenarios: Documented rules
+
+Source: [`tests/bdd/features/documented_rules.feature`](../tests/bdd/features/documented_rules.feature) | Level: Component | Environment: mocked HTTP | Technique: Executable specification (Gherkin)
+
+| ID | Scenario | Given | When | Then | Variants | Mode |
+| --- | --- | --- | --- | --- | ---: | --- |
+| TC-009 | Without a limit the client sends no limit, so the API default applies | the &lt;dataset&gt; dataset answers with an empty result | I get the dataset without a limit | the request carries no limit | 2 | Offline |
+| TC-010 | A limit of zero is sent unchanged | the &lt;dataset&gt; dataset answers with an empty result | I get the dataset with limit 0 | the request carries only limit "0" | 2 | Offline |
+| TC-011 | A filter with two values is sent as a JSON array | the &lt;dataset&gt; dataset answers with an empty result | I get the dataset filtered by price areas "DK1" and "DK2" | the request carries the filter '{"PriceArea":["DK1","DK2"]}' | 2 | Offline |
+
+### Dataset API: Request methods
 
 Source: [`tests/test_eds_client.py`](../tests/test_eds_client.py) | Level: Component | Environment: none | Technique: Configuration checks
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-018 | - | Creating client with defaults | Default timeout is used per request | 1 | Offline |
-| TC-019 | Custom timeout | Getting dataset | It is passed to the request | 1 | Offline |
-| TC-020 | Server slower than the timeout | Getting dataset | Connection error names the read timeout | 1 | Offline |
-| TC-021 | - | Using client as context manager | Session is closed on exit | 1 | Offline |
-| TC-022 | Positional query argument | Getting dataset | Type error is raised | 3 | Offline |
+| TC-012 | Dataset | Getting it | Request is HTTP get | 2 | Offline |
+| TC-013 | Limit offset and sort | Getting dataset | Parameters are joined by ampersand | 2 | Offline |
+| TC-014 | Dataset | Getting metadata | Request is HTTP get on the meta path | 2 | Offline |
+| TC-015 | Server slower than the timeout | Getting dataset | Connection error names the read timeout | 1 | Offline |
 
 ### Dataset API: Filtering
 
@@ -87,57 +80,7 @@ Source: [`tests/test_filter_encoding.py`](../tests/test_filter_encoding.py) | Le
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-023 | Non ascii filter | Getting dataset | Filter round trips through JSON | 2 | Offline |
-| TC-024 | Empty filters | Getting dataset | Empty JSON object is sent | 2 | Offline |
-| TC-025 | Numeric filter value | Getting dataset | It is sent as JSON number | 2 | Offline |
-
-### Data quality: 
-
-Source: [`tests/test_live_data_quality.py`](../tests/test_live_data_quality.py) | Level: System | Environment: public EDS API | Technique: Data quality checks
-
-| ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
-| --- | --- | --- | --- | ---: | --- |
-| TC-026 | - | Checking freshness | The newest record is recent enough | 2 | Live |
-| TC-027 | - | Checking completeness | Every area has every step without gaps | 2 | Live |
-| TC-028 | - | Checking areas | Dk1 and dk2 are both present | 2 | Live |
-| TC-029 | - | Checking time zones | Danish time matches the utc timestamp | 2 | Live |
-| TC-030 | - | Checking values | They are finite numbers within the plausible range | 2 | Live |
-| TC-031 | - | Parsing records | Every record fits the typed model | 2 | Live |
-
-### Live API (test_live_edge_cases)
-
-Source: [`tests/test_live_edge_cases.py`](../tests/test_live_edge_cases.py) | Level: System | Environment: public EDS API | Technique: Error guessing, negative testing
-
-| ID | Feature | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
-| --- | --- | --- | --- | --- | ---: | --- |
-| TC-032 | CO2Emis | Negative offset | Getting dataset | Bad request mentions offset | 1 | Live |
-| TC-033 | CO2Emis | Unknown sort column | Getting dataset | Bad request mentions sort | 1 | Live |
-| TC-034 | CO2Emis | Unknown filter column | Getting dataset | Bad request mentions column | 1 | Live |
-| TC-035 | CO2Emis | Filter matching nothing | Getting dataset | Result is empty and filter is echoed | 1 | Live |
-| TC-036 | CO2Emis | Offset far beyond data | Getting dataset | Result is empty | 1 | Live |
-| TC-037 | News | Unknown category | Getting actual news | No content is returned | 1 | Live |
-| TC-038 | News | No category | Getting actual news | Bad request names category | 1 | Live |
-| TC-039 | News | Invalid date | Getting archived news | Bad request names date | 1 | Live |
-| TC-040 | News | Unknown news path | Getting news | Not found is returned | 1 | Live |
-| TC-041 | News | Sub path below calendar | Getting news | Not found is returned | 1 | Live |
-| TC-042 | News | Unknown parameter | Getting calendar | It is ignored | 1 | Live |
-| TC-043 | News | Unknown parameter | Getting news list | It is ignored | 1 | Live |
-| TC-044 | News | Different case | Getting calendar | Path is still resolved | 1 | Live |
-
-### Live API (test_live_smoke)
-
-Source: [`tests/test_live_smoke.py`](../tests/test_live_smoke.py) | Level: System | Environment: public EDS API | Technique: Smoke testing
-
-| ID | Feature | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
-| --- | --- | --- | --- | --- | ---: | --- |
-| TC-045 |  | - | Getting dataset metadata | The dataset is still published and updated | 2 | Live |
-| TC-046 | CO2Emis | - | Getting records | They are typed model objects | 1 | Live |
-| TC-047 | CO2Emis | Oldest first sort | Getting consecutive pages | Together they equal one larger page | 1 | Live |
-| TC-048 | CO2Emis | Unknown dataset | Getting it | Not found names the dataset | 1 | Live |
-| TC-049 | CO2Emis | Price area filter | Getting CO2Emis | Only the requested areas are returned | 2 | Live |
-| TC-050 | DayAheadPrices | Descending sort | Getting day ahead prices | Prices are descending | 1 | Live |
-| TC-051 | News | - | Getting live news | Every item matches schema | 1 | Live |
-| TC-052 | News | - | Getting live calendar | Every entry matches schema and archive agrees | 1 | Live |
+| TC-016 | Non ascii filter | Getting dataset | Filter round trips through JSON | 2 | Offline |
 
 ### Client library: Logging
 
@@ -145,40 +88,9 @@ Source: [`tests/test_logging.py`](../tests/test_logging.py) | Level: Integration
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-053 | Retryable status persists | Retries are exhausted | Warning is logged | 1 | Offline |
-| TC-054 | Successful response | Getting dataset | One line logs request status and duration | 1 | Offline |
-| TC-055 | Error response | Getting dataset | Body preview is logged | 1 | Offline |
-| TC-056 | Retry after header | Server throttles | Wait and reason are logged | 1 | Offline |
-| TC-057 | Server error without retry after | Retrying | Backoff wait is logged | 1 | Offline |
-| TC-058 | Backoff with jitter | Retrying | Logged wait is the wait that happened | 1 | Offline |
-| TC-059 | Nothing listening | Getting dataset | Failure with URL and duration is logged | 1 | Offline |
-
-### Dataset API: Model and schema agreement
-
-Source: [`tests/test_model_schema_agreement.py`](../tests/test_model_schema_agreement.py) | Level: Component | Environment: none, JSON Schema | Technique: Equivalence partitioning, contract comparison
-
-| ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
-| --- | --- | --- | --- | ---: | --- |
-| TC-060 | Minutes5 dk absent | Validating | Model and schema both accept | 1 | Offline |
-| TC-061 | Minutes5 dk null | Validating | Disagreement is known | 1 | Offline |
-| TC-062 | Minutes5 dk valid date time | Validating | Model and schema both accept | 1 | Offline |
-| TC-063 | Minutes5 dk wrong type list | Validating | Model and schema both reject | 1 | Offline |
-| TC-064 | Minutes5 dk wrong type number | Validating | Disagreement is known | 1 | Offline |
-| TC-065 | Minutes5 dk not a date time | Validating | Disagreement is known | 1 | Offline |
-| TC-066 | Time utc absent | Validating | Model and schema both accept | 1 | Offline |
-| TC-067 | Time utc null | Validating | Disagreement is known | 1 | Offline |
-| TC-068 | Time utc valid date time | Validating | Model and schema both accept | 1 | Offline |
-| TC-069 | Time utc wrong type list | Validating | Model and schema both reject | 1 | Offline |
-| TC-070 | Time utc wrong type number | Validating | Disagreement is known | 1 | Offline |
-| TC-071 | Time utc not a date time | Validating | Disagreement is known | 1 | Offline |
-| TC-072 | Time dk absent | Validating | Model and schema both accept | 1 | Offline |
-| TC-073 | Time dk null | Validating | Disagreement is known | 1 | Offline |
-| TC-074 | Time dk valid date time | Validating | Model and schema both accept | 1 | Offline |
-| TC-075 | Time dk wrong type list | Validating | Disagreement is known | 1 | Offline |
-| TC-076 | Day ahead price eur absent | Validating | Model and schema both accept | 1 | Offline |
-| TC-077 | Day ahead price eur null | Validating | Disagreement is known | 1 | Offline |
-| TC-078 | Day ahead price eur valid number | Validating | Model and schema both accept | 1 | Offline |
-| TC-079 | Day ahead price eur wrong type string | Validating | Disagreement is known | 1 | Offline |
+| TC-017 | Retryable status persists | Retries are exhausted | Warning is logged | 1 | Offline |
+| TC-018 | Backoff with jitter | Retrying | Logged wait is the wait that happened | 1 | Offline |
+| TC-019 | Nothing listening | Getting dataset | Failure with URL and duration is logged | 1 | Offline |
 
 ### Dataset API: Pydantic models
 
@@ -186,16 +98,12 @@ Source: [`tests/test_models.py`](../tests/test_models.py) | Level: Component | E
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-080 | Valid JSON | Parsing records | Typed models are returned | 1 | Offline |
-| TC-081 | Record without required field | Parsing records | Validation error is raised | 1 | Offline |
-| TC-082 | Invalid field value | Parsing records | Validation error is raised | 2 | Offline |
-| TC-083 | Empty records | Parsing records | Empty list is returned | 1 | Offline |
-| TC-084 | Unknown extra field | Parsing records | It is ignored | 1 | Offline |
-| TC-085 | Unexpected body | Parsing records | Invalid response error is raised | 2 | Offline |
-| TC-086 | Valid day ahead prices JSON | Parsing records | Every field is mapped | 1 | Offline |
-| TC-087 | Known price area | Parsing day ahead prices | It is accepted | 2 | Offline |
-| TC-088 | Invalid day ahead prices record | Parsing records | Validation error is raised | 2 | Offline |
-| TC-089 | Day ahead prices without time | Parsing records | Time is none | 1 | Offline |
+| TC-020 | Valid JSON | Parsing records | Typed models are returned | 1 | Offline |
+| TC-021 | Record without required field | Parsing records | Validation error is raised | 1 | Offline |
+| TC-022 | Invalid field value | Parsing records | Validation error is raised | 1 | Offline |
+| TC-023 | Unexpected body | Parsing records | Invalid response error is raised | 2 | Offline |
+| TC-024 | Required field missing | Parsing records | Validation error is raised | 1 | Offline |
+| TC-025 | Unknown area or text price | Parsing day ahead prices | Validation error is raised | 1 | Offline |
 
 ### BDD scenarios: News
 
@@ -203,8 +111,8 @@ Source: [`tests/bdd/features/news.feature`](../tests/bdd/features/news.feature) 
 
 | ID | Scenario | Given | When | Then | Variants | Mode |
 | --- | --- | --- | --- | --- | ---: | --- |
-| TC-090 | The category is sent with its exact case | the news API answers with an actual item | I ask for the actual news of category "&lt;category&gt;" | the request carries only category "&lt;category&gt;" | 2 | Offline |
-| TC-091 | The archive without a date sends no date | the news API answers with an empty archive | I ask for the archived news without a date | the request carries no parameters | 1 | Offline |
+| TC-026 | The category is sent with its exact case | the news API answers with an actual item | I ask for the actual news of category "&lt;category&gt;" | the request carries only category "&lt;category&gt;" | 2 | Offline |
+| TC-027 | The archive without a date sends no date | the news API answers with an empty archive | I ask for the archived news without a date | the request carries no parameters | 1 | Offline |
 
 ### News API: News
 
@@ -212,19 +120,17 @@ Source: [`tests/test_news_api.py`](../tests/test_news_api.py) | Level: Component
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-092 | - | Calling news API method | Request goes to its endpoint path | 4 | Offline |
-| TC-093 | News sample | Validating against schema | Schema is satisfied | 3 | Offline |
-| TC-094 | No category | Getting actual news | No category parameter is sent | 1 | Offline |
-| TC-095 | Date | Getting archived news | Date is sent | 1 | Offline |
+| TC-028 | News sample | Validating against schema | Schema is satisfied | 3 | Offline |
+| TC-029 | - | Calling news API method | Request goes to its endpoint path | 4 | Offline |
+| TC-030 | Date | Getting archived news | Date is sent | 1 | Offline |
 
 ### Dataset API: API specification drift
 
-Source: [`tests/test_openapi_drift.py`](../tests/test_openapi_drift.py) | Level: System | Environment: public EDS API | Technique: Contract testing, regression test
+Source: [`tests/test_openapi_drift.py`](../tests/test_openapi_drift.py) | Level: Component | Environment: none | Technique: Contract testing, regression test
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-096 | - | Comparing with the published specification | Every operation the client uses is documented | 1 | Live |
-| TC-097 | Specification without a path and a parameter | Looking for drift | Both are reported | 1 | Offline |
+| TC-031 | Specification without a path and a parameter | Looking for drift | Both are reported | 1 | Offline |
 
 ### Dataset API: API specification drift
 
@@ -232,26 +138,10 @@ Source: [`tests/test_openapi_parameter_drift.py`](../tests/test_openapi_paramete
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-098 | Limit removed | Looking for drift | It is reported | 1 | Offline |
-| TC-099 | Limit moved from query to header | Looking for drift | Location change is reported | 1 | Offline |
-| TC-100 | Limit type changed to string | Looking for drift | Type change is reported | 1 | Offline |
-| TC-101 | Limit format changed to int64 | Looking for drift | Format change is reported | 1 | Offline |
-| TC-102 | Limit became required | Looking for drift | Required change is reported | 1 | Offline |
-| TC-103 | Endpoint removed | Looking for drift | It is reported | 1 | Offline |
-| TC-104 | Get became post | Looking for drift | The missing method is reported | 1 | Offline |
-| TC-105 | Limit declared at path level | Looking for drift | It is still found | 1 | Offline |
-| TC-106 | Operation redefines path level limit | Looking for drift | Operation definition is used | 1 | Offline |
-| TC-107 | Correct contract | Looking for drift | No drift is reported | 1 | Offline |
-| TC-108 | Limit referenced from components | Looking for drift | Reference is resolved | 1 | Offline |
-| TC-109 | Referenced limit has wrong type | Looking for drift | Type change is reported | 1 | Offline |
-
-### Dataset API: Parameter combinations
-
-Source: [`tests/test_parameter_combinations.py`](../tests/test_parameter_combinations.py) | Level: Component | Environment: mocked HTTP | Technique: Decision table
-
-| ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
-| --- | --- | --- | --- | ---: | --- |
-| TC-110 | Parameter combination | Getting dataset | Exactly those parameters are sent | 4 | Offline |
+| TC-032 | Limit removed | Looking for drift | It is reported | 1 | Offline |
+| TC-033 | Limit type changed to string | Looking for drift | Type change is reported | 1 | Offline |
+| TC-034 | Endpoint removed | Looking for drift | It is reported | 1 | Offline |
+| TC-035 | Correct contract | Looking for drift | No drift is reported | 1 | Offline |
 
 ### Client library: Property-based
 
@@ -259,9 +149,7 @@ Source: [`tests/test_properties.py`](../tests/test_properties.py) | Level: Compo
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-111 | Any valid parameters | Getting dataset | Every parameter survives the URL | 1 | Offline |
-| TC-112 | Any negative limit | Getting dataset | Value error is raised before sending | 1 | Offline |
-| TC-113 | Any path with optional slashes | Building news URL | There is no double slash | 1 | Offline |
+| TC-036 | Any valid parameters | Getting dataset | Every parameter survives the URL | 1 | Offline |
 
 ### BDD scenarios: Resilience
 
@@ -269,10 +157,10 @@ Source: [`tests/bdd/features/resilience.feature`](../tests/bdd/features/resilien
 
 | ID | Scenario | Given | When | Then | Variants | Mode |
 | --- | --- | --- | --- | --- | ---: | --- |
-| TC-114 | The client waits as long as a throttling server asks | an API that answers 429 with "Retry-After: 2" and then 200 | I get a dataset | the client waited 2 seconds before it retried; the response status is 200 | 1 | Offline |
-| TC-115 | The client refuses to wait much longer than it allows | an API that answers 429 with "Retry-After: 300" and then 200 | I get a dataset | the request fails because the server asked for a longer wait than allowed; the client did not wait | 1 | Offline |
-| TC-116 | The client gives up when the API keeps failing | an API that always answers 503 | I get a dataset | the request fails with a retry error after 3 attempts | 1 | Offline |
-| TC-117 | Client errors are not retried | an API that always answers &lt;status&gt; | I get a dataset | the response status is &lt;status&gt;; the API received 1 request | 1 | Offline |
+| TC-037 | The client waits as long as a throttling server asks | an API that answers 429 with "Retry-After: 2" and then 200 | I get a dataset | the client waited 2 seconds before it retried; the response status is 200 | 1 | Offline |
+| TC-038 | The client refuses to wait much longer than it allows | an API that answers 429 with "Retry-After: 300" and then 200 | I get a dataset | the request fails because the server asked for a longer wait than allowed; the client did not wait | 1 | Offline |
+| TC-039 | The client gives up when the API keeps failing | an API that always answers 503 | I get a dataset | the request fails with a retry error after 3 attempts | 1 | Offline |
+| TC-040 | Client errors are not retried | an API that always answers &lt;status&gt; | I get a dataset | the response status is &lt;status&gt;; the API received 1 request | 1 | Offline |
 
 ### Client library: Retry-After limit
 
@@ -280,15 +168,9 @@ Source: [`tests/test_retry_after_cap.py`](../tests/test_retry_after_cap.py) | Le
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-118 | - | Creating retry config | The default limit is sixty seconds | 1 | Offline |
-| TC-119 | - | Checking the error type | It is a subclass of retry error | 1 | Offline |
-| TC-120 | Retry after above the limit | Server throttles | Client fails fast without waiting | 1 | Offline |
-| TC-121 | Retry after at the limit | Server throttles | Client waits and succeeds | 1 | Offline |
-| TC-122 | Retry after just above the limit | Server throttles | Client refuses to wait | 1 | Offline |
-| TC-123 | Retry after as HTTP date above limit | Server throttles | Client fails fast without waiting | 1 | Offline |
-| TC-124 | Retry after as HTTP date below the limit | Server throttles | Client waits until that time | 1 | Offline |
-| TC-125 | No limit | Server asks for a long wait | Client still waits | 1 | Offline |
-| TC-126 | An allowed wait | The next wait is too long | Client gives up at the second one | 1 | Offline |
+| TC-041 | - | Creating retry config | The default limit is sixty seconds | 1 | Offline |
+| TC-042 | Retry after above the limit | Server throttles | Client fails fast without waiting | 1 | Offline |
+| TC-043 | Retry after at the limit | Server throttles | Client waits and succeeds | 1 | Offline |
 
 ### Client library: Retry-After header
 
@@ -296,14 +178,8 @@ Source: [`tests/test_retry_after_header.py`](../tests/test_retry_after_header.py
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-127 | Retry after zero after503 | Server then accepts retry | Zero wait is honoured | 1 | Offline |
-| TC-128 | Retry after zero as the only failure | Server then accepts retry | Zero wait is honoured | 1 | Offline |
-| TC-129 | Retry after one second | Server then accepts retry | One second is waited | 1 | Offline |
-| TC-130 | Retry after HTTP date | Server then accepts retry | Wait is about five seconds | 1 | Offline |
-| TC-131 | Invalid retry after after503 | Server then accepts retry | Backoff is used | 1 | Offline |
-| TC-132 | Negative retry after after503 | Server then accepts retry | Backoff is used | 1 | Offline |
-| TC-133 | Retry after above the maximum | Server throttles | Client refuses without waiting | 1 | Offline |
-| TC-134 | No retry after header | Server fails three times | Backoff grows exponentially | 1 | Offline |
+| TC-044 | Retry after zero after503 | Server then accepts retry | Zero wait is honoured | 1 | Offline |
+| TC-045 | Invalid retry after after503 | Server then accepts retry | Backoff is used | 1 | Offline |
 
 ### Client library: Retry behavior
 
@@ -311,10 +187,9 @@ Source: [`tests/test_retry_behavior.py`](../tests/test_retry_behavior.py) | Leve
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-135 | Throttled once | Getting dataset | Final success is returned | 1 | Offline |
-| TC-136 | Persistent server error | Getting news | Retries stop after max retries | 1 | Offline |
-| TC-137 | Zero max retries | Server fails | No retry is made | 1 | Offline |
-| TC-138 | Nothing listening | Getting dataset | Connection error is raised after one retry | 1 | Offline |
+| TC-046 | Throttled once | Getting dataset | Final success is returned | 1 | Offline |
+| TC-047 | Persistent server error | Getting news | Retries stop after max retries | 1 | Offline |
+| TC-048 | Zero max retries | Server fails | No retry is made | 1 | Offline |
 
 ### Client library: Retry configuration
 
@@ -322,32 +197,13 @@ Source: [`tests/test_retry_config.py`](../tests/test_retry_config.py) | Level: C
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-139 | Dataset override | Resolving datasets | Override applies only to that dataset | 1 | Offline |
-| TC-140 | Base URL with trailing slash | Resolving overridden dataset | Override still applies | 1 | Offline |
-| TC-141 | Dataset override with jitter | Resolving datasets | Only that dataset has jitter | 1 | Offline |
-| TC-142 | Excessive max retries | Creating client | Warning is logged | 1 | Offline |
-| TC-143 | Dataset override with excessive max retries | Creating client | Warning is logged | 1 | Offline |
-| TC-144 | Dataset override | Resolving dataset with longer name | Override does not apply | 1 | Offline |
-| TC-145 | Dataset override | Request has query string | Override still applies | 1 | Offline |
-| TC-146 | Dataset override | Closing client | Its adapter is closed | 1 | Offline |
-| TC-147 | Base URL with upper case host | Resolving overridden dataset | Override still applies | 1 | Offline |
-| TC-148 | Negative value | Creating retry config | Value error names field | 4 | Offline |
-| TC-149 | None for max retry after | Creating retry config | No error is raised | 1 | Offline |
-| TC-150 | Zero timeout | Creating client | Value error names timeout | 1 | Offline |
-
-### Dataset API: Schema validation
-
-Source: [`tests/test_schema_validation.py`](../tests/test_schema_validation.py) | Level: Component | Environment: JSON Schema; two tests use the public EDS API | Technique: Equivalence partitioning, negative testing
-
-| ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
-| --- | --- | --- | --- | ---: | --- |
-| TC-151 | - | Getting CO2Emis | Response matches schema | 1 | Live |
-| TC-152 | - | Getting day ahead prices | Response matches schema | 1 | Live |
-| TC-153 | Empty records list | Validating | Schema is satisfied | 1 | Offline |
-| TC-154 | Record without optional field | Validating | Schema is satisfied | 2 | Offline |
-| TC-155 | Record with text as value | Validating | Validation fails | 2 | Offline |
-| TC-156 | Record without required field | Validating | Validation fails | 2 | Offline |
-| TC-157 | Malformed body | Validating | Validation fails | 4 | Offline |
+| TC-049 | Dataset override | Resolving datasets | Override applies only to that dataset | 1 | Offline |
+| TC-050 | Excessive max retries | Creating client | Warning is logged | 1 | Offline |
+| TC-051 | Dataset override | Closing client | Its adapter is closed | 1 | Offline |
+| TC-052 | Negative value | Creating retry config | Value error names field | 4 | Offline |
+| TC-053 | Zero timeout | Creating client | Value error names timeout | 1 | Offline |
+| TC-054 | Base URL with upper case host | Resolving overridden dataset | Override still applies | 1 | Offline |
+| TC-055 | Dataset override | Request has query string | Override still applies | 1 | Offline |
 
 ### Dataset API: Typed records
 
@@ -355,12 +211,11 @@ Source: [`tests/test_typed_records.py`](../tests/test_typed_records.py) | Level:
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-158 | Model | Getting records | Typed records are returned | 1 | Offline |
-| TC-159 | Query parameters | Getting records | They reach the API | 2 | Offline |
-| TC-160 | No model | Getting records | Type error says so | 2 | Offline |
-| TC-161 | Error status | Getting records | HTTP error is raised | 2 | Offline |
-| TC-162 | Body that is not JSON | Getting records | Invalid response error is raised | 2 | Offline |
-| TC-163 | Unknown price area | Getting records | Validation error is raised | 1 | Offline |
+| TC-056 | Model | Getting records | Typed records are returned | 1 | Offline |
+| TC-057 | No model | Getting records | Type error says so | 2 | Offline |
+| TC-058 | Error status | Getting records | HTTP error is raised | 2 | Offline |
+| TC-059 | Body that is not JSON | Getting records | Invalid response error is raised | 2 | Offline |
+| TC-060 | Query parameters | Getting records | They reach the API | 2 | Offline |
 
 ### Client library: URL building
 
@@ -368,26 +223,9 @@ Source: [`tests/test_url_building.py`](../tests/test_url_building.py) | Level: C
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-164 | Base URL with trailing slash | Building dataset URL | No double slash | 1 | Offline |
-| TC-165 | News path | Building news URL | Slashes are normalized | 2 | Offline |
-| TC-166 | News path with special characters | Building news URL | It stays one encoded path segment | 3 | Offline |
-| TC-167 | Dataset name with special characters | Building dataset URL | It stays one encoded segment | 3 | Offline |
-| TC-168 | Dataset name with slash | Getting dataset | Request path keeps the encoded slash | 1 | Offline |
-
-### : 
-
-Source: [`tests/test_utc_time.py`](../tests/test_utc_time.py) | Level: Component | Environment: none | Technique: Equivalence partitioning, negative testing
-
-| ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
-| --- | --- | --- | --- | ---: | --- |
-| TC-169 | Utc timestamp with z suffix | Converting | Same instant in utc | 1 | Offline |
-| TC-170 | Timestamp with plus one offset | Converting | Hour shifts back to utc | 1 | Offline |
-| TC-171 | Timestamp with minus five offset | Converting | Hour shifts forward to utc | 1 | Offline |
-| TC-172 | Naive timestamp | Converting | Treated as utc by documented rule | 1 | Offline |
-| TC-173 | Missing field | Converting | Data quality error names field and dataset | 1 | Offline |
-| TC-174 | None value | Converting | Data quality error names field and dataset | 1 | Offline |
-| TC-175 | Invalid date format | Converting | Data quality error quotes the value | 1 | Offline |
-| TC-176 | Non string value | Converting | Data quality error names the type | 1 | Offline |
+| TC-061 | Base URL with trailing slash | Building dataset URL | No double slash | 1 | Offline |
+| TC-062 | News path with special characters | Building news URL | It stays one encoded path segment | 3 | Offline |
+| TC-063 | Dataset name with special characters | Building dataset URL | It stays one encoded segment | 3 | Offline |
 
 ### Client library: Wait budget
 
@@ -395,11 +233,6 @@ Source: [`tests/test_wait_budget.py`](../tests/test_wait_budget.py) | Level: Int
 
 | ID | Precondition (given) | Action (when) | Expected result (then) | Variants | Mode |
 | --- | --- | --- | --- | ---: | --- |
-| TC-177 | No wait budget | Server throttles repeatedly | Every wait is taken | 1 | Offline |
-| TC-178 | Wait budget covering all waits | Server throttles twice | Request succeeds | 1 | Offline |
-| TC-179 | Wait budget exceeded | Server throttles again | Retry after too long error is raised | 1 | Offline |
-| TC-180 | Budget spent by first request | Second request is throttled | Budget is shared | 1 | Offline |
-| TC-181 | Negative wait budget | Creating client | Value error names wait budget | 1 | Offline |
-| TC-182 | Wait within remaining budget | Sleeping | Wait is taken and counted | 1 | Offline |
-| TC-183 | Waits that add up to the budget | Sleeping | All are taken | 1 | Offline |
-| TC-184 | Wait beyond remaining budget | Sleeping | Retry after too long is raised without waiting | 1 | Offline |
+| TC-064 | Wait budget exceeded | Server throttles again | Retry after too long error is raised | 1 | Offline |
+| TC-065 | Budget spent by first request | Second request is throttled | Budget is shared | 1 | Offline |
+| TC-066 | Negative wait budget | Creating client | Value error names wait budget | 1 | Offline |

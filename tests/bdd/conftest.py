@@ -67,7 +67,7 @@ def get_sorted(world, sort):
 
 @when(parsers.parse('I get the dataset filtered by price area "{area}"'))
 def get_filtered(world, area):
-    attempt(world, lambda: world.api.get(filters={"PriceArea": area}))
+    attempt(world, lambda: world.api.get(filters={"PriceArea": [area]}))
 
 
 @then(parsers.parse('the request carries limit "{limit}" and offset "{offset}"'))
@@ -181,3 +181,23 @@ def request_has_only_category(eds, category):
 @then("the request carries no parameters")
 def request_has_no_parameters(eds):
     assert eds.last_request.query == {}
+
+
+@when("I get the dataset without a limit")
+def get_without_limit(world):
+    attempt(world, lambda: world.api.get())
+
+
+@when(parsers.parse('I get the dataset filtered by price areas "{first}" and "{second}"'))
+def get_filtered_by_two_areas(world, first, second):
+    attempt(world, lambda: world.api.get(filters={"PriceArea": [first, second]}))
+
+
+@then("the request carries no limit")
+def request_has_no_limit(eds):
+    assert "limit" not in eds.last_request.query
+
+
+@then(parsers.parse('the request carries only limit "{limit}"'))
+def request_has_only_limit(eds, limit):
+    assert eds.last_request.query == {"limit": [limit]}

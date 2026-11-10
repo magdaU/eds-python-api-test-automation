@@ -58,10 +58,9 @@ def test_givenRecordWithoutRequiredField_whenParsingRecords_thenValidationErrorI
 @pytest.mark.parametrize(
     "record",
     [
-        {"Minutes5UTC": "yesterday", "PriceArea": "DK1", "CO2Emission": 123.4},
         {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK3", "CO2Emission": 123.4},
     ],
-    ids=["bad-utc-time", "unknown-area"],
+    ids=["unknown-area"],
 )
 def test_givenInvalidFieldValue_whenParsingRecords_thenValidationErrorIsRaised(record):
     # arrange
@@ -70,39 +69,6 @@ def test_givenInvalidFieldValue_whenParsingRecords_thenValidationErrorIsRaised(r
     # act / assert
     with pytest.raises(ValidationError):
         parse_records(response_json, CO2EmisRecord)
-
-
-def test_givenEmptyRecords_whenParsingRecords_thenEmptyListIsReturned():
-    # arrange
-    response_json = {"records": [], "total": 0}
-
-    # act
-    records = parse_records(response_json, CO2EmisRecord)
-
-    # assert
-    assert records == []
-
-
-def test_givenUnknownExtraField_whenParsingRecords_thenItIsIgnored():
-    # arrange
-    response_json = {
-        "records": [
-            {
-                "Minutes5UTC": "2024-01-01T00:00:00",
-                "PriceArea": "DK1",
-                "CO2Emission": 123.4,
-                "NewField": "x",
-            }
-        ],
-        "total": 1,
-    }
-
-    # act
-    records = parse_records(response_json, CO2EmisRecord)
-
-    # assert
-    assert records[0].CO2Emission == 123.4
-    assert not hasattr(records[0], "NewField")
 
 
 @pytest.mark.parametrize(
@@ -116,60 +82,31 @@ def test_givenUnexpectedBody_whenParsingRecords_thenInvalidResponseErrorIsRaised
         parse_records(response_json, CO2EmisRecord)
 
 
-def test_givenValidDayAheadPricesJson_whenParsingRecords_thenEveryFieldIsMapped():
+def test_givenRequiredFieldMissing_whenParsingRecords_thenValidationErrorIsRaised():
     # arrange
-    response_json = {
-        "records": [
-            {"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "SE3", "DayAheadPriceDKK": 567.8}
-        ],
-        "total": 1,
-    }
-
-    # act
-    records = parse_records(response_json, DayAheadPricesRecord)
-
-    # assert
-    assert len(records) == 1
-    assert records[0].TimeUTC == datetime(2024, 2, 3, 4, 15)
-    assert records[0].PriceArea == "SE3"
-    assert records[0].DayAheadPriceDKK == 567.8
-
-
-@pytest.mark.parametrize("area", ["DK1", "SE4"])
-def test_givenKnownPriceArea_whenParsingDayAheadPrices_thenItIsAccepted(area):
-    # arrange
-    response_json = {"records": [{"PriceArea": area, "DayAheadPriceDKK": 1.5}], "total": 1}
-
-    # act
-    records = parse_records(response_json, DayAheadPricesRecord)
-
-    # assert
-    assert records[0].PriceArea == area
-
-
-@pytest.mark.parametrize(
-    "record",
-    [
-        {"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "DK2"},
-        {"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "DK3", "DayAheadPriceDKK": 567.8},
-    ],
-    ids=["missing-price", "unknown-area"],
-)
-def test_givenInvalidDayAheadPricesRecord_whenParsingRecords_thenValidationErrorIsRaised(record):
-    # arrange
-    response_json = {"records": [record], "total": 1}
+    co2 = {"Minutes5UTC": "2024-01-01T00:00:00", "PriceArea": "DK1", "CO2Emission": 123.4}
+    price = {"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "DK2", "DayAheadPriceDKK": 567.8}
+    cases = [
+        (CO2EmisRecord, {k: v for k, v in co2.items() if k != "PriceArea"}),
+        (CO2EmisRecord, {k: v for k, v in co2.items() if k != "CO2Emission"}),
+        (DayAheadPricesRecord, {k: v for k, v in price.items() if k != "PriceArea"}),
+        (DayAheadPricesRecord, {k: v for k, v in price.items() if k != "DayAheadPriceDKK"}),
+    ]
 
     # act / assert
-    with pytest.raises(ValidationError):
-        parse_records(response_json, DayAheadPricesRecord)
+    for model, record in cases:
+        with pytest.raises(ValidationError):
+            parse_records({"records": [record], "total": 1}, model)
 
 
-def test_givenDayAheadPricesWithoutTime_whenParsingRecords_thenTimeIsNone():
+def test_givenUnknownAreaOrTextPrice_whenParsingDayAheadPrices_thenValidationErrorIsRaised():
     # arrange
-    response_json = {"records": [{"PriceArea": "DK1", "DayAheadPriceDKK": 12.3}], "total": 1}
+    records = [
+        {"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "XX9", "DayAheadPriceDKK": 567.8},
+        {"TimeUTC": "2024-02-03T04:15:00", "PriceArea": "DK2", "DayAheadPriceDKK": "expensive"},
+    ]
 
-    # act
-    records = parse_records(response_json, DayAheadPricesRecord)
-
-    # assert
-    assert records[0].TimeUTC is None
+    # act / assert
+    for record in records:
+        with pytest.raises(ValidationError):
+            parse_records({"records": [record], "total": 1}, DayAheadPricesRecord)

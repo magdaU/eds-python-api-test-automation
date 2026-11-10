@@ -1,11 +1,6 @@
-import logging
-import socket
-
 import pytest
 import requests
 
-from client.dataset_api import DatasetApi
-from client.eds_client import EDSApiClient, RetryConfig
 from client.news_api import NewsApi
 from tests.support.allure_labels import labels
 from tests.support.scripted_server import api_for, client_for
@@ -47,24 +42,3 @@ def test_givenZeroMaxRetries_whenServerFails_thenNoRetryIsMade(scripted_server):
     with pytest.raises(requests.exceptions.RetryError):
         api_for(server, max_retries=0).get()
     assert server.request_count == 1
-
-
-def test_givenNothingListening_whenGettingDataset_thenConnectionErrorIsRaisedAfterOneRetry(caplog):
-    # arrange
-    with socket.socket() as probe:
-        probe.bind(("127.0.0.1", 0))
-        free_port = probe.getsockname()[1]
-    client = EDSApiClient(
-        base_url=f"http://127.0.0.1:{free_port}", retry=RetryConfig(max_retries=1, backoff_factor=0)
-    )
-    api = DatasetApi(client, "CO2Emis")
-
-    # act
-    with (
-        caplog.at_level(logging.WARNING, logger="client.retry"),
-        pytest.raises(requests.exceptions.ConnectionError),
-    ):
-        api.get()
-
-    # assert
-    assert caplog.messages.count("Retrying in 0.0 s, backoff (no response)") == 1

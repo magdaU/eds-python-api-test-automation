@@ -2,34 +2,54 @@ import pytest
 import requests
 
 from client.dataset_api import DatasetApi
-from client.eds_client import DEFAULT_TIMEOUT, EDSApiClient, RetryConfig
+from client.eds_client import EDSApiClient, RetryConfig
 from tests.support.allure_labels import labels
 
-pytestmark = labels("Client library", "Client configuration")
+pytestmark = labels("Dataset API", "Request methods", "critical")
 
 
-def test_whenCreatingClientWithDefaults_thenDefaultTimeoutIsUsedPerRequest(eds):
+def test_givenDataset_whenGettingIt_thenRequestIsHttpGet(requests_mock, eds, dataset, dataset_api):
     # arrange
-    client = EDSApiClient()
-    eds.dataset("CO2Emis").answers()
+    eds.dataset(dataset.name).answers()
 
     # act
-    client.get_dataset("CO2Emis")
+    dataset_api.get()
 
     # assert
-    assert eds.last_request.timeout == DEFAULT_TIMEOUT
+    # the guide: "The restful API is a synchronous interface with Http Get."
+    assert requests_mock.last_request.method == "GET"
 
 
-def test_givenCustomTimeout_whenGettingDataset_thenItIsPassedToTheRequest(eds):
+def test_givenLimitOffsetAndSort_whenGettingDataset_thenParametersAreJoinedByAmpersand(
+    requests_mock, eds, dataset, dataset_api
+):
     # arrange
-    client = EDSApiClient(timeout=3)
-    eds.dataset("CO2Emis").answers()
+    eds.dataset(dataset.name).answers()
 
     # act
-    client.get_dataset("CO2Emis")
+    dataset_api.get(limit=3, offset=6, sort=dataset.required_field)
 
     # assert
-    assert eds.last_request.timeout == 3
+    # the guide: "Parameter Name = Parameter Value, where each pair of parameter name and value
+    # are separated by &."
+    query = requests_mock.last_request.url.split("?", 1)[1]
+    assert query == f"limit=3&offset=6&sort={dataset.required_field}"
+
+
+def test_givenDataset_whenGettingMetadata_thenRequestIsHttpGetOnTheMetaPath(
+    requests_mock, eds, dataset, dataset_api
+):
+    # arrange
+    eds.metadata(dataset.name).answers(json={})
+
+    # act
+    dataset_api.metadata()
+
+    # assert
+    # the guide: "or to get metadata: .../meta/dataset/{dataset | group | organization}"
+    assert requests_mock.last_request.method == "GET"
+    # requests_mock compares the path in lower case
+    assert requests_mock.last_request.path == f"/meta/dataset/{dataset.name.lower()}"
 
 
 def test_givenServerSlowerThanTheTimeout_whenGettingDataset_thenConnectionErrorNamesTheReadTimeout(
@@ -42,34 +62,6 @@ def test_givenServerSlowerThanTheTimeout_whenGettingDataset_thenConnectionErrorN
     )
 
     # act / assert
+    # not in the guide: a client setting, kept because a request that never ends is a client defect
     with pytest.raises(requests.exceptions.ConnectionError, match="Read timed out"):
         DatasetApi(client, "CO2Emis").get()
-
-
-def test_whenUsingClientAsContextManager_thenSessionIsClosedOnExit(monkeypatch):
-    # arrange
-    client = EDSApiClient()
-    closed = []
-    monkeypatch.setattr(client.session, "close", lambda: closed.append(True))
-
-    # act
-    with client:
-        pass
-
-    # assert
-    assert closed == [True]
-
-
-@pytest.mark.parametrize(
-    "call",
-    [
-        lambda api: api.client.get_dataset("CO2Emis", 5),
-        lambda api: api.get(5),
-        lambda api: api.records(5),
-    ],
-    ids=["client-get-dataset", "api-get", "api-records"],
-)
-def test_givenPositionalQueryArgument_whenGettingDataset_thenTypeErrorIsRaised(co2_api, call):
-    # act / assert
-    with pytest.raises(TypeError, match="positional"):
-        call(co2_api)

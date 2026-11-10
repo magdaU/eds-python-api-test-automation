@@ -21,12 +21,6 @@ OUTPUT = ROOT / "docs" / "test-cases.md"
 # module -> (test level, environment / test double, main test design technique); a new module must
 # be classified here
 MODULES = {
-    "test_allure_categories": (
-        "Component",
-        "none",
-        "Equivalence partitioning, configuration checks",
-    ),
-    "test_allure_environment": ("Component", "none", "Equivalence partitioning"),
     "test_boundary_values": ("Component", "mocked HTTP", "Boundary value analysis"),
     "test_dataset_queries": ("Component", "mocked HTTP", "Executable specification (Gherkin)"),
     "test_dataset_contract": (
@@ -34,27 +28,25 @@ MODULES = {
         "mocked HTTP, local HTTP server",
         "Contract and request verification",
     ),
+    "test_documented_rules": ("Component", "mocked HTTP", "Executable specification (Gherkin)"),
+    "test_documented_api_rules": (
+        "Component",
+        "mocked HTTP",
+        "Requirements-based testing (rules from the API guide)",
+    ),
     "test_eds_client": ("Component", "none", "Configuration checks"),
+    "test_url_building": ("Component", "none", "Equivalence partitioning"),
     "test_filter_encoding": ("Component", "mocked HTTP", "Equivalence partitioning"),
-    "test_live_data_quality": ("System", "public EDS API", "Data quality checks"),
-    "test_live_edge_cases": ("System", "public EDS API", "Error guessing, negative testing"),
-    "test_openapi_drift": ("System", "public EDS API", "Contract testing, regression test"),
-    "test_live_smoke": ("System", "public EDS API", "Smoke testing"),
+    "test_openapi_drift": ("Component", "none", "Contract testing, regression test"),
     "test_logging": ("Integration", "local HTTP server", "Negative testing, log assertions"),
     "test_models": ("Component", "none", "Equivalence partitioning, negative testing"),
     "test_news": ("Component", "mocked HTTP", "Executable specification (Gherkin)"),
     "test_news_api": ("Component", "mocked HTTP", "Request verification, schema validation"),
-    "test_model_schema_agreement": (
-        "Component",
-        "none, JSON Schema",
-        "Equivalence partitioning, contract comparison",
-    ),
     "test_openapi_parameter_drift": (
         "Component",
         "in-memory OpenAPI specification",
         "Contract testing, regression test",
     ),
-    "test_parameter_combinations": ("Component", "mocked HTTP", "Decision table"),
     "test_properties": ("Component", "mocked HTTP", "Property-based testing"),
     "test_resilience": ("Integration", "local HTTP server", "Executable specification (Gherkin)"),
     "test_retry_after_cap": (
@@ -69,14 +61,7 @@ MODULES = {
     ),
     "test_retry_behavior": ("Integration", "local HTTP server", "State-based, negative testing"),
     "test_retry_config": ("Component", "none", "Configuration checks"),
-    "test_schema_validation": (
-        "Component",
-        "JSON Schema; two tests use the public EDS API",
-        "Equivalence partitioning, negative testing",
-    ),
     "test_typed_records": ("Component", "mocked HTTP", "Contract and request verification"),
-    "test_url_building": ("Component", "none", "Equivalence partitioning"),
-    "test_utc_time": ("Component", "none", "Equivalence partitioning, negative testing"),
     "test_wait_budget": ("Integration", "local HTTP server", "State-based testing"),
 }
 LEVELS = ["Component", "Integration", "System"]
@@ -87,6 +72,7 @@ BDD_FEATURES = {
     "test_dataset_queries": "dataset_queries",
     "test_resilience": "resilience",
     "test_news": "news",
+    "test_documented_rules": "documented_rules",
 }
 FEATURES_DIR = ROOT / "tests" / "bdd" / "features"
 
@@ -120,7 +106,11 @@ def collect(*pytest_args: str) -> Counter[tuple[str, str]]:
         "no:randomly",
         *pytest_args,
     ]
-    output = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, check=True).stdout
+    # pytest exits with 5 when nothing is collected (e.g. `-m live` once the live tests are removed)
+    result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+    if result.returncode not in (0, 5):
+        raise SystemExit(result.stdout + result.stderr)
+    output = result.stdout
     counts: Counter[tuple[str, str]] = Counter()
     for line in output.splitlines():
         match = re.match(r"tests/(?:bdd/)?(test_\w+)\.py::(test_\w+)", line)
@@ -338,8 +328,7 @@ def render() -> str:
         f"{functions} test functions expand to {all_offline + all_live} executed test cases "
         "(*Variants* counts parametrized runs). Each test name reads "
         "`given<precondition>_when<action>_then<expected result>`; "
-        "the columns below are that name, split. Tests that call the public EDS API count as "
-        "*System* level whichever module they live in. "
+        "the columns below are that name, split. "
         "See the [test strategy](test-strategy.md) for how the levels are used.\n\n"
         "## Summary by test level\n\n" + "\n".join(summary) + "\n\n## Test cases\n"
     )

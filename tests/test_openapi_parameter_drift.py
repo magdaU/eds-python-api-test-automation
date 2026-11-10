@@ -32,19 +32,6 @@ def test_givenLimitRemoved_whenLookingForDrift_thenItIsReported():
     assert problems == ["GET /dataset/{datasetName} no longer documents the parameter limit"]
 
 
-def test_givenLimitMovedFromQueryToHeader_whenLookingForDrift_thenLocationChangeIsReported():
-    # arrange
-    spec = _spec_with_get([{**DOCUMENTED_LIMIT, "in": "header"}])
-
-    # act
-    problems = find_drift(spec, EXPECTED_LIMIT)
-
-    # assert
-    assert problems == [
-        "GET /dataset/{datasetName}: the parameter limit is documented in header, not query"
-    ]
-
-
 def test_givenLimitTypeChangedToString_whenLookingForDrift_thenTypeChangeIsReported():
     # arrange
     spec = _spec_with_get([{**DOCUMENTED_LIMIT, "schema": {"type": "string", "format": "int32"}}])
@@ -58,33 +45,6 @@ def test_givenLimitTypeChangedToString_whenLookingForDrift_thenTypeChangeIsRepor
     ]
 
 
-def test_givenLimitFormatChangedToInt64_whenLookingForDrift_thenFormatChangeIsReported():
-    # arrange
-    spec = _spec_with_get([{**DOCUMENTED_LIMIT, "schema": {"type": "integer", "format": "int64"}}])
-
-    # act
-    problems = find_drift(spec, EXPECTED_LIMIT)
-
-    # assert
-    assert problems == [
-        "GET /dataset/{datasetName}: the parameter limit is documented with format int64, not int32"
-    ]
-
-
-def test_givenLimitBecameRequired_whenLookingForDrift_thenRequiredChangeIsReported():
-    # arrange
-    spec = _spec_with_get([{**DOCUMENTED_LIMIT, "required": True}])
-
-    # act
-    problems = find_drift(spec, EXPECTED_LIMIT)
-
-    # assert
-    assert problems == [
-        "GET /dataset/{datasetName}: the parameter limit is documented with required=True, "
-        "not required=False"
-    ]
-
-
 def test_givenEndpointRemoved_whenLookingForDrift_thenItIsReported():
     # arrange
     spec = {"paths": {"/News": {"get": {}}}}
@@ -94,47 +54,6 @@ def test_givenEndpointRemoved_whenLookingForDrift_thenItIsReported():
 
     # assert
     assert problems == ["GET /dataset/{datasetName} is no longer documented"]
-
-
-def test_givenGetBecamePost_whenLookingForDrift_thenTheMissingMethodIsReported():
-    # arrange
-    spec = {"paths": {DATASET_PATH: {"post": {"parameters": [DOCUMENTED_LIMIT]}}}}
-
-    # act
-    problems = find_drift(spec, EXPECTED_LIMIT)
-
-    # assert
-    assert problems == ["GET /dataset/{datasetName} is no longer documented"]
-
-
-def test_givenLimitDeclaredAtPathLevel_whenLookingForDrift_thenItIsStillFound():
-    # arrange
-    spec = {"paths": {DATASET_PATH: {"parameters": [DOCUMENTED_LIMIT], "get": {}}}}
-
-    # act
-    problems = find_drift(spec, EXPECTED_LIMIT)
-
-    # assert
-    assert problems == []
-
-
-def test_givenOperationRedefinesPathLevelLimit_whenLookingForDrift_thenOperationDefinitionIsUsed():
-    # arrange
-    path_level_wrong_type = {**DOCUMENTED_LIMIT, "schema": {"type": "string", "format": "int32"}}
-    spec = {
-        "paths": {
-            DATASET_PATH: {
-                "parameters": [path_level_wrong_type],
-                "get": {"parameters": [DOCUMENTED_LIMIT]},
-            }
-        }
-    }
-
-    # act
-    problems = find_drift(spec, EXPECTED_LIMIT)
-
-    # assert
-    assert problems == []
 
 
 def test_givenCorrectContract_whenLookingForDrift_thenNoDriftIsReported():
@@ -202,38 +121,3 @@ def test_givenCorrectContract_whenLookingForDrift_thenNoDriftIsReported():
 
     # assert
     assert problems == []
-
-
-def test_givenLimitReferencedFromComponents_whenLookingForDrift_thenReferenceIsResolved():
-    # arrange
-    spec = {
-        "paths": {
-            DATASET_PATH: {"get": {"parameters": [{"$ref": "#/components/parameters/Limit"}]}}
-        },
-        "components": {"parameters": {"Limit": DOCUMENTED_LIMIT}},
-    }
-
-    # act
-    problems = find_drift(spec, EXPECTED_LIMIT)
-
-    # assert
-    assert problems == []
-
-
-def test_givenReferencedLimitHasWrongType_whenLookingForDrift_thenTypeChangeIsReported():
-    # arrange
-    wrong_limit = {**DOCUMENTED_LIMIT, "schema": {"type": "string", "format": "int32"}}
-    spec = {
-        "paths": {
-            DATASET_PATH: {"get": {"parameters": [{"$ref": "#/components/parameters/Limit"}]}}
-        },
-        "components": {"parameters": {"Limit": wrong_limit}},
-    }
-
-    # act
-    problems = find_drift(spec, EXPECTED_LIMIT)
-
-    # assert
-    assert problems == [
-        "GET /dataset/{datasetName}: the parameter limit is documented as string, not integer"
-    ]

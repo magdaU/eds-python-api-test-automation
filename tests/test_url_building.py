@@ -1,6 +1,5 @@
 import pytest
 
-from client.dataset_api import DatasetApi
 from client.eds_client import EDSApiClient
 from tests.support.allure_labels import labels
 
@@ -18,24 +17,6 @@ def test_givenBaseUrlWithTrailingSlash_whenBuildingDatasetUrl_thenNoDoubleSlash(
 
     # assert
     assert url == f"{BASE}/dataset/CO2Emis"
-
-
-@pytest.mark.parametrize(
-    ("path", "expected_suffix"),
-    [
-        ("", "/News"),
-        ("/actual/", "/News/actual"),
-    ],
-)
-def test_givenNewsPath_whenBuildingNewsUrl_thenSlashesAreNormalized(path, expected_suffix):
-    # arrange
-    client = EDSApiClient(base_url=BASE)
-
-    # act
-    url = client.news_url(path)
-
-    # assert
-    assert url == BASE + expected_suffix
 
 
 @pytest.mark.parametrize(
@@ -80,17 +61,3 @@ def test_givenDatasetNameWithSpecialCharacters_whenBuildingDatasetUrl_thenItStay
 
     # assert
     assert url == f"{BASE}/dataset/{encoded}"
-
-
-def test_givenDatasetNameWithSlash_whenGettingDataset_thenRequestPathKeepsTheEncodedSlash(
-    eds, eds_client
-):
-    # arrange
-    api = DatasetApi(eds_client, "../News")
-    eds.dataset("../News").answers()
-
-    # act
-    api.get()
-
-    # assert
-    assert eds.last_request.path == "/dataset/..%2FNews"

@@ -1,6 +1,6 @@
 name: Performance
 
-# Manual / weekly only: this hits the public EDS API, so keep the load low.
+# Manual only: this hits the public EDS API, so keep the load low. There is no schedule.
 on:
   workflow_dispatch:
     inputs:
@@ -13,8 +13,6 @@ on:
       max_response_ms:
         description: Max allowed response time per request (ms)
         default: "2000"
-  schedule:
-    - cron: "0 3 * * 1"
 
 permissions:
   contents: read

@@ -20,7 +20,7 @@ Feature: Querying a dataset
   Scenario: Filtering by price area
     Given the DayAheadPrices dataset answers with an empty result
     When I get the dataset filtered by price area "DK1"
-    Then the request carries the filter '{"PriceArea":"DK1"}'
+    Then the request carries the filter '{"PriceArea":["DK1"]}'
 
   Scenario: A negative limit is refused before anything is sent
     Given the CO2Emis dataset answers with an empty result
