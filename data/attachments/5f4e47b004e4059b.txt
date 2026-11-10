@@ -1,6 +1,0 @@
-WARNING  client.retry:retry.py:137 Retrying in 41.0 s because the server sent Retry-After (status 429)
-INFO     client.eds_client:eds_client.py:235 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 5, 'offset': 0, 'sort': 'Minutes5UTC asc, PriceArea asc'} -> 200 in 42102 ms
-WARNING  client.retry:retry.py:137 Retrying in 60.0 s because the server sent Retry-After (status 429)
-INFO     client.eds_client:eds_client.py:235 GET https://api.energidataservice.dk/dataset/CO2Emis params={'limit': 5, 'offset': 5, 'sort': 'Minutes5UTC asc, PriceArea asc'} -> 200 in 60781 ms
-WARNING  client.retry:retry.py:137 Retrying in 60.0 s because the server sent Retry-After (status 429)
-WARNING  client.eds_client:eds_client.py:192 Giving up on https://api.energidataservice.dk/dataset/CO2Emis: the wait budget of 120 s for this client is used up (101 s spent); the next wait of 60 s is not taken
