@@ -1,4 +1,0 @@
-  File "/opt/hostedtoolcache/Python/3.12.16/x64/lib/python3.12/socketserver.py", line 845, in write
-    self._sock.sendall(b)
-BrokenPipeError: [Errno 32] Broken pipe
-----------------------------------------
