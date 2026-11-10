@@ -3,257 +3,103 @@
 [![Allure Report](https://img.shields.io/badge/allure-report-brightgreen)](https://magdau.github.io/eds-python-api-test-automation/)
 [![Tests](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/tests.yml/badge.svg)](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/tests.yml)
 
-Python-based API test automation framework for the [Energi Data Service (EDS)](https://www.energidataservice.dk/) API: pytest, Pydantic, Allure, GitHub Actions, JMeter. Built as a QA Automation portfolio project demonstrating REST API testing, parameterized/positive/negative testing, response validation, and CI/CD integration.
+Python test automation for the [Energi Data Service (EDS)](https://www.energidataservice.dk/) API: pytest, Pydantic, Allure, GitHub Actions, JMeter.
 
-<p align="center">
-  <a href="https://magdau.github.io/eds-python-api-test-automation/">
-    <img src="docs/allure-report.png" alt="Allure report overview" width="500">
-  </a>
-</p>
-
-## 📊 Test Results
+## Results and documents
 
 | What | Where |
 | --- | --- |
-| Allure report (latest `main` run, with Trend, Retries, Executors, Categories) | **https://magdau.github.io/eds-python-api-test-automation/** |
-| Test runs on GitHub Actions (build numbers in Allure, e.g. `#95`, are these runs) | [Tests workflow](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/tests.yml) |
-| Nightly live API check (catches API drift; no live tests left since 2026-11-10) | [Live nightly workflow](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/live-nightly.yml) |
-| Code quality (ruff, mypy, coverage) | [Quality workflow](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/quality.yml) |
+| Allure report (latest run on `main`) | https://magdau.github.io/eds-python-api-test-automation/ |
+| Test runs on GitHub Actions | [Tests workflow](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/tests.yml) |
+| Test architecture | [docs/test-architecture.md](docs/test-architecture.md) |
+| Test strategy | [docs/test-strategy.md](docs/test-strategy.md) |
+| Test plan | [docs/test-plan.md](docs/test-plan.md) |
+| Test cases (generated) | [docs/test-cases.md](docs/test-cases.md) |
+| Test coverage and mutation checks | [docs/test-coverage.md](docs/test-coverage.md) |
+| Test report | [docs/test-report.md](docs/test-report.md) |
 
-## 📚 Test Documentation
+## Current state (2026-11-10)
 
-| Document | Content |
-| --- | --- |
-| [Test architecture](docs/test-architecture.md) | Responsibilities of the code, the reasons behind the main decisions, risk to test map, performance acceptance |
-| [Test strategy](docs/test-strategy.md) | Objectives, scope, test levels, techniques, environments, entry/exit criteria, risks |
-| [Test plan](docs/test-plan.md) | What is tested, when, by what, and when testing is done |
-| [Test cases](docs/test-cases.md) | Catalogue of all test cases (generated from the tests) |
-| [Test coverage](docs/test-coverage.md) | Code coverage, mutation checks, functional coverage, known gaps |
-| [Test results](docs/test-results.md) | Results of the latest CI run on `main` (generated from the Allure report) |
-| [Test report](docs/test-report.md) | Summary, defects found and resolved, residual risks, recommendation |
+- **97 tests**: 95 pass, 2 expected failures (`xfail`, a documented rule the client does not implement yet). The limit for this project is 100 tests.
+- **17 BDD cases** from 6 scenarios (`tests/bdd/`).
+- **0 live tests.** The suite sends no requests to the EDS API. It runs on mocks and a local scripted server.
+- **Coverage** of `client/` and `models/`: 100% of statements and branches.
+- **Mutation checks**: 58 of 62 mutants killed. The 4 survivors are in the Pydantic models and JSON Schemas and are a recorded decision (see `docs/test-strategy.md`, section 13).
 
-Regenerate the generated ones with `python scripts/generate_test_cases.py` and `python scripts/generate_test_results.py`.
+The suite covers the rules of the EDS API guide (GET requests, `name=value` query pairs, `limit`, `offset`, `sort`, `filter`, the News endpoints), negative and boundary cases, the retry and wait logic, Pydantic models and JSON Schemas, and property-based tests (`hypothesis`).
 
-## 🛠️ Technologies
+## Technologies
 
-Python · pytest · pytest-bdd (Gherkin) · hypothesis · pytest-rerunfailures · pytest-randomly · ruff · mypy · pytest-cov · pre-commit · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · JMeter · Git · GitHub Actions · GitHub Pages
+Python 3.12 · pytest · pytest-bdd · hypothesis · ruff · mypy · pytest-cov · pre-commit · Requests · Pydantic · jsonschema · requests-mock · Docker · Allure · JMeter · GitHub Actions
 
-## 📁 Project Structure
+## Project structure
 
 ```text
-eds-python-api-test-automation/
-│
-├── client/
-│   ├── eds_client.py    # EDSApiClient: transport, retry/backoff, per-dataset overrides, logging
-│   ├── retry.py         # LoggingRetry, RetryAfterTooLongError (a Retry-After above the limit fails fast)
-│   ├── dataset_api.py   # DatasetApi: API object for one dataset (URL + get)
-│   ├── news_api.py      # NewsApi: API object for /News endpoints
-│   └── parsers.py       # raw JSON -> typed Pydantic models
-│
-├── models/               # Pydantic models (CO2EmisRecord, DayAheadPricesRecord)
-├── schemas/               # JSON Schema per dataset / News item, for response validation
-├── allure/
-│   ├── categories.json   # Allure report failure categories
-│   └── report-notes.js   # explains empty Categories widgets in the generated report
-│
-├── tests/
-│   ├── conftest.py, support/, mocks/   # fixtures, shared helpers (scripted local server, schema asserts), requests-mock data
-│   ├── bdd/                            # Gherkin scenarios (features/*.feature) and their step definitions
-│   └── test_*.py                       # one module per concern: contract, News, retry, boundaries, encoding, schema,
-│                                       # models, properties, logging, Allure, OpenAPI drift (live modules removed 2026-11-10)
-│
-├── .github/workflows/
-│   ├── tests.yml         # CI: tests, Allure report, GitHub Pages publish
-│   ├── quality.yml       # CI: ruff, mypy, offline tests with coverage gate
-│   ├── security.yml      # CI: pip-audit (known vulnerabilities) and detect-secrets, also weekly
-│   ├── live-nightly.yml  # CI: nightly live tests to catch API drift (also manual)
-│   ├── performance.yml   # JMeter run, manual only (no schedule)
-│   └── mutation.yml      # CI: weekly mutation checks (scripts/mutation_check.py)
-├── performance/
-│   ├── eds_api_load_test.jmx   # JMeter plan (low-load baseline)
-│   └── endpoints.csv           # endpoints the plan iterates over
-│
-├── docs/                  # test documentation (strategy, plan, cases, coverage, results, report) + README images
-├── scripts/               # generators for docs/test-cases.md and docs/test-results.md, report note injector, mutation checks
-│
-├── Dockerfile
-├── requirements.txt
-├── requirements-dev.txt   # ruff, mypy, pytest-cov, type stubs, pre-commit, detect-secrets
-├── .pre-commit-config.yaml # local hooks: ruff, mypy, detect-secrets, offline tests before a push
-├── pyproject.toml         # ruff, mypy and coverage configuration
-├── pytest.ini
-├── README.md
-├── ROADMAP.md
-├── LICENSE
-└── .gitignore
+client/        EDSApiClient (transport, retry, logging), DatasetApi, NewsApi, parsers
+models/        Pydantic models of the dataset records
+schemas/       JSON Schemas of the responses
+tests/         pytest modules, BDD features (tests/bdd/), shared fixtures and helpers (tests/support/)
+performance/   JMeter plan and endpoint list (manual run)
+scripts/       generators for the test-case docs, mutation checks
+docs/          test documentation
+.github/workflows/   tests, quality, security, mutation, performance (manual), live-nightly
 ```
 
-## 🧪 Current Test Coverage
-
-97 tests (95 pass, 2 expected failures for a documented rule the client does not implement yet; 17 of them are BDD cases from 6 scenarios; limit 100) across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mocked (`requests-mock`) or against a local scripted server. The suite sends no requests to the real EDS API. Coverage of `client/` and `models/` is 100%; full mutation run on 2026-11-10: 58 of 62 killed; the 4 survivors (models and schemas) are a conscious decision (see `docs/test-strategy.md`, section 13). They cover:
-
-* Status code, content type and structure; `limit`, `filter`, `offset` and `sort` (`limit=0` returns every record, a negative `limit` is rejected)
-* Negative scenarios: refused connection, 4xx not retried, timeouts (the live checks against the real API were removed on 2026-11-10)
-* News API (`/News`, `/actual`, `/calendar`, `/archived`): paths, parameters with their exact case, samples vs. schema
-* API specification drift: the detector reports a missing path, parameter and wrong type (offline; the check against the published specification was removed on 2026-11-10)
-* JSON Schema validation and Pydantic parsing (valid and invalid data, on recorded samples)
-* Boundary values, parameter combinations (decision table), filter encoding, URL building, property-based tests (`hypothesis`)
-* Real retry behavior against a local scripted server (503/429 then 200, exhaustion, no retry on 4xx), a timeout on every call,
-  per-dataset retry/backoff/jitter tuning, and diagnostics: one log line per request, the wait before each retry and why
-  (a `Retry-After` above 60 s ends the request at once), a warning when retries are exhausted
-* BDD scenarios (`pytest-bdd`) for query parameters, retries and News
-* pytest-level reruns on live tests (network errors only), feeding Allure's Retries trend
-
-## 🚀 Getting Started
+## Getting started
 
 ```bash
-git clone https://github.com/magdaU/eds-python-api-test-automation.git && cd eds-python-api-test-automation
 python -m venv .venv
-.venv\Scripts\activate      # Windows; use `source .venv/bin/activate` on macOS/Linux
+.venv\Scripts\activate          # Windows; on macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
-pytest -v -m "not live"
+pytest -v
 ```
 
-> **Live tests removed (2026-11-10).** The 38 tests that hit the real EDS API were deleted to avoid loading the public API:
-> `test_live_smoke.py`, `test_live_edge_cases.py`, `test_live_data_quality.py`, the two live tests in `test_schema_validation.py`
-> and the one in `test_openapi_drift.py`. The suite now sends no requests to the API and runs offline (97 collected tests: 95 pass, 2 expected failures). The
-> `live` / `data_quality` markers, the `Live nightly` workflow and the live-test support code are not yet cleaned up.
+Code quality checks (install dev tools with `pip install -r requirements-dev.txt`):
 
-On GitHub, pull requests run only the offline tests and the full suite runs on `main`. A nightly workflow (`live-nightly.yml`,
-also manual) runs only the live tests, including the data-quality checks (`-m data_quality`) that the run on `main` skips so
-a data problem does not turn the build red.
+```bash
+ruff check .
+ruff format --check .
+mypy
+pytest --cov --cov-branch
+```
 
-> **Rate limit.** The public API throttles by dataset (the discontinued `Elspotprices` answered one query per ~300 s window).
-> A full run sends exactly one query to `DayAheadPrices`, whose limit is not measured (a push to `main` and `Live nightly` share the concurrency group `eds-live-api`, so two live runs never overlap; a run still waiting in that group is cancelled when a newer one arrives, so a pending run can be dropped); if a repeated run is throttled it fails fast
-> with `RetryAfterTooLongError`. For repeated local runs use `pytest -m "not live"`.
-
-> **Wait budget.** `EDSApiClient(wait_budget=...)` caps the total of all waits (`Retry-After` and backoff) of one client; the
-> default is no limit. A wait over the budget is refused with `RetryAfterTooLongError`.
->
-> **Throttling in live tests.** The live tests use the default client and its retry settings, with a wait budget. All their waits (`Retry-After`
-> and backoff) share one budget of 120 s per run (`LIVE_RETRY_BUDGET_SECONDS` in `tests/support/live.py`). A wait that would
-> exceed the budget, or a `Retry-After` above the client's 60 s cap, is refused: the test is reported as **skipped** with the
-> reason `API throttled`, not failed. A rerun happens only on network errors, never on throttling. Every test also has a
-> 120 s timeout (`timeout = 120` in `pytest.ini`, from `pytest-timeout`).
-
-**CI guard against empty reports.** The `Tests` workflow publishes the Allure report only when pytest exits with `0` or `1`
-and `allure-results` is not empty; otherwise it fails the job. A collection error once produced a 0-test report that reset the Trend history.
-
-Mutation checks (do the tests notice a deliberately broken client? takes about 7 minutes, offline; run on a clean tree):
+Mutation checks (offline, run on a clean working tree; takes several minutes):
 
 ```bash
 python scripts/mutation_check.py
 ```
 
-Code quality (same checks as the `Quality` workflow; install dev tools with `pip install -r requirements-dev.txt`):
-
-```bash
-ruff check .                         # lint, import order, bug patterns, complexity, pytest style (PT)
-ruff format --check .                # formatting
-mypy                                 # type check (client, models)
-pytest -m "not live" --cov           # offline tests; fails under 90% coverage
-```
-
-The same tools run locally before each commit with [pre-commit](https://pre-commit.com) (versions pinned in `requirements-dev.txt`):
-
-```bash
-pip install -r requirements-dev.txt
-pre-commit install --install-hooks --hook-type pre-commit --hook-type commit-msg --hook-type pre-push
-```
-
-A commit runs `ruff check`, `ruff format --check`, `mypy` and `detect-secrets`; a push runs the offline tests. A commit message with
-an AI co-author line and a commit of the author's private notes (`LESSONS_LEARNED.md`, `CODE_REVIEW_NOTES.md`) are refused.
-Run every hook on every file with `pre-commit run --all-files`.
-
-For an Allure HTML report:
+Allure report of a local run:
 
 ```bash
 pytest --alluredir=allure-results
 allure serve allure-results
 ```
 
-The live report is published on every push to `main`. A local run shows only that run, without the trend, executor and
-categories data. The Environment widget is written automatically whenever `--alluredir` is used.
-
-The **Categories** widget lists only failed, broken and skipped tests (`allure/categories.json`), so "0 items total" means
-no failures. The published report says so itself (`allure/report-notes.js`).
-
-### Performance tests (JMeter)
-
-A low-load JMeter plan lives in `performance/` (requires JMeter 5.6+). Run it from that directory:
-
-```bash
-jmeter -n -t eds_api_load_test.jmx -l results.jtl -e -o report
-```
-
-Override defaults with `-Jthreads=2 -Jduration=30 -Jthinktime=1000 -Jmax_response_ms=2000`.
-It hits the public EDS API, so keep the load low. The chosen way to run it is by hand, locally, with minimal load:
-`jmeter -n -t eds_api_load_test.jmx -Jthreads=1 -Jrampup=1 -Jduration=10 -Jthinktime=1000 -Jmax_response_ms=2000 -l results.jtl`
-(see `know-how/PERFORMANCE_NOTE.md`). `performance.yml` runs only when started by hand (no schedule).
-
-<p align="center">
-  <img src="docs/jmeter-report.png" alt="JMeter dashboard report" width="500">
-</p>
-
-### Run in Docker
+Docker (offline tests by default):
 
 ```bash
 docker build -t eds-api-tests .
 docker run --rm eds-api-tests
 ```
 
-The container runs as a non-root user and defaults to the offline tests (`-m "not live"`); for the live ones use
-`docker run --rm eds-api-tests pytest -v -m live`.
+## Performance tests (JMeter)
 
-<details>
-<summary>One-time GitHub Pages setup (only when forking/recreating this repo)</summary>
+The JMeter plan in `performance/` is run by hand only, with minimal load, because it sends requests to the public EDS API:
 
-The workflow publishes the report to the `gh-pages` branch, but GitHub serves it only after two manual steps:
+```bash
+cd performance
+jmeter -n -t eds_api_load_test.jmx -Jthreads=1 -Jrampup=1 -Jduration=10 -Jthinktime=1000 -Jmax_response_ms=2000 -l results.jtl
+```
 
-1. The repository must be **public** (Pages for a private repo needs a paid plan).
-2. Push to `main` once so the branch exists, then set `Settings → Pages → Source` to **"Deploy from a branch"**,
-   branch `gh-pages`, folder `/ (root)`.
+Details and the options are in `know-how/PERFORMANCE_NOTE.md`. `performance.yml` has no schedule and runs only when started by hand.
 
-After that every push to `main` updates the report.
-</details>
+## API under test
 
-## 🔌 API Under Test
+[Energi Data Service](https://www.energidataservice.dk/) is a public API. The [API guide](https://www.energidataservice.dk/guides/api-guides) states the request rules, and the [OpenAPI specification](https://api.energidataservice.dk/swagger/public/swagger.json) describes the endpoints.
 
-[Energi Data Service](https://www.energidataservice.dk/) — public API, see [API docs](https://www.energidataservice.dk/guides/api-guides).
+The client's parameters match the specification (checked by hand on 2026-11-10): `datasetName`, `limit` and `offset` (int32), `sort` and `filter` (string), `category` and `date` for the News endpoints. The specification also documents `start`, `end`, `columns` and `timezone`, which the client does not use.
 
-<p align="center">
-  <a href="https://www.energidataservice.dk/guides/api-guides">
-    <img src="docs/eds-api-guide.png" alt="Energi Data Service API guide" width="500">
-  </a>
-</p>
+## About the project
 
-**Zgodność ze specyfikacją (2026-11-10).** Specyfikacja OpenAPI 3.0.1 (`https://api.energidataservice.dk/swagger/public/swagger.json`, „EDS API” v1, 15 ścieżek, tylko `get`) zgadza się z parametrami, na których polega klient: `datasetName`, `limit` i `offset` (int32), `sort` i `filter` (string), `category`, `date` (date-time) i brak parametrów dla `/News*`. Specyfikacja dokumentuje też `start`, `end`, `columns` i `timezone`, których klient nie używa, oraz tylko odpowiedź `200`. Porównanie zrobiono ręcznie raz; szczegóły i ograniczenia są w `know-how/API_GUIDES.md`.
-
-## ✅ Completed Improvements
-
-* [x] API client abstraction
-* [x] pytest fixtures
-* [x] Parameterized tests
-* [x] Additional EDS datasets
-* [x] API client retry with exponential backoff
-* [x] GitHub Actions CI pipeline
-* [x] Pagination testing
-* [x] Sorting validation
-* [x] Negative test scenarios
-* [x] Schema validation
-* [x] Pydantic models
-* [x] Logging
-* [x] Allure reporting
-* [x] Docker support
-* [x] Configurable retry/backoff tuning (jitter, per-dataset limits)
-* [x] Allure trend, executors and categories widgets
-* [x] Allure Retries trend
-* [x] News API endpoint tests (`/News`, `/actual`, `/calendar`, `/archived`)
-* [x] JMeter performance tests
-* [x] CI guard against empty or broken Allure reports
-
-All planned items are done except step 7 ([Allure reporting](ROADMAP.md#7-allure-reporting)), which is open. See [ROADMAP.md](ROADMAP.md) for the step-by-step plan behind each one.
-
-## 👩‍💻 About the Project
-
-A solo QA Automation portfolio project, built incrementally with a focus on clean test design and realistic QA practices.
+A solo QA Automation portfolio project, built incrementally with a focus on clean test design and realistic QA practices. See [ROADMAP.md](ROADMAP.md) for the plan.
