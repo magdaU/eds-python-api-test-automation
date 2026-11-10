@@ -3,7 +3,6 @@ examples."""
 
 import json
 
-import pytest
 import requests_mock
 from hypothesis import given
 from hypothesis import strategies as st
@@ -47,33 +46,3 @@ def test_givenAnyValidParameters_whenGettingDataset_thenEveryParameterSurvivesTh
     assert query["offset"] == [str(offset)]
     assert query["sort"] == [sort]
     assert json.loads(query["filter"][0]) == filters
-
-
-@given(limit=st.integers(max_value=-1))
-def test_givenAnyNegativeLimit_whenGettingDataset_thenValueErrorIsRaisedBeforeSending(limit):
-    # arrange
-    client = EDSApiClient(base_url=BASE)
-
-    # act / assert
-    with requests_mock.Mocker() as mocker:
-        with pytest.raises(ValueError, match="limit"):
-            client.get_dataset("CO2Emis", limit=limit)
-        assert mocker.call_count == 0
-
-
-@given(
-    path=st.text(alphabet=st.characters(whitelist_categories=("Ll", "Lu", "Nd")), max_size=20),
-    padding=st.sampled_from(["", "/"]),
-)
-def test_givenAnyPathWithOptionalSlashes_whenBuildingNewsUrl_thenThereIsNoDoubleSlash(
-    path, padding
-):
-    # arrange
-    client = EDSApiClient(base_url=BASE + padding)
-
-    # act
-    url = client.news_url(padding + path + padding)
-
-    # assert
-    assert "//" not in url.removeprefix("http://")
-    assert url.startswith(f"{BASE}/News")

@@ -17,7 +17,7 @@ Python-based API test automation framework for the [Energi Data Service (EDS)](h
 | --- | --- |
 | Allure report (latest `main` run, with Trend, Retries, Executors, Categories) | **https://magdau.github.io/eds-python-api-test-automation/** |
 | Test runs on GitHub Actions (build numbers in Allure, e.g. `#95`, are these runs) | [Tests workflow](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/tests.yml) |
-| Nightly live API check (catches API drift) | [Live nightly workflow](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/live-nightly.yml) |
+| Nightly live API check (catches API drift; no live tests left since 2026-11-10) | [Live nightly workflow](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/live-nightly.yml) |
 | Code quality (ruff, mypy, coverage) | [Quality workflow](https://github.com/magdaU/eds-python-api-test-automation/actions/workflows/quality.yml) |
 
 ## 📚 Test Documentation
@@ -60,14 +60,14 @@ eds-python-api-test-automation/
 │   ├── conftest.py, support/, mocks/   # fixtures, shared helpers (scripted local server, schema asserts), requests-mock data
 │   ├── bdd/                            # Gherkin scenarios (features/*.feature) and their step definitions
 │   └── test_*.py                       # one module per concern: contract, News, retry, boundaries, encoding, schema,
-│                                       # models, properties, logging, Allure, live smoke / edge cases / data quality / OpenAPI drift
+│                                       # models, properties, logging, Allure, OpenAPI drift (live modules removed 2026-11-10)
 │
 ├── .github/workflows/
 │   ├── tests.yml         # CI: tests, Allure report, GitHub Pages publish
 │   ├── quality.yml       # CI: ruff, mypy, offline tests with coverage gate
 │   ├── security.yml      # CI: pip-audit (known vulnerabilities) and detect-secrets, also weekly
 │   ├── live-nightly.yml  # CI: nightly live tests to catch API drift (also manual)
-│   ├── performance.yml   # CI: JMeter run (manual / weekly)
+│   ├── performance.yml   # JMeter run, manual only (no schedule)
 │   └── mutation.yml      # CI: weekly mutation checks (scripts/mutation_check.py)
 ├── performance/
 │   ├── eds_api_load_test.jmx   # JMeter plan (low-load baseline)
@@ -90,17 +90,13 @@ eds-python-api-test-automation/
 
 ## 🧪 Current Test Coverage
 
-243 test cases (205 offline, 38 live; measured by `pytest --collect-only` on `main` at `cc140d39`, 2026-11-05) across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mostly mocked (`requests-mock`)
-with a few bounded live tests against the real API. The [Allure report](https://magdau.github.io/eds-python-api-test-automation/)
-shows 231 of them (205 offline and 26 live) on the next run on `main`: the 12 data-quality checks run only in the nightly `Live nightly` job. They cover:
+97 tests (95 pass, 2 expected failures for a documented rule the client does not implement yet; 17 of them are BDD cases from 6 scenarios; limit 100) across the `CO2Emis` and `DayAheadPrices` datasets and the `News` API, mocked (`requests-mock`) or against a local scripted server. The suite sends no requests to the real EDS API. Coverage of `client/` and `models/` is 100%; full mutation run on 2026-11-10: 58 of 62 killed; the 4 survivors (models and schemas) are a conscious decision (see `docs/test-strategy.md`, section 13). They cover:
 
 * Status code, content type and structure; `limit`, `filter`, `offset` and `sort` (`limit=0` returns every record, a negative `limit` is rejected)
-* Negative scenarios: refused connection, 4xx not retried, invalid dataset and unknown path against the live API
-* News API (`/News`, `/actual`, `/calendar`, `/archived`): paths, parameters with their exact case, samples vs. schema, live 400/204/404 checks
-* API specification drift (live): every operation and parameter the client uses is still in the public OpenAPI specification
-* Dataset status from the metadata endpoint (it caught that `Elspotprices` had been discontinued)
-* Data quality of the newest records (nightly): freshness, gaps, DK1/DK2, Danish time against UTC, plausible values
-* JSON Schema validation and Pydantic parsing (valid and invalid data, also on live records)
+* Negative scenarios: refused connection, 4xx not retried, timeouts (the live checks against the real API were removed on 2026-11-10)
+* News API (`/News`, `/actual`, `/calendar`, `/archived`): paths, parameters with their exact case, samples vs. schema
+* API specification drift: the detector reports a missing path, parameter and wrong type (offline; the check against the published specification was removed on 2026-11-10)
+* JSON Schema validation and Pydantic parsing (valid and invalid data, on recorded samples)
 * Boundary values, parameter combinations (decision table), filter encoding, URL building, property-based tests (`hypothesis`)
 * Real retry behavior against a local scripted server (503/429 then 200, exhaustion, no retry on 4xx), a timeout on every call,
   per-dataset retry/backoff/jitter tuning, and diagnostics: one log line per request, the wait before each retry and why
@@ -118,7 +114,11 @@ pip install -r requirements.txt
 pytest -v -m "not live"
 ```
 
-Tests that hit the real EDS API carry the `live` marker; skip them for a fast, offline run with `pytest -v -m "not live"`.
+> **Live tests removed (2026-11-10).** The 38 tests that hit the real EDS API were deleted to avoid loading the public API:
+> `test_live_smoke.py`, `test_live_edge_cases.py`, `test_live_data_quality.py`, the two live tests in `test_schema_validation.py`
+> and the one in `test_openapi_drift.py`. The suite now sends no requests to the API and runs offline (97 collected tests: 95 pass, 2 expected failures). The
+> `live` / `data_quality` markers, the `Live nightly` workflow and the live-test support code are not yet cleaned up.
+
 On GitHub, pull requests run only the offline tests and the full suite runs on `main`. A nightly workflow (`live-nightly.yml`,
 also manual) runs only the live tests, including the data-quality checks (`-m data_quality`) that the run on `main` skips so
 a data problem does not turn the build red.
@@ -187,8 +187,9 @@ jmeter -n -t eds_api_load_test.jmx -l results.jtl -e -o report
 ```
 
 Override defaults with `-Jthreads=2 -Jduration=30 -Jthinktime=1000 -Jmax_response_ms=2000`.
-It hits the public EDS API, so keep the load low. In CI it runs only manually or weekly
-(`performance.yml`) and uploads the HTML report as an artifact.
+It hits the public EDS API, so keep the load low. The chosen way to run it is by hand, locally, with minimal load:
+`jmeter -n -t eds_api_load_test.jmx -Jthreads=1 -Jrampup=1 -Jduration=10 -Jthinktime=1000 -Jmax_response_ms=2000 -l results.jtl`
+(see `know-how/PERFORMANCE_NOTE.md`). `performance.yml` runs only when started by hand (no schedule).
 
 <p align="center">
   <img src="docs/jmeter-report.png" alt="JMeter dashboard report" width="500">
@@ -225,6 +226,8 @@ After that every push to `main` updates the report.
     <img src="docs/eds-api-guide.png" alt="Energi Data Service API guide" width="500">
   </a>
 </p>
+
+**Zgodność ze specyfikacją (2026-11-10).** Specyfikacja OpenAPI 3.0.1 (`https://api.energidataservice.dk/swagger/public/swagger.json`, „EDS API” v1, 15 ścieżek, tylko `get`) zgadza się z parametrami, na których polega klient: `datasetName`, `limit` i `offset` (int32), `sort` i `filter` (string), `category`, `date` (date-time) i brak parametrów dla `/News*`. Specyfikacja dokumentuje też `start`, `end`, `columns` i `timezone`, których klient nie używa, oraz tylko odpowiedź `200`. Porównanie zrobiono ręcznie raz; szczegóły i ograniczenia są w `know-how/API_GUIDES.md`.
 
 ## ✅ Completed Improvements
 

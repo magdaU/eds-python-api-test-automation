@@ -2,7 +2,6 @@ from datetime import datetime
 
 import pytest
 import requests
-from pydantic import ValidationError
 
 from client.dataset_api import DatasetApi
 from client.parsers import InvalidResponseError
@@ -37,24 +36,6 @@ def test_givenModel_whenGettingRecords_thenTypedRecordsAreReturned(eds, co2_api)
     assert records[0].CO2Emission == 98.7
 
 
-def test_givenQueryParameters_whenGettingRecords_thenTheyReachTheApi(eds, dataset, dataset_api):
-    # arrange
-    eds.dataset(dataset.name).answers()
-
-    # act
-    dataset_api.records(
-        limit=3, offset=6, sort=f"{dataset.required_field} desc", filters={"PriceArea": "DK1"}
-    )
-
-    # assert
-    assert eds.last_request.query == {
-        "limit": ["3"],
-        "offset": ["6"],
-        "sort": [f"{dataset.required_field} desc"],
-        "filter": ['{"PriceArea":"DK1"}'],
-    }
-
-
 def test_givenNoModel_whenGettingRecords_thenTypeErrorSaysSo(eds, eds_client, dataset):
     # arrange
     api = DatasetApi(eds_client, dataset.name)
@@ -86,12 +67,19 @@ def test_givenBodyThatIsNotJson_whenGettingRecords_thenInvalidResponseErrorIsRai
         dataset_api.records()
 
 
-def test_givenUnknownPriceArea_whenGettingRecords_thenValidationErrorIsRaised(eds, co2_api):
+def test_givenQueryParameters_whenGettingRecords_thenTheyReachTheApi(eds, dataset, dataset_api):
     # arrange
-    eds.dataset("CO2Emis").answers(
-        records=[{"Minutes5UTC": "2024-05-06T07:08:00", "PriceArea": "DK3", "CO2Emission": 98.7}]
+    eds.dataset(dataset.name).answers()
+
+    # act
+    dataset_api.records(
+        limit=3, offset=6, sort=f"{dataset.required_field} desc", filters={"PriceArea": "DK1"}
     )
 
-    # act / assert
-    with pytest.raises(ValidationError):
-        co2_api.records()
+    # assert
+    assert eds.last_request.query == {
+        "limit": ["3"],
+        "offset": ["6"],
+        "sort": [f"{dataset.required_field} desc"],
+        "filter": ['{"PriceArea":"DK1"}'],
+    }

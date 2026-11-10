@@ -42,7 +42,7 @@ own backoff and the live runs show it as slower or throttled, not as a failed as
 | --- | --- | --- | --- |
 | Component | Client methods, parameter handling, parsing, configuration | `requests-mock` or none | every PR, every push to `main` |
 | Integration | The client's real HTTP stack (`requests`, `urllib3`, retry adapter) | Scripted HTTP server on `127.0.0.1` | every PR, every push to `main` |
-| System | The client against the real public EDS API | Public API, one small request per test | push to `main`, nightly |
+| System | The client against the real public EDS API | Public API, one small request per test | none since 2026-11-10 (the live tests were removed to avoid loading the API) |
 | Non-functional | Latency and error rate under light concurrency | JMeter against the public API | manually and weekly |
 
 `requests-mock` replaces the transport, so the retry adapter never runs against a mocked response. Everything that depends
@@ -57,11 +57,11 @@ on retries, status handling after retries or real connection errors therefore ru
 | Functional, black-box | Boundary value analysis (`limit`: negative, 0, 1; `offset`: negative, 0; the `int32` upper bound is not tested) | `test_boundary_values` |
 | Functional, black-box | Decision table (combinations of the four optional parameters) | `test_parameter_combinations` |
 | Functional, black-box | Property-based testing (`hypothesis`) | `test_properties` |
-| Negative testing, error guessing | Invalid input, unknown paths and columns, timeouts, refused connections, persistent 5xx | `test_retry_behavior`, `test_live_edge_cases` |
-| Contract testing | JSON Schema validation of samples and live responses | `test_schema_validation`, `test_dataset_contract`, `test_news_api` |
+| Negative testing, error guessing | Invalid input, timeouts, refused connections, persistent 5xx | `test_retry_behavior`, `test_eds_client` |
+| Contract testing | JSON Schema validation of samples | `test_schema_validation`, `test_dataset_contract`, `test_news_api` |
 | Contract testing | OpenAPI drift: the operations and parameters the client uses are still documented (an offline test proves the detector reports a missing path, parameter and wrong type) | `test_openapi_drift` |
-| Smoke testing | One bounded call per area against the live API | `test_live_smoke` |
-| Data-quality monitoring | The 100 newest records of `CO2Emis` and `DayAheadPrices`: freshness, gaps, DK1/DK2, Danish time against UTC (daylight saving), value range; one query per series | `test_live_data_quality` (marker `data_quality`, nightly only) |
+| Smoke testing | Removed on 2026-11-10 (one bounded call per area against the live API) | none |
+| Data-quality monitoring | Removed on 2026-11-10 (newest records of `CO2Emis` and `DayAheadPrices`, nightly only) | none |
 | Structural (white-box) | Statement and branch coverage of `client/` and `models/`; gate at 90% | `pytest --cov` |
 | Static analysis | `ruff` and `mypy` in strict mode | `quality.yml` |
 | Security | Known vulnerabilities in pinned dependencies (`pip-audit`) and secrets in tracked files (`detect-secrets`); also weekly | `security.yml` |
@@ -102,10 +102,8 @@ on every test would only add indirection.
   it can fail (the OpenAPI drift detector).
 - **Severity.** Each module carries an Allure severity via `labels(epic, feature, severity)`: `critical` for retry, contract,
   schemas and models; `minor` for test tooling and logs; `normal` otherwise.
-- **Mock-first, live-bounded.** Edge cases and error paths are proven offline. Live tests are smoke checks and a few edge
-  cases. The edge cases are each one `limit=1` request with a pause between requests; the smoke and data-quality checks
-  request up to `limit=100`, and the paging test sends three requests. `limit=-1` is never sent live: the API treats it as
-  "no limit" and returns millions of records.
+- **Mock-first.** Since 2026-11-10 all tests are offline (mocks and the local scripted server); the live tests were removed to
+  avoid loading the public API. Earlier, the live tests were bounded smoke and edge checks (one request each, with pauses).
 - **Tolerate only transient failures.** Live tests (all marked flaky) rerun only on network errors (`ConnectionError`,
   `Timeout`), never on assertion failures or on throttling. A throttled live test (`RetryAfterTooLongError`) is skipped
   with its reason, not failed. All waits of one run share a budget of 120 s (`wait_budget` of `EDSApiClient`, set in `tests/support/live.py`), and
@@ -135,7 +133,7 @@ Python 3.12 (local, Docker `python:3.12-slim`, CI on `ubuntu-latest`). `pytest` 
 | `Security` | pull request, push to `main`, Monday 05:00 UTC, manual | `pip-audit` and `detect-secrets`; fails on any finding |
 | `Live nightly` | daily cron 02:00 UTC (GitHub started the last seven runs between 06:57 and 08:14 UTC), manual | Live tests only, including data quality, to catch API drift and stale or broken data. No Allure report: the result is the run itself |
 | `Performance` | Monday 03:00 UTC, manual | JMeter plan, fails on any failed sample |
-| `Mutation checks` | Monday 04:00 UTC, manual | 56 deliberate breakages of the client, models and schemas (measured 2026-11-05 at `cc140d39`); fails when the offline tests miss one (about 7 minutes, report in the job summary) |
+| `Mutation checks` | Monday 04:00 UTC, manual | 62 deliberate breakages of the client, models and schemas; fails when the offline tests miss one. Last full run on the current suite (2026-11-10): 58 of 62 killed; the 4 survivors are listed under "Known mutation gaps" |
 
 ## 9. Entry and exit criteria
 
@@ -158,7 +156,7 @@ CI runs these checks on every pull request. It blocks a merge only where branch 
 | Public API rate limiting (429) | Medium | Flaky live tests, blocked client | Few and small live requests, retry with backoff, rerun on network errors only; 429 is never triggered on purpose |
 | 429 with a long `Retry-After` (up to 300 s observed; waiting it out made a full run take about 5 minutes instead of 30 seconds, see the [test report](test-report.md#7-residual-risks-and-open-items)) | High | Slow feedback; now a throttled live fixture fails fast | The client refuses a `Retry-After` above 60 s (`RetryConfig.max_retry_after`) with `RetryAfterTooLongError` (Allure: *Infrastructure problems*); waits and reasons are logged. `Elspotprices` allowed one query per ~300 s; the limit of `DayAheadPrices` is not measured, so a run sends one query to it and a second run within five minutes could fail fast. A push to `main` and `Live nightly` share the concurrency group `eds-live-api`, so two live runs never overlap; pull requests run offline tests only |
 | Retry logic is wrong but untested | Medium | Hammering the API, or silent failures | Retry behaviour tested against a real local server, not only mocks |
-| Tests pass although the client is broken | Medium | False confidence | Mutation checks (56), the kill matrix, request-based assertions; coverage is not trusted alone (see [test coverage](test-coverage.md)) |
+| Tests pass although the client is broken | Medium | False confidence | Mutation checks (62), the kill matrix, request-based assertions; coverage is not trusted alone (see [test coverage](test-coverage.md)) |
 | Report shows misleading history | Low | Wrong decisions | Publish guard in CI, Allure categories |
 | Dependency changes break the suite | Medium | Red build | Pinned versions; a changed minimum version is verified in a clean environment |
 | A pinned dependency has a known vulnerability | Medium | Vulnerable environment | `pip-audit` on every pull request and weekly. On 2026-10-30 it flagged `requests` 2.32.3 and `pytest` 8.3.3; both were bumped after the offline suite, `mypy` and coverage passed on the new versions |
@@ -180,8 +178,27 @@ summary, defects, risks: [test-report.md](test-report.md).
 - Regenerate [test-cases.md](test-cases.md) (`python scripts/generate_test_cases.py`) after changing tests, and
   [test-results.md](test-results.md) (`python scripts/generate_test_results.py`) when a new report is needed.
 - Guard against the *pesticide paradox*: when client behaviour changes, check by a quick mutation that at least one test
-  fails. `scripts/mutation_check.py` does this for 56 known changes every week (56 measured on 2026-11-05); add a mutation when a new client behaviour
+  fails. `scripts/mutation_check.py` does this for 62 known changes every week (list as of 2026-11-10); add a mutation when a new client behaviour
   is protected by a test, and update a mutation's line when the client line it names changes (otherwise the run reports `STALE`).
 - Before removing a test, build the kill matrix (which test fails for which mutation, no `-x`, fixed order) and check what
   the test protects; do not edit tests while it runs, because the mutations change the client files.
 - Coverage is an indicator, never a goal: 100% does not show that assertions are strong enough.
+
+### Known mutation gaps (decision, not a quality claim)
+
+The mutation list is kept in full (62 mutants as of 2026-11-10). It is not reduced to make the check pass. Mutants that
+survive are a conscious gap, recorded here and in `know-how/TODO.md`, section 8.
+
+- Full run on the current suite (2026-11-10, 97 tests, 62 mutants): 58 killed, 4 survived. All 4 survivors are in models and schemas:
+  - `model-time-required` (`models/dayaheadprices.py`): `TimeUTC` required in DayAheadPrices; no test accepts a record without `TimeUTC`.
+  - `schema-co2-envelope-optional` (`schemas/co2emis_schema.json`): `limit` and `dataset` no longer required; no test fails.
+  - `schema-price-optional` (`schemas/dayaheadprices_schema.json`): `DayAheadPriceDKK` no longer required; no test fails.
+  - `schema-emission-any-type` (`schemas/co2emis_schema.json`): `CO2Emission` accepts any type; no test fails.
+  All client mutants are killed.
+- Earlier results (kept for history only): 43 of 56 on the 84-test state; then targeted runs on the 97-test state (8 of 8 restored targets killed; 9 of 10 Pydantic model mutants killed).
+- Pydantic model mutants on the 97-test state (run 2026-11-10 against the full offline suite): 9 of 10 killed.
+  The one that survives is `model-time-required` (`TimeUTC` required in DayAheadPrices): no test accepts a record
+  without `TimeUTC`, so the mutant is not detected.
+- Limits of this model check: it covers the ten model mutants only, not the schema or the client; it runs the full
+  offline suite, not a reduced one; the test count was not reduced to make it pass.
+- Report of the full run: `scratchpad/mutation-report-full.md` (not part of the repository).

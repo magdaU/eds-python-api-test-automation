@@ -1,7 +1,6 @@
 import pytest
 from hypothesis import settings
 
-from client.dataset_api import DatasetApi
 from client.eds_client import EDSApiClient
 from client.news_api import NewsApi
 from client.retry import RetryAfterTooLongError
@@ -9,11 +8,9 @@ from tests.support.allure_environment import environment_from_session
 from tests.support.datasets import (
     ALL_DATASETS,
     CO2EMIS_DATASET,
-    DAYAHEADPRICES_DATASET,
     api_for_dataset,
 )
 from tests.support.fake_eds import FakeEds
-from tests.support.live import DAYAHEADPRICES_LIVE_QUERY
 from tests.support.scripted_server import ScriptedServer
 
 
@@ -81,18 +78,6 @@ def dataset(request):
 @pytest.fixture
 def dataset_api(eds_client, dataset):
     return api_for_dataset(eds_client, dataset)
-
-
-@pytest.fixture
-def co2_response(co2_api):
-    return co2_api.get(limit=1)
-
-
-@pytest.fixture(scope="session")
-def dayaheadprices_latest(eds_client):
-    """The only live query a test run sends to DayAheadPrices, shared by every live test that needs
-    its data."""
-    return DatasetApi(eds_client, DAYAHEADPRICES_DATASET.name).get(**DAYAHEADPRICES_LIVE_QUERY)
 
 
 # Hypothesis settings for every property-based test: 100 examples, no per-example deadline.
