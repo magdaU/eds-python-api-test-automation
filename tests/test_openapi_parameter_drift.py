@@ -1,10 +1,16 @@
 """Parameter drift in the OpenAPI specification: name, location, type, format, required flag,
 inheritance from the path and `$ref`. Uses small in-memory specifications only."""
 
+import pytest
+
 from tests.support.allure_labels import labels
+from tests.support.attachments import swagger_screenshot  # noqa: F401
 from tests.support.openapi import EXPECTED_PARAMETERS, find_drift
 
-pytestmark = labels("Dataset API", "API specification drift", "critical")
+pytestmark = [
+    *labels("Dataset API", "API specification drift", "critical"),
+    pytest.mark.usefixtures("swagger_screenshot"),
+]
 
 DATASET_PATH = "/dataset/{datasetName}"
 LIMIT_EXPECTATION = {"in": "query", "type": "integer", "format": "int32", "required": False}
