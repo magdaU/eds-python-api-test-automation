@@ -20,7 +20,7 @@ and the layers do not leak (tests use API objects, API objects use the client, n
 `EDSApiClient` further (a URL builder, a logger) would add files without removing a real problem, against KISS and YAGNI.
 Reopen this only if a concrete pain shows up, such as a second transport or a third kind of endpoint.
 
-Note: the suite sends no requests to the EDS API. The live tests, including the data-quality checks, are not in the repository. Running them by hand is described in [test strategy, section 8.1](test-strategy.md#81-live-and-nightly-tests-why-they-are-not-scheduled).
+Note: the suite sends no requests to the EDS API. The live tests, including the data-quality checks, are not in the repository. Bringing them back is described in [test strategy, section 8.1](test-strategy.md#81-why-there-is-no-live-or-nightly-workflow).
 
 The Pydantic models are optional and live behind one method. `DatasetApi.records()` returns model objects when the API
 object was created with a `model` (otherwise it raises `TypeError`), and `get()` still returns the raw response. The `Literal`

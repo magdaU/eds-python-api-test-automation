@@ -43,20 +43,20 @@ catalogued in [test-cases.md](test-cases.md).
 | Monday 04:00 UTC and manual | `Mutation checks`: 62 deliberate breakages of the client, models and schemas; fails when the offline suite misses one. Results in the job summary |
 | Monday 05:00 UTC and manual | `Security`: `pip-audit` and `detect-secrets` |
 | Manual only | `Performance`: JMeter plan against the public API (2 users, 30 s, think time 1 s); fails on any failed sample |
-| Manual only | `Live nightly`: runs the `live` tests when they exist. The daily schedule was removed on 2026-11-26 (section 4.1) |
 | After a defect fix | A regression test is added in the fix, then the normal triggers apply |
 
-### 4.1 Why the nightly live run is disabled
+### 4.1 No live or nightly workflow
 
-- **Cause:** the `Live nightly` workflow ran `pytest -m live` every day at 02:00 UTC. The live tests were removed from the
-  repository on 2026-11-10 (commit `800b1e4e`, to avoid loading the public API), so pytest collected 97 tests,
-  deselected all 97, selected none and exited with code 5 ("no tests collected"). The step failed every time.
-- **Effect:** every scheduled run from 2026-11-17 to 2026-11-25 failed, and GitHub mailed the repository administrators for
-  each failure. The failures said nothing about the API or the product, so they only added noise.
-- **Decision:** the daily schedule was removed on 2026-11-26 (PR #147). The workflow stays available for a manual run.
-- **Strategy:** the live and nightly tests are kept as a framework option, not as an automatic gate. They protect the public
-  API (no load by default) and the workflows (no red jobs without tests), and they can be run by hand. Full rationale and
-  the steps to enable them are in the [test strategy, section 8.1](test-strategy.md#81-live-and-nightly-tests-why-they-are-not-scheduled).
+- **Cause:** the live tests were removed from the repository on 2026-11-10 (commit `800b1e4e`). The `Live nightly` workflow
+  still ran `pytest -m live` every day at 02:00 UTC, so pytest collected nothing and exited with code 5 ("no tests
+  collected"). Every scheduled run from 2026-11-17 to 2026-11-25 failed, and GitHub mailed the repository administrators for
+  each failure.
+- **Decision:** the `Live nightly` workflow was removed on 2026-11-26. Its schedule had already been removed in PR #147, and
+  PR #149 made the manual run succeed with a notice; no such run has been observed yet. Removing the workflow means the
+  pipeline no longer contains a job that tests nothing.
+- **Reasons:** protect the public EDS API from daily load, keep the pipeline free of failing or empty jobs, and gate changes
+  on the offline suite. The reasoning and the steps to bring live tests back are in the
+  [test strategy, section 8.1](test-strategy.md#81-why-there-is-no-live-or-nightly-workflow).
 
 ## 5. Pass and fail criteria
 
