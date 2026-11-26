@@ -6,7 +6,7 @@ Related: [test strategy](test-strategy.md) · [test plan](test-plan.md) · [test
 
 ## 1. Summary and recommendation
 
-**Current state (2026-11-10, measured):** 97 collected tests (95 pass, 2 expected failures), 17 of them BDD; 0 live tests; coverage of `client/` and `models/` 100% (statements and branches); full mutation run 58 of 62 killed, 4 survivors (models and schemas). The CI workflow `live-nightly.yml` is still scheduled and runs `pytest -m live`, which now collects nothing; it has not been changed. Sections 2 to 8 describe earlier states unless a sentence says "current"; they are kept as history.
+**Current state (2026-11-10, measured):** 97 collected tests (95 pass, 2 expected failures), 17 of them BDD; 0 live tests; coverage of `client/` and `models/` 100% (statements and branches); full mutation run 58 of 62 killed, 4 survivors (models and schemas). The CI workflow `live-nightly.yml` has no schedule since 2026-11-26 (manual run only); its scheduled runs failed with exit code 5 because `pytest -m live` collects nothing. Sections 2 to 8 describe earlier states unless a sentence says "current"; they are kept as history.
 
 **Update 2026-11-10:** the 38 live tests (the ones that send requests to the EDS API) were removed to avoid loading the public API. The suite now has 97 collected tests (95 pass, 2 expected failures), all offline (`pytest --collect-only -q`); section 4 gives the current split. The figures below from before that date are kept as history.
 

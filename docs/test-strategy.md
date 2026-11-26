@@ -131,7 +131,7 @@ Python 3.12 (local, Docker `python:3.12-slim`, CI on `ubuntu-latest`). `pytest` 
 | `Tests` | push to `main` | All tests including live (and the OpenAPI drift test) except data quality (`-m "not data_quality"`); Allure report published to GitHub Pages |
 | `Quality` | pull request, push to `main` | `ruff`, `ruff format --check`, `mypy`, offline tests with the coverage gate |
 | `Security` | pull request, push to `main`, Monday 05:00 UTC, manual | `pip-audit` and `detect-secrets`; fails on any finding |
-| `Live nightly` | daily cron 02:00 UTC (GitHub started the last seven runs between 06:57 and 08:14 UTC), manual | Live tests only, including data quality, to catch API drift and stale or broken data. No Allure report: the result is the run itself |
+| `Live nightly` | manual only (the daily cron was removed on 2026-11-26; no live tests exist since 2026-11-10) | Would run live tests only, to catch API drift and stale or broken data, if live tests are restored. No Allure report: the result is the run itself |
 | `Performance` | Monday 03:00 UTC, manual | JMeter plan, fails on any failed sample |
 | `Mutation checks` | Monday 04:00 UTC, manual | 62 deliberate breakages of the client, models and schemas; fails when the offline tests miss one. Last full run on the current suite (2026-11-10): 58 of 62 killed; the 4 survivors are listed under "Known mutation gaps" |
 

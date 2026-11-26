@@ -1,10 +1,8 @@
 name: Live nightly
 
-# Pull requests skip live tests (they hit the public EDS API). This job runs them once a day, with the data-quality checks,
-# to catch API contract drift; GitHub emails the repository admins when a scheduled run fails.
+# Pull requests skip live tests (they hit the public EDS API). The daily schedule was removed: the suite has no live tests
+# since 2026-11-10, so the scheduled run failed with exit code 5 ("no tests collected"). Run manually only.
 on:
-  schedule:
-    - cron: "0 2 * * *"
   workflow_dispatch:
 
 permissions:
