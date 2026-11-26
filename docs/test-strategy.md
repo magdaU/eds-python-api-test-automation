@@ -9,8 +9,9 @@ Terminology follows ISTQB.
 ## 1. Objectives
 
 1. Detect regressions in the API client (`client/`, `models/`) quickly and deterministically, on every pull request.
-2. Detect drift in the real EDS API (changed fields, statuses or error messages) within a day.
-3. Keep the load on a public, rate-limited API minimal and predictable.
+2. Keep the load on the public EDS API at zero for automated runs: no workflow sends requests to it. The live tests are
+   kept and can be run by hand to check the real API (section 8.1).
+3. Keep the framework itself demonstrable: test design, the client, reporting and CI are all runnable from the repository.
 4. Make results visible and trustworthy: one report with history, no misleading numbers.
 
 ## 2. Scope
@@ -28,8 +29,9 @@ authentication), but it is thin: only status 200 is declared, `/dataset/{dataset
 and `offset` are plain integers without a minimum (`limit=-1` returns the whole dataset). The response contract was therefore
 observed on the live API and recorded in the JSON Schemas ([`schemas/`](../schemas)) and in the [ROADMAP](../ROADMAP.md)
 (item 12). The **test oracle** is that contract, what the specification does document, and the documented behaviour of the
-client. A live drift test (`test_openapi_drift`) fails when the specification stops documenting an operation or parameter the
-client uses. Schemathesis is not used: with only 200 declared every real error would count as a violation, and unbounded
+client. The drift detector (`test_openapi_drift`) checks that the operations and parameters the client uses are still documented
+in the specification. It runs offline on inline specifications; the published specification is fetched only when the live
+tests are run by hand. Schemathesis is not used: with only 200 declared every real error would count as a violation, and unbounded
 `limit` and `offset` would load the public API.
 
 One assumption could change without notice: the [EDS API guide](https://www.energidataservice.dk/guides/api-guides) documents
@@ -42,8 +44,8 @@ own backoff and the live runs show it as slower or throttled, not as a failed as
 | --- | --- | --- | --- |
 | Component | Client methods, parameter handling, parsing, configuration | `requests-mock` or none | every PR, every push to `main` |
 | Integration | The client's real HTTP stack (`requests`, `urllib3`, retry adapter) | Scripted HTTP server on `127.0.0.1` | every PR, every push to `main` |
-| System | The client against the real public EDS API | Public API, one small request per test | none since 2026-11-10 (the live tests were removed to avoid loading the API) |
-| Non-functional | Latency and error rate under light concurrency | JMeter against the public API | manually and weekly |
+| System | The client against the real public EDS API | Public API, one small request per test | Not run by any workflow. Run by hand when the live tests are enabled (section 8.1) |
+| Non-functional | Latency and error rate under light concurrency | JMeter against the public API | manually only (section 8.1) |
 
 `requests-mock` replaces the transport, so the retry adapter never runs against a mocked response. Everything that depends
 on retries, status handling after retries or real connection errors therefore runs against the scripted local server
@@ -60,8 +62,8 @@ on retries, status handling after retries or real connection errors therefore ru
 | Negative testing, error guessing | Invalid input, timeouts, refused connections, persistent 5xx | `test_retry_behavior`, `test_eds_client` |
 | Contract testing | JSON Schema validation of samples | `test_schema_validation`, `test_dataset_contract`, `test_news_api` |
 | Contract testing | OpenAPI drift: the operations and parameters the client uses are still documented (an offline test proves the detector reports a missing path, parameter and wrong type) | `test_openapi_drift` |
-| Smoke testing | Removed on 2026-11-10 (one bounded call per area against the live API) | none |
-| Data-quality monitoring | Removed on 2026-11-10 (newest records of `CO2Emis` and `DayAheadPrices`, nightly only) | none |
+| Smoke testing | One bounded call per area against the live API. No such test exists in the repository now; the `live` marker stays registered in `pytest.ini` so the tests can be added back (section 8.1) | none |
+| Data-quality monitoring | Checks on the newest records of `CO2Emis` and `DayAheadPrices`. No such test exists in the repository now; the `data_quality` marker stays registered in `pytest.ini` (section 8.1) | none |
 | Structural (white-box) | Statement and branch coverage of `client/` and `models/`; gate at 90% | `pytest --cov` |
 | Static analysis | `ruff` and `mypy` in strict mode | `quality.yml` |
 | Security | Known vulnerabilities in pinned dependencies (`pip-audit`) and secrets in tracked files (`detect-secrets`); also weekly | `security.yml` |
@@ -102,13 +104,13 @@ on every test would only add indirection.
   it can fail (the OpenAPI drift detector).
 - **Severity.** Each module carries an Allure severity via `labels(epic, feature, severity)`: `critical` for retry, contract,
   schemas and models; `minor` for test tooling and logs; `normal` otherwise.
-- **Mock-first.** Since 2026-11-10 all tests are offline (mocks and the local scripted server); the live tests were removed to
-  avoid loading the public API. Earlier, the live tests were bounded smoke and edge checks (one request each, with pauses).
-- **Tolerate only transient failures.** Live tests (all marked flaky) rerun only on network errors (`ConnectionError`,
-  `Timeout`), never on assertion failures or on throttling. A throttled live test (`RetryAfterTooLongError`) is skipped
-  with its reason, not failed. All waits of one run share a budget of 120 s (`wait_budget` of `EDSApiClient`, set in `tests/support/live.py`), and
-  each test has a 120 s timeout (`pytest-timeout`), so one test cannot wait for minutes. The offline tests keep the client
-  defaults. Mocks and schemas are located relative to the code, so tests run from any directory.
+- **Offline by default.** The suite runs without network access: mocks and the local scripted server. No test currently
+  sends a request to the public API. Live tests are a separate, manual option (section 8.1).
+- **Rules for live tests, if they are enabled.** Rerun only on network errors (`ConnectionError`, `Timeout`), never on
+  assertion failures or on throttling. A throttled test (`RetryAfterTooLongError`) is skipped with its reason, not failed.
+  All waits of one run share a budget of 120 s (`wait_budget` of `EDSApiClient`, set in `tests/support/live.py`), and each
+  test has a 120 s timeout (`pytest-timeout`). The offline tests keep the client defaults. Mocks and schemas are located
+  relative to the code, so tests run from any directory.
 
 ## 6. Test data
 
@@ -128,12 +130,34 @@ Python 3.12 (local, Docker `python:3.12-slim`, CI on `ubuntu-latest`). `pytest` 
 | Workflow | Trigger | Content |
 | --- | --- | --- |
 | `Tests` | pull request to `main` | Offline tests only (`-m "not live"`), Allure results as artifact |
-| `Tests` | push to `main` | All tests including live (and the OpenAPI drift test) except data quality (`-m "not data_quality"`); Allure report published to GitHub Pages |
+| `Tests` | push to `main` | The whole offline suite (`-m "not data_quality"`, which selects every test today); Allure report published to GitHub Pages |
 | `Quality` | pull request, push to `main` | `ruff`, `ruff format --check`, `mypy`, offline tests with the coverage gate |
 | `Security` | pull request, push to `main`, Monday 05:00 UTC, manual | `pip-audit` and `detect-secrets`; fails on any finding |
-| `Live nightly` | manual only (the daily cron was removed on 2026-11-26; no live tests exist since 2026-11-10) | Would run live tests only, to catch API drift and stale or broken data, if live tests are restored. No Allure report: the result is the run itself |
-| `Performance` | Monday 03:00 UTC, manual | JMeter plan, fails on any failed sample |
-| `Mutation checks` | Monday 04:00 UTC, manual | 62 deliberate breakages of the client, models and schemas; fails when the offline tests miss one. Last full run on the current suite (2026-11-10): 58 of 62 killed; the 4 survivors are listed under "Known mutation gaps" |
+| `Live nightly` | manual only. The daily schedule was removed on 2026-11-26 (section 8.1) | Runs the `live` tests when they exist (none do today). No Allure report: the result is the run itself |
+| `Performance` | manual only (no schedule) | JMeter plan against the public API, fails on any failed sample |
+| `Mutation checks` | Monday 04:00 UTC and manual | 62 deliberate breakages of the client, models and schemas; fails when the offline tests miss one. Last full run on the current suite (2026-11-26): 58 of 62 killed; the 4 survivors are listed under "Known mutation gaps" |
+
+### 8.1 Live and nightly tests: why they are not scheduled
+
+The live tests (marker `live`) send requests to the public Energi Data Service API. The data-quality checks (marker
+`data_quality`) do the same. Both are kept as part of the framework, but neither runs automatically:
+
+- **Protect the public API.** EDS is a shared production service with rate limits. A test run on every push, or a nightly
+  run, adds load every day for no benefit to the users of this repository. The default is zero requests.
+- **Keep the workflows green.** A scheduled job without tests fails. On 2026-11-26 the nightly job had failed every day since
+  2026-11-17, because no live tests remained and `pytest -m live` exited with code 5 ("no tests collected"). Each failure
+  also sent an e-mail to the repository administrators. A workflow that fails for a reason unrelated to the product
+  teaches people to ignore it.
+- **Show the framework, not the schedule.** The purpose of the project is to show how the framework is designed and run.
+  Live and nightly runs are an option that a team can switch on, not a requirement of the framework.
+
+**To enable the live tests** (manual steps, in this order):
+
+1. Add the live tests back with the `live` (or `data_quality`) marker, following the rules in section 5.
+2. Check that the marker selects them: `pytest -m live --collect-only -q` must collect more than zero tests.
+3. Run them by hand: `pytest -m live -v`, or start the `Live nightly` workflow with `workflow_dispatch`. Prefer manual runs.
+4. Add a `schedule` block to `live-nightly.yml` only when a team has accepted the load on the API and the schedule's
+   cost. Keep one run per day and the `eds-live-api` concurrency group, so two live runs never overlap.
 
 ## 9. Entry and exit criteria
 
@@ -146,15 +170,16 @@ CI runs these checks on every pull request. It blocks a merge only where branch 
 
 > **TODO (owner):** set branch protection on `main` to require `Tests`, `Quality` and `Security`. Until then a failing check does not stop a merge.
 
-**Exit (`main` is healthy):** the full run on `main` and the nightly live run pass, and the Allure report shows no failed or broken test.
+**Exit (`main` is healthy):** the `Tests` run on `main` passes, and the Allure report shows no failed or broken test. The live
+tests are not part of this criterion while they are disabled (section 8.1).
 
 ## 10. Risk-based prioritisation
 
 | Risk | Likelihood | Impact | Mitigation |
 | --- | --- | --- | --- |
-| EDS API changes a field, status or message | Medium | Live tests fail, schemas outdated | Nightly live run (its result is the Actions run), JSON Schemas, the OpenAPI drift test; on `main` the Allure *Contract drift* category |
+| EDS API changes a field, status or message | Medium | Live tests fail, schemas outdated | JSON Schemas and recorded samples, the OpenAPI drift detector, Allure *Contract drift* category. Live checks against the API run only by hand (section 8.1) |
 | Public API rate limiting (429) | Medium | Flaky live tests, blocked client | Few and small live requests, retry with backoff, rerun on network errors only; 429 is never triggered on purpose |
-| 429 with a long `Retry-After` (up to 300 s observed; waiting it out made a full run take about 5 minutes instead of 30 seconds, see the [test report](test-report.md#7-residual-risks-and-open-items)) | High | Slow feedback; now a throttled live fixture fails fast | The client refuses a `Retry-After` above 60 s (`RetryConfig.max_retry_after`) with `RetryAfterTooLongError` (Allure: *Infrastructure problems*); waits and reasons are logged. `Elspotprices` allowed one query per ~300 s; the limit of `DayAheadPrices` is not measured, so a run sends one query to it and a second run within five minutes could fail fast. A push to `main` and `Live nightly` share the concurrency group `eds-live-api`, so two live runs never overlap; pull requests run offline tests only |
+| 429 with a long `Retry-After` (up to 300 s observed; waiting it out made a full run take about 5 minutes instead of 30 seconds, see the [test report](test-report.md#7-residual-risks-and-open-items)) | High | Slow feedback; now a throttled live fixture fails fast | The client refuses a `Retry-After` above 60 s (`RetryConfig.max_retry_after`) with `RetryAfterTooLongError` (Allure: *Infrastructure problems*); waits and reasons are logged. `Elspotprices` allowed one query per ~300 s; the limit of `DayAheadPrices` is not measured, so a run sends one query to it and a second run within five minutes could fail fast. Live runs share the concurrency group `eds-live-api`, so two live runs never overlap; no workflow runs them automatically |
 | Retry logic is wrong but untested | Medium | Hammering the API, or silent failures | Retry behaviour tested against a real local server, not only mocks |
 | Tests pass although the client is broken | Medium | False confidence | Mutation checks (62), the kill matrix, request-based assertions; coverage is not trusted alone (see [test coverage](test-coverage.md)) |
 | Report shows misleading history | Low | Wrong decisions | Publish guard in CI, Allure categories |
@@ -178,7 +203,7 @@ summary, defects, risks: [test-report.md](test-report.md).
 - Regenerate [test-cases.md](test-cases.md) (`python scripts/generate_test_cases.py`) after changing tests, and
   [test-results.md](test-results.md) (`python scripts/generate_test_results.py`) when a new report is needed.
 - Guard against the *pesticide paradox*: when client behaviour changes, check by a quick mutation that at least one test
-  fails. `scripts/mutation_check.py` does this for 62 known changes every week (list as of 2026-11-10); add a mutation when a new client behaviour
+  fails. `scripts/mutation_check.py` does this for 62 known changes every week (list as of 2026-11-26); add a mutation when a new client behaviour
   is protected by a test, and update a mutation's line when the client line it names changes (otherwise the run reports `STALE`).
 - Before removing a test, build the kill matrix (which test fails for which mutation, no `-x`, fixed order) and check what
   the test protects; do not edit tests while it runs, because the mutations change the client files.
@@ -186,19 +211,15 @@ summary, defects, risks: [test-report.md](test-report.md).
 
 ### Known mutation gaps (decision, not a quality claim)
 
-The mutation list is kept in full (62 mutants as of 2026-11-10). It is not reduced to make the check pass. Mutants that
-survive are a conscious gap, recorded here and in `know-how/TODO.md`, section 8.
+The mutation list is kept in full (62 mutants). It is not reduced to make the check pass. Mutants that survive are a
+conscious gap, recorded here.
 
-- Full run on the current suite (2026-11-10, 97 tests, 62 mutants): 58 killed, 4 survived. All 4 survivors are in models and schemas:
+- Full run on the current suite (2026-11-26, 97 tests, 62 mutants): 58 killed, 4 survived. All 4 survivors are in models and schemas:
   - `model-time-required` (`models/dayaheadprices.py`): `TimeUTC` required in DayAheadPrices; no test accepts a record without `TimeUTC`.
   - `schema-co2-envelope-optional` (`schemas/co2emis_schema.json`): `limit` and `dataset` no longer required; no test fails.
   - `schema-price-optional` (`schemas/dayaheadprices_schema.json`): `DayAheadPriceDKK` no longer required; no test fails.
   - `schema-emission-any-type` (`schemas/co2emis_schema.json`): `CO2Emission` accepts any type; no test fails.
   All client mutants are killed.
-- Earlier results (kept for history only): 43 of 56 on the 84-test state; then targeted runs on the 97-test state (8 of 8 restored targets killed; 9 of 10 Pydantic model mutants killed).
-- Pydantic model mutants on the 97-test state (run 2026-11-10 against the full offline suite): 9 of 10 killed.
-  The one that survives is `model-time-required` (`TimeUTC` required in DayAheadPrices): no test accepts a record
-  without `TimeUTC`, so the mutant is not detected.
-- Limits of this model check: it covers the ten model mutants only, not the schema or the client; it runs the full
-  offline suite, not a reduced one; the test count was not reduced to make it pass.
-- Report of the full run: `scratchpad/mutation-report-full.md` (not part of the repository).
+- The four survivors are accepted as a conscious decision (recorded on 2026-11-10). The reason is not written down in this
+  repository. Killing them, or removing them from the catalogue, is a separate change.
+- Details of the run, with each survivor's effect, are in the [test report, section 4](test-report.md#4-mutation-checks).

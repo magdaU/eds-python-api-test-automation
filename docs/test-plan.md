@@ -8,8 +8,8 @@ document says what is tested, when, by what, and when testing is done.
 | Item | Version |
 | --- | --- |
 | API client: `client/` (`EDSApiClient`, `DatasetApi`, `NewsApi`, parsers) and `models/` | `main` |
-| EDS API as consumed by the client: datasets `CO2Emis`, `DayAheadPrices`, endpoints `/News*` | offline, from the recorded samples and schemas (since 2026-11-10; the live checks that observed the API were removed) |
-| The public OpenAPI specification (`/swagger/public/swagger.json`), as far as the client relies on it | offline, inline specifications (the live fetch was removed on 2026-11-10) |
+| EDS API as consumed by the client: datasets `CO2Emis`, `DayAheadPrices`, endpoints `/News*` | recorded samples and JSON Schemas (offline) |
+| The public OpenAPI specification (`/swagger/public/swagger.json`), as far as the client relies on it | inline specifications (offline) |
 | Test framework: fixtures, helpers, CI workflows, Allure reporting | `main` |
 
 ## 2. Features to be tested
@@ -19,9 +19,9 @@ document says what is tested, when, by what, and when testing is done.
 | Dataset queries | `limit`, `offset`, `sort`, `filter` (single, combined, edge and invalid values) |
 | News | `/News`, `/News/actual`, `/News/calendar`, `/News/archived`: paths, parameters, 400/204/404 behaviour, calendar vs archive consistency |
 | Response contract | JSON Schema and Pydantic validation of dataset and news responses; typed records (`DatasetApi.records()`); `InvalidResponseError` for an unexpected body |
-| API specification | The operations and parameters the client uses are still documented in the OpenAPI specification (drift check) |
-| Client robustness | Retry with backoff on 429/5xx, no retry on 4xx, exhaustion, per-dataset overrides, timeout (a read timeout surfaces as `ConnectionError`), refused connection, warning on exhaustion, keyword-only query arguments, session closed by `close()` or `with` |
-| Test infrastructure | Severity labels, CI publish guard (Allure environment and categories are not unit-tested since 2026-11-10) |
+| API specification | The operations and parameters the client uses are still documented in the OpenAPI specification (drift detector) |
+| Client robustness | Retry with backoff on 429/5xx, no retry on 4xx, exhaustion, `Retry-After` cap and wait budget, per-dataset overrides, timeout (a read timeout surfaces as `ConnectionError`), refused connection, warning on exhaustion, keyword-only query arguments, session closed by `close()` or `with` |
+| Test infrastructure | Severity labels, CI publish guard |
 | Quality attributes | Low-load latency and error rate (JMeter), static analysis, statement and branch coverage, known vulnerabilities and committed secrets (`Security` workflow) |
 
 **Not tested:** see "Out of scope" in the [test strategy](test-strategy.md#2-scope) and "Known gaps" in the
@@ -29,29 +29,34 @@ document says what is tested, when, by what, and when testing is done.
 
 ## 3. Approach
 
-Per [test strategy](test-strategy.md): mocked component tests for breadth, a scripted local HTTP server for retry
-behaviour, JMeter for a latency baseline. Since 2026-11-10 the suite has no live tests, so it sends no requests to the public API. Test cases are catalogued in
-[test-cases.md](test-cases.md).
+Per the [test strategy](test-strategy.md): mocked component tests for breadth, a scripted local HTTP server for retry
+behaviour, JMeter for a latency baseline. The suite sends no requests to the public EDS API. The live tests that did so
+are not in the repository now; the option to run them by hand is described in the strategy, section 8.1. Test cases are
+catalogued in [test-cases.md](test-cases.md).
 
 ## 4. Schedule and triggers
 
 | When | What runs |
 | --- | --- |
-| Every pull request | Offline tests (random order), `ruff`, `mypy`, coverage gate, `Security` |
-| Every push to `main` | `tests.yml` runs the offline suite (its filter `-m "not data_quality"` now selects every test), with `ruff`, `mypy`, coverage gate, `Security` and the Allure report. The workflow file has not been changed since the live tests were removed (2026-11-10) and has not been re-run since |
-| Manual only (`workflow_dispatch`) | `live-nightly.yml` no longer has a schedule. It was removed because no live tests exist since 2026-11-10, so the daily run collected nothing and exited with code 5 |
-| Manual only | JMeter performance plan (`performance.yml`, `workflow_dispatch`, no schedule since 2026-11-10). Limits: 1–2 users, 10–30 s, think time 1 s, see `know-how/PERFORMANCE_NOTE.md` |
-| Monday 04:00 UTC | Mutation checks (62 deliberate breakages, offline; full run 2026-11-10: 58 killed, 4 survived, see `docs/test-strategy.md`, section 13); report in the job summary |
-| Monday 05:00 UTC | `Security`: advisories published after the last change |
-| After a defect fix | Regression test added in the fix, then the normal triggers |
+| Every pull request to `main` | `Tests` (offline suite, random order, Allure results as artifact), `Quality` (`ruff`, `ruff format --check`, `mypy --strict`, coverage gate), `Security` |
+| Every push to `main` | `Tests` (offline suite, Allure report published to GitHub Pages), `Quality`, `Security` |
+| Monday 04:00 UTC and manual | `Mutation checks`: 62 deliberate breakages of the client, models and schemas; fails when the offline suite misses one. Results in the job summary |
+| Monday 05:00 UTC and manual | `Security`: `pip-audit` and `detect-secrets` |
+| Manual only | `Performance`: JMeter plan against the public API (2 users, 30 s, think time 1 s); fails on any failed sample |
+| Manual only | `Live nightly`: runs the `live` tests when they exist. The daily schedule was removed on 2026-11-26 (section 4.1) |
+| After a defect fix | A regression test is added in the fix, then the normal triggers apply |
 
-### 4.1 Why the nightly live run is disabled (2026-11-26)
+### 4.1 Why the nightly live run is disabled
 
-- **Cause:** `live-nightly.yml` ran `pytest -m live`. Since 2026-11-10 the suite has no live tests, so pytest collected 97 tests, deselected all 97, selected 0 and exited with code 5 ("no tests collected"). The step failed every time.
-- **Effect:** every scheduled run from 2026-11-17 to 2026-11-25 failed, and GitHub mailed the repository admins for each one. The failures signalled nothing about the API, so they only added noise.
-- **Decision:** the daily schedule was removed (PR #147). The workflow stays available as a manual run (`workflow_dispatch`).
-- **Consequence:** nothing in the pipeline checks the live EDS API any more. API drift, 429 or 5xx responses and stale data are not detected until the live tests come back (see section 6).
-- **To restore:** add live tests with the `live` marker, check that `pytest -m live` collects them, and then add the `schedule` block back to `live-nightly.yml`.
+- **Cause:** the `Live nightly` workflow ran `pytest -m live` every day at 02:00 UTC. The live tests were removed from the
+  repository on 2026-11-10 (commit `800b1e4e`, to avoid loading the public API), so pytest collected 97 tests,
+  deselected all 97, selected none and exited with code 5 ("no tests collected"). The step failed every time.
+- **Effect:** every scheduled run from 2026-11-17 to 2026-11-25 failed, and GitHub mailed the repository administrators for
+  each failure. The failures said nothing about the API or the product, so they only added noise.
+- **Decision:** the daily schedule was removed on 2026-11-26 (PR #147). The workflow stays available for a manual run.
+- **Strategy:** the live and nightly tests are kept as a framework option, not as an automatic gate. They protect the public
+  API (no load by default) and the workflows (no red jobs without tests), and they can be run by hand. Full rationale and
+  the steps to enable them are in the [test strategy, section 8.1](test-strategy.md#81-live-and-nightly-tests-why-they-are-not-scheduled).
 
 ## 5. Pass and fail criteria
 
@@ -62,25 +67,26 @@ met. Exit criteria for merging and for a healthy `main` are in the [test strateg
 
 | Situation | Action |
 | --- | --- |
-| The public EDS API returns 429 or 5xx persistently | Not detected by the suite: it sends no requests to the API. The nightly live job that used to show it has no schedule and no tests (see the schedule table). |
-| The EDS API changes a contract | Not detected by any test: the suite runs on recorded samples and the schemas, not on the live API. |
-| A run produces no results (collection error) | The CI guard blocks publishing; fix the cause (for example a missing dependency) and re-run. |
+| The public EDS API returns 429 or 5xx persistently | Not detected automatically: no workflow sends requests to the API. It is detected only when the live tests are run by hand (strategy, section 8.1). |
+| The EDS API changes a contract | Not detected automatically. The offline suite checks the recorded samples and the JSON Schemas; the OpenAPI drift detector checks the documented operations and parameters only when run against a fetched specification. |
+| A run produces no results (collection error) | The CI guard blocks publishing of the Allure report; fix the cause (for example a missing dependency) and re-run. |
 
 ## 7. Deliverables
 
 | Deliverable | Location | Kept current by |
 | --- | --- | --- |
-| Test strategy, plan, coverage, report | `docs/` | Edited by hand when the approach changes |
+| Test strategy, plan, architecture, coverage, report | `docs/` | Edited by hand when the approach or the measured state changes |
 | Test cases | [test-cases.md](test-cases.md) | `scripts/generate_test_cases.py` |
-| Test results | [test-results.md](test-results.md) | `scripts/generate_test_results.py` |
+| Test results (one CI run) | [test-results.md](test-results.md) | `scripts/generate_test_results.py` |
 | Live report with history | [Allure report](https://magdau.github.io/eds-python-api-test-automation/) | CI on every push to `main` |
-| Performance and mutation reports | `jmeter-report` artifact; job summary and `mutation-report` artifact | CI |
+| Performance and mutation results | Job summaries of `Performance` and `Mutation checks` | CI |
 
 ## 8. Environment and responsibilities
 
 Local development (Windows, Python 3.12), Docker (`python:3.12-slim`), GitHub Actions (`ubuntu-latest`, Python 3.12). The
-only external dependency is the public EDS API at `https://api.energidataservice.dk`. One person designs, implements and
-reviews the tests; every change goes through a pull request that must pass CI before merge.
+only external dependency is the public EDS API at `https://api.energidataservice.dk`, which the default suite does not call.
+One person designs, implements and reviews the tests. CI runs on every pull request; requiring it through branch protection
+is an open task for the repository owner (test strategy, section 9).
 
 ## 9. Risks and contingencies
 
