@@ -53,8 +53,8 @@ JSON Schemas and are a recorded decision, not an open defect:
 | `schema-price-optional` | `DayAheadPriceDKK` no longer required in the DayAheadPrices schema | No test fails on a record without the price |
 | `schema-emission-any-type` | `CO2Emission` accepts any type in the CO2Emis schema | No test fails on a non-numeric emission |
 
-All client mutants are killed. The script exits with code 1 while these 4 survive, so the weekly `Mutation checks` run
-reports a failure until the list is changed or the survivors are killed (see section 6).
+All client mutants are killed. These 4 are listed in `ACCEPTED_SURVIVORS` in `scripts/mutation_check.py`: they are reported
+as `ACCEPTED` and do not fail the run. Any other survivor, and any mutant that is `INVALID` or `STALE`, still fails it.
 
 ## 5. Live API: not checked automatically
 
@@ -76,7 +76,8 @@ What this means for the results:
 - **Untested areas.** The client does not use `start`, `end`, `columns` or `timezone`, the `/meta/*` lists and the download
   endpoint. Only `CO2Emis` and `DayAheadPrices` are covered. See [test coverage](test-coverage.md#6-known-gaps).
 - **Performance thresholds.** The JMeter run reports p50, p95 and p99 but does not enforce limits yet; there is no baseline.
-- **Mutation survivors.** The survivors listed in section 4 are a recorded decision, not a claim of full mutation coverage.
+- **Mutation survivors.** The 4 survivors listed in section 4 are accepted in `ACCEPTED_SURVIVORS`. This is a recorded
+  decision, not a claim of full mutation coverage. Remove an entry from the list once a test kills its mutant.
 
 ## 7. How this report is kept current
 

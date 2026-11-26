@@ -23,7 +23,8 @@ Command: `pytest --cov --cov-branch` (branch measurement is switched on in `pypr
 - Tests: 97 collected (`pytest --collect-only -q`): 95 pass, 2 expected failures (`xfail`). 0 live tests. 17 BDD cases from 13 scenarios. The limit for this project is 100 tests.
 - Coverage: 100% of statements and branches (table above).
 - Mutations: 62 mutants, full run on 2026-11-26: 58 killed, 4 survived (`model-time-required`, `schema-co2-envelope-optional`,
-  `schema-price-optional`, `schema-emission-any-type`; all in the models and JSON Schemas). Details in
+  `schema-price-optional`, `schema-emission-any-type`; all in the models and JSON Schemas). The 4 are accepted in
+  `ACCEPTED_SURVIVORS`, so the run passes. Details in
   [test report, section 4](test-report.md#4-mutation-checks).
 
 Coverage shows which lines ran, not whether a test would fail if the line were wrong. That is why the suite is also checked by

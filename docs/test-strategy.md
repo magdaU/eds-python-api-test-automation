@@ -135,7 +135,7 @@ Python 3.12 (local, Docker `python:3.12-slim`, CI on `ubuntu-latest`). `pytest` 
 | `Security` | pull request, push to `main`, Monday 05:00 UTC, manual | `pip-audit` and `detect-secrets`; fails on any finding |
 | `Live nightly` | manual only. The daily schedule was removed on 2026-11-26 (section 8.1) | Runs the `live` tests when they exist (none do today). No Allure report: the result is the run itself |
 | `Performance` | manual only (no schedule) | JMeter plan against the public API, fails on any failed sample |
-| `Mutation checks` | Monday 04:00 UTC and manual | 62 deliberate breakages of the client, models and schemas; fails when the offline tests miss one. Last full run on the current suite (2026-11-26): 58 of 62 killed; the 4 survivors are listed under "Known mutation gaps" |
+| `Mutation checks` | Monday 04:00 UTC and manual | 62 deliberate breakages of the client, models and schemas; fails when the offline tests miss one that is not in `ACCEPTED_SURVIVORS`. Last full run on the current suite (2026-11-26): 58 of 62 killed; the 4 survivors are listed under "Known mutation gaps" |
 
 ### 8.1 Live and nightly tests: why they are not scheduled
 
@@ -221,5 +221,7 @@ conscious gap, recorded here.
   - `schema-emission-any-type` (`schemas/co2emis_schema.json`): `CO2Emission` accepts any type; no test fails.
   All client mutants are killed.
 - The four survivors are accepted as a conscious decision (recorded on 2026-11-10). The reason is not written down in this
-  repository. Killing them, or removing them from the catalogue, is a separate change.
+  repository. They are listed in `ACCEPTED_SURVIVORS` in `scripts/mutation_check.py`: the run reports them as `ACCEPTED`
+  and does not fail on them. Any other survivor still fails the run. Killing a survivor with a test means removing its
+  entry from that list.
 - Details of the run, with each survivor's effect, are in the [test report, section 4](test-report.md#4-mutation-checks).
