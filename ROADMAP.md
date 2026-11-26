@@ -1,6 +1,6 @@
 # Roadmap
 
-Step-by-step plan for each item in the README's [Completed Improvements](README.md#-completed-improvements).
+Step-by-step plan for each completed item. The completed-items list was removed from the [README](README.md) when it was shortened to the current state.
 
 > **Historical plan:** these steps record how each item was planned, not how it was built. The code has since
 > moved on — e.g. `get_dataset` takes `filters` (not `filter`), and the per-dataset tests became

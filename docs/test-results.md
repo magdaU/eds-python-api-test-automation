@@ -7,11 +7,11 @@
 
 | | |
 | --- | --- |
-| Build | [Build #296](https://github.com/magdaU/eds-python-api-test-automation/actions/runs/45783113092) (GitHub Actions) |
-| Branch / commit | `main` / `78f710f` |
+| Build | [Build #302](https://github.com/magdaU/eds-python-api-test-automation/actions/runs/45805193771) (GitHub Actions) |
+| Branch / commit | `main` / `c8d144a` |
 | Scope | not data_quality |
-| Started (UTC) | 2026-11-26 08:26:19 |
-| Finished (UTC) | 2026-11-26 08:26:30 |
+| Started (UTC) | 2026-11-26 10:51:40 |
+| Finished (UTC) | 2026-11-26 10:51:51 |
 | Duration, first test start to last test stop | 0 min 11 s |
 | Summed duration of the test bodies | 2.7 s (setup and fixtures excluded) |
 | Python / OS | 3.12.16 / Linux |
@@ -27,28 +27,28 @@
 
 | Module | Passed | Failed | Broken | Skipped | Total | Summed time (ms) |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `test_boundary_values` | 4 | 0 | 0 | 0 | 4 | 4 |
-| `test_dataset_contract` | 4 | 0 | 0 | 0 | 4 | 5 |
-| `test_dataset_queries` | 4 | 0 | 0 | 0 | 4 | 10 |
-| `test_documented_api_rules` | 0 | 0 | 0 | 2 | 2 | 2 |
-| `test_documented_rules` | 6 | 0 | 0 | 0 | 6 | 17 |
-| `test_eds_client` | 7 | 0 | 0 | 0 | 7 | 108 |
-| `test_filter_encoding` | 2 | 0 | 0 | 0 | 2 | 2 |
-| `test_logging` | 3 | 0 | 0 | 0 | 3 | 513 |
-| `test_models` | 7 | 0 | 0 | 0 | 7 | 0 |
-| `test_news` | 3 | 0 | 0 | 0 | 3 | 13 |
-| `test_news_api` | 8 | 0 | 0 | 0 | 8 | 20 |
-| `test_openapi_drift` | 1 | 0 | 0 | 0 | 1 | 0 |
-| `test_openapi_parameter_drift` | 4 | 0 | 0 | 0 | 4 | 1 |
-| `test_properties` | 1 | 0 | 0 | 0 | 1 | 1900 |
-| `test_resilience` | 4 | 0 | 0 | 0 | 4 | 21 |
-| `test_retry_after_cap` | 3 | 0 | 0 | 0 | 3 | 5 |
-| `test_retry_after_header` | 2 | 0 | 0 | 0 | 2 | 10 |
-| `test_retry_behavior` | 3 | 0 | 0 | 0 | 3 | 10 |
-| `test_retry_config` | 10 | 0 | 0 | 0 | 10 | 2 |
-| `test_typed_records` | 9 | 0 | 0 | 0 | 9 | 5 |
+| `test_boundary_values` | 4 | 0 | 0 | 0 | 4 | 3 |
+| `test_dataset_contract` | 4 | 0 | 0 | 0 | 4 | 4 |
+| `test_dataset_queries` | 4 | 0 | 0 | 0 | 4 | 11 |
+| `test_documented_api_rules` | 0 | 0 | 0 | 2 | 2 | 3 |
+| `test_documented_rules` | 6 | 0 | 0 | 0 | 6 | 21 |
+| `test_eds_client` | 7 | 0 | 0 | 0 | 7 | 107 |
+| `test_filter_encoding` | 2 | 0 | 0 | 0 | 2 | 3 |
+| `test_logging` | 3 | 0 | 0 | 0 | 3 | 510 |
+| `test_models` | 7 | 0 | 0 | 0 | 7 | 2 |
+| `test_news` | 3 | 0 | 0 | 0 | 3 | 9 |
+| `test_news_api` | 8 | 0 | 0 | 0 | 8 | 21 |
+| `test_openapi_drift` | 1 | 0 | 0 | 0 | 1 | 1 |
+| `test_openapi_parameter_drift` | 4 | 0 | 0 | 0 | 4 | 0 |
+| `test_properties` | 1 | 0 | 0 | 0 | 1 | 1897 |
+| `test_resilience` | 4 | 0 | 0 | 0 | 4 | 19 |
+| `test_retry_after_cap` | 3 | 0 | 0 | 0 | 3 | 7 |
+| `test_retry_after_header` | 2 | 0 | 0 | 0 | 2 | 8 |
+| `test_retry_behavior` | 3 | 0 | 0 | 0 | 3 | 8 |
+| `test_retry_config` | 10 | 0 | 0 | 0 | 10 | 3 |
+| `test_typed_records` | 9 | 0 | 0 | 0 | 9 | 9 |
 | `test_url_building` | 7 | 0 | 0 | 0 | 7 | 2 |
-| `test_wait_budget` | 3 | 0 | 0 | 0 | 3 | 9 |
+| `test_wait_budget` | 3 | 0 | 0 | 0 | 3 | 8 |
 
 ## Tests that did not pass
 
