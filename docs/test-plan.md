@@ -39,7 +39,7 @@ behaviour, JMeter for a latency baseline. Since 2026-11-10 the suite has no live
 | --- | --- |
 | Every pull request | Offline tests (random order), `ruff`, `mypy`, coverage gate, `Security` |
 | Every push to `main` | `tests.yml` runs the offline suite (its filter `-m "not data_quality"` now selects every test), with `ruff`, `mypy`, coverage gate, `Security` and the Allure report. The workflow file has not been changed since the live tests were removed (2026-11-10) and has not been re-run since |
-| Daily, cron 02:00 UTC | `live-nightly.yml` still runs `pytest -m live`. No live tests exist since 2026-11-10, so pytest collects nothing and exits with code 5. The workflow has not been changed; a decision is pending (`know-how/TODO.md`, section 8) |
+| Manual only (`workflow_dispatch`) | `live-nightly.yml` no longer has a schedule. It was removed because no live tests exist since 2026-11-10, so the daily run collected nothing and exited with code 5 |
 | Manual only | JMeter performance plan (`performance.yml`, `workflow_dispatch`, no schedule since 2026-11-10). Limits: 1–2 users, 10–30 s, think time 1 s, see `know-how/PERFORMANCE_NOTE.md` |
 | Monday 04:00 UTC | Mutation checks (62 deliberate breakages, offline; full run 2026-11-10: 58 killed, 4 survived, see `docs/test-strategy.md`, section 13); report in the job summary |
 | Monday 05:00 UTC | `Security`: advisories published after the last change |
@@ -54,7 +54,7 @@ met. Exit criteria for merging and for a healthy `main` are in the [test strateg
 
 | Situation | Action |
 | --- | --- |
-| The public EDS API returns 429 or 5xx persistently | Not detected by the suite: it sends no requests to the API. The nightly live job that used to show it is still scheduled but has no tests (see the schedule table). |
+| The public EDS API returns 429 or 5xx persistently | Not detected by the suite: it sends no requests to the API. The nightly live job that used to show it has no schedule and no tests (see the schedule table). |
 | The EDS API changes a contract | Not detected by any test: the suite runs on recorded samples and the schemas, not on the live API. |
 | A run produces no results (collection error) | The CI guard blocks publishing; fix the cause (for example a missing dependency) and re-run. |
 
