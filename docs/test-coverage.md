@@ -14,7 +14,7 @@ Command: `pytest --cov --cov-branch` (branch measurement is switched on in `pypr
 | **Total** | **243** | **0** | **38** | **0** | **100%** |
 
 - Scope is `client/` and `models/` (the code under test); test helpers and scripts are not measured.
-- There are no live tests in the repository (see [test strategy, section 8.1](test-strategy.md#81-live-and-nightly-tests-why-they-are-not-scheduled)).
+- There are no live tests in the repository (see [test strategy, section 8.1](test-strategy.md#81-why-there-is-no-live-or-nightly-workflow)).
 - The gate is 90% (`fail_under = 90` in `pyproject.toml`), applied by `Quality` to the combined figure of statements and branches.
 
 ## 2. Why coverage alone is not trusted

@@ -133,31 +133,31 @@ Python 3.12 (local, Docker `python:3.12-slim`, CI on `ubuntu-latest`). `pytest` 
 | `Tests` | push to `main` | The whole offline suite (`-m "not data_quality"`, which selects every test today); Allure report published to GitHub Pages |
 | `Quality` | pull request, push to `main` | `ruff`, `ruff format --check`, `mypy`, offline tests with the coverage gate |
 | `Security` | pull request, push to `main`, Monday 05:00 UTC, manual | `pip-audit` and `detect-secrets`; fails on any finding |
-| `Live nightly` | manual only. The daily schedule was removed on 2026-11-26 (section 8.1) | Runs the `live` tests when they exist. When none exist (today) the job counts them, writes a notice to the job summary and succeeds. No Allure report: the result is the run itself |
 | `Performance` | manual only (no schedule) | JMeter plan against the public API, fails on any failed sample |
 | `Mutation checks` | Monday 04:00 UTC and manual | 62 deliberate breakages of the client, models and schemas; fails when the offline tests miss one that is not in `ACCEPTED_SURVIVORS`. Last full run on the current suite (2026-11-26): 58 of 62 killed; the 4 survivors are listed under "Known mutation gaps" |
 
-### 8.1 Live and nightly tests: why they are not scheduled
+### 8.1 Why there is no live or nightly workflow
 
-The live tests (marker `live`) send requests to the public Energi Data Service API. The data-quality checks (marker
-`data_quality`) do the same. Both are kept as part of the framework, but neither runs automatically:
+The live tests (marker `live`) and the data-quality checks (marker `data_quality`) sent requests to the public Energi Data
+Service API. The live tests were removed from the repository on 2026-11-10 (commit `800b1e4e`). The `Live nightly` workflow
+that ran them was removed on 2026-11-26. The reasons:
 
-- **Protect the public API.** EDS is a shared production service with rate limits. A test run on every push, or a nightly
-  run, adds load every day for no benefit to the users of this repository. The default is zero requests.
-- **Keep the workflows green.** A scheduled job without tests fails. On 2026-11-26 the nightly job had failed every day since
-  2026-11-17, because no live tests remained and `pytest -m live` exited with code 5 ("no tests collected"). Each failure
-  also sent an e-mail to the repository administrators. A workflow that fails for a reason unrelated to the product
-  teaches people to ignore it.
-- **Show the framework, not the schedule.** The purpose of the project is to show how the framework is designed and run.
-  Live and nightly runs are an option that a team can switch on, not a requirement of the framework.
+- **Protect the public API.** EDS is a shared production service with rate limits. A run on every push, or every night,
+  adds load every day for no benefit to the users of this repository. The default is zero requests to the API.
+- **Keep the pipeline meaningful.** With no live tests, the scheduled job ran `pytest -m live`, which collected nothing and
+  exited with code 5 ("no tests collected"). It failed every night from 2026-11-17 to 2026-11-25, and each failure e-mailed
+  the repository administrators. A manual run with no tests can only show a green result that tests nothing, so the
+  workflow was removed rather than kept as a placeholder.
+- **Gate on what the framework controls.** The offline suite, which runs on every pull request and push, is the quality gate.
+  It checks the client against recorded samples, JSON Schemas and mocks. The real API is not part of the gate.
 
-**To enable the live tests** (manual steps, in this order):
+**To bring the live tests back** (manual steps, in this order):
 
-1. Add the live tests back with the `live` (or `data_quality`) marker, following the rules in section 5.
+1. Add the live tests with the `live` (or `data_quality`) marker, following the rules in section 5.
 2. Check that the marker selects them: `pytest -m live --collect-only -q` must collect more than zero tests.
-3. Run them by hand: `pytest -m live -v`, or start the `Live nightly` workflow with `workflow_dispatch`. Prefer manual runs.
-4. Add a `schedule` block to `live-nightly.yml` only when a team has accepted the load on the API and the schedule's
-   cost. Keep one run per day and the `eds-live-api` concurrency group, so two live runs never overlap.
+3. Run them by hand from a local checkout: `pytest -m live -v`.
+4. Add a scheduled workflow only when a team has accepted the load on the API. Keep one run per day and the `eds-live-api`
+   concurrency group, so two live runs never overlap.
 
 ## 9. Entry and exit criteria
 

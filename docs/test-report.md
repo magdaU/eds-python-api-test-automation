@@ -58,9 +58,9 @@ as `ACCEPTED` and do not fail the run. Any other survivor, and any mutant that i
 
 ## 5. Live API: not checked automatically
 
-No workflow sends requests to the public EDS API. This is a decision, not a gap in the framework: a scheduled run would load
-a shared production API every day, and a scheduled job without tests fails. The live tests and the nightly workflow can be
-enabled and run by hand. The rationale and the steps are in the [test strategy, section 8.1](test-strategy.md#81-live-and-nightly-tests-why-they-are-not-scheduled).
+No workflow sends requests to the public EDS API, and there is no live or nightly workflow. This is a decision, not a gap in
+the framework: a scheduled run would load a shared production API every day, and a scheduled job without tests fails. The
+reasoning and the steps to bring live tests back are in the [test strategy, section 8.1](test-strategy.md#81-why-there-is-no-live-or-nightly-workflow).
 
 What this means for the results:
 
