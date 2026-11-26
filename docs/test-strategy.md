@@ -133,7 +133,7 @@ Python 3.12 (local, Docker `python:3.12-slim`, CI on `ubuntu-latest`). `pytest` 
 | `Tests` | push to `main` | The whole offline suite (`-m "not data_quality"`, which selects every test today); Allure report published to GitHub Pages |
 | `Quality` | pull request, push to `main` | `ruff`, `ruff format --check`, `mypy`, offline tests with the coverage gate |
 | `Security` | pull request, push to `main`, Monday 05:00 UTC, manual | `pip-audit` and `detect-secrets`; fails on any finding |
-| `Live nightly` | manual only. The daily schedule was removed on 2026-11-26 (section 8.1) | Runs the `live` tests when they exist (none do today). No Allure report: the result is the run itself |
+| `Live nightly` | manual only. The daily schedule was removed on 2026-11-26 (section 8.1) | Runs the `live` tests when they exist. When none exist (today) the job counts them, writes a notice to the job summary and succeeds. No Allure report: the result is the run itself |
 | `Performance` | manual only (no schedule) | JMeter plan against the public API, fails on any failed sample |
 | `Mutation checks` | Monday 04:00 UTC and manual | 62 deliberate breakages of the client, models and schemas; fails when the offline tests miss one that is not in `ACCEPTED_SURVIVORS`. Last full run on the current suite (2026-11-26): 58 of 62 killed; the 4 survivors are listed under "Known mutation gaps" |
 
