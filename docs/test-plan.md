@@ -45,6 +45,14 @@ behaviour, JMeter for a latency baseline. Since 2026-11-10 the suite has no live
 | Monday 05:00 UTC | `Security`: advisories published after the last change |
 | After a defect fix | Regression test added in the fix, then the normal triggers |
 
+### 4.1 Why the nightly live run is disabled (2026-11-26)
+
+- **Cause:** `live-nightly.yml` ran `pytest -m live`. Since 2026-11-10 the suite has no live tests, so pytest collected 97 tests, deselected all 97, selected 0 and exited with code 5 ("no tests collected"). The step failed every time.
+- **Effect:** every scheduled run from 2026-11-17 to 2026-11-25 failed, and GitHub mailed the repository admins for each one. The failures signalled nothing about the API, so they only added noise.
+- **Decision:** the daily schedule was removed (PR #147). The workflow stays available as a manual run (`workflow_dispatch`).
+- **Consequence:** nothing in the pipeline checks the live EDS API any more. API drift, 429 or 5xx responses and stale data are not detected until the live tests come back (see section 6).
+- **To restore:** add live tests with the `live` marker, check that `pytest -m live` collects them, and then add the `schedule` block back to `live-nightly.yml`.
+
 ## 5. Pass and fail criteria
 
 A test passes when all its assertions hold. The suite passes when no test fails or breaks and the coverage gate (90%) is
