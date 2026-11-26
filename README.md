@@ -18,13 +18,18 @@ Python test automation for the [Energi Data Service (EDS)](https://www.energidat
 | Test coverage and mutation checks | [docs/test-coverage.md](docs/test-coverage.md) |
 | Test report | [docs/test-report.md](docs/test-report.md) |
 
-## Current state (2026-11-10)
+## Current state (measured 2026-11-26)
 
 - **97 tests**: 95 pass, 2 expected failures (`xfail`, a documented rule the client does not implement yet). The limit for this project is 100 tests.
-- **17 BDD cases** from 6 scenarios (`tests/bdd/`).
-- **0 live tests.** The suite sends no requests to the EDS API. It runs on mocks and a local scripted server.
+- **17 BDD test cases** from 13 scenarios in 4 feature files (`tests/bdd/`).
+- **No live tests.** The suite sends no requests to the EDS API. It runs on mocks and a local scripted server.
 - **Coverage** of `client/` and `models/`: 100% of statements and branches.
-- **Mutation checks**: 58 of 62 mutants killed. The 4 survivors are in the Pydantic models and JSON Schemas and are a recorded decision (see `docs/test-strategy.md`, section 13).
+- **Mutation checks**: see `docs/test-coverage.md`, section 2, for the latest full run.
+
+**Live and nightly tests.** The framework includes the option to run live tests against the public EDS API, and a nightly
+workflow for them. Neither runs automatically: a scheduled run would load a public production API every day, and a
+scheduled job without tests fails. Both can be enabled and run by hand. The reasoning and the steps are in
+`docs/test-strategy.md`, section 8.1.
 
 The suite covers the rules of the EDS API guide (GET requests, `name=value` query pairs, `limit`, `offset`, `sort`, `filter`, the News endpoints), negative and boundary cases, the retry and wait logic, Pydantic models and JSON Schemas, and property-based tests (`hypothesis`).
 
@@ -92,7 +97,7 @@ cd performance
 jmeter -n -t eds_api_load_test.jmx -Jthreads=1 -Jrampup=1 -Jduration=10 -Jthinktime=1000 -Jmax_response_ms=2000 -l results.jtl
 ```
 
-Details and the options are in `know-how/PERFORMANCE_NOTE.md`. `performance.yml` has no schedule and runs only when started by hand.
+`performance.yml` has no schedule and runs only when started by hand.
 
 ## API under test
 

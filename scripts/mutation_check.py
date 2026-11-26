@@ -337,6 +337,17 @@ MUTATIONS = [
 ]
 
 
+# Mutants that survive by a conscious decision (recorded 2026-11-10; see docs/test-strategy.md,
+# section 13). They are reported but do not fail the run. Any other survivor, and any mutant
+# that is INVALID or STALE, still fails it. Remove an entry once a test kills its mutant.
+ACCEPTED_SURVIVORS = {
+    "model-time-required",
+    "schema-co2-envelope-optional",
+    "schema-price-optional",
+    "schema-emission-any-type",
+}
+
+
 def run_suite() -> int:
     return subprocess.run(PYTEST, cwd=ROOT, capture_output=True, check=False).returncode
 
@@ -357,30 +368,37 @@ def run_mutation(mutation: Mutation) -> str:
     )  # anything else: the mutant did not even load
 
 
-def is_problem(outcome: str) -> bool:
-    return outcome != "killed"
+def is_accepted(name: str, outcome: str) -> bool:
+    return outcome == "survived" and name in ACCEPTED_SURVIVORS
+
+
+def is_problem(name: str, outcome: str) -> bool:
+    return outcome != "killed" and not is_accepted(name, outcome)
 
 
 def write_report(path: Path, results: list[tuple[Mutation, str, float]]) -> None:
-    survivors = [mutation.name for mutation, outcome, _ in results if is_problem(outcome)]
+    killed = sum(outcome == "killed" for _, outcome, _ in results)
+    accepted = [m.name for m, outcome, _ in results if is_accepted(m.name, outcome)]
+    problems = [m.name for m, outcome, _ in results if is_problem(m.name, outcome)]
     verdict = (
-        f"**Not killed: {', '.join(survivors)}.** A behaviour of the client has no assertion."
-        if survivors
-        else "Every change was noticed."
+        f"**Not accepted: {', '.join(problems)}.** A behaviour of the client has no assertion."
+        if problems
+        else "Every change was noticed or is an accepted survivor."
     )
     lines = [
         "## Mutation checks",
         "",
-        f"{len(results) - len(survivors)} of {len(results)} mutations killed. {verdict}",
+        f"{killed} of {len(results)} mutations killed, {len(accepted)} accepted survivors. "
+        f"{verdict}",
         "",
         "| Result | Mutation | File | Change | Seconds |",
         "| --- | --- | --- | --- | ---: |",
     ]
     for mutation, outcome, seconds in results:
         change = f"`{mutation.old.strip()}` → `{mutation.new.strip()}`".replace("|", "\\|")
+        label = "ACCEPTED" if is_accepted(mutation.name, outcome) else outcome.upper()
         lines.append(
-            f"| {outcome.upper()} | {mutation.name} | `{mutation.path}` "
-            f"| {change} | {seconds:.0f} |"
+            f"| {label} | {mutation.name} | `{mutation.path}` | {change} | {seconds:.0f} |"
         )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -396,21 +414,29 @@ def main(selected: list[str], report: Path | None = None) -> int:
         return 2
 
     problems = []
+    accepted = []
     results = []
     for mutation in mutations:
         started = time.perf_counter()
         outcome = run_mutation(mutation)
         seconds = time.perf_counter() - started
         results.append((mutation, outcome, seconds))
-        flag = "  <-- PROBLEM" if is_problem(outcome) else ""
-        print(f"{outcome:9} {mutation.name} ({seconds:.0f} s){flag}", flush=True)
-        if flag:
+        if is_problem(mutation.name, outcome):
+            flag = "  <-- PROBLEM"
             problems.append(mutation.name)
+        elif is_accepted(mutation.name, outcome):
+            flag = "  (accepted survivor)"
+            accepted.append(mutation.name)
+        else:
+            flag = ""
+        print(f"{outcome:9} {mutation.name} ({seconds:.0f} s){flag}", flush=True)
     if report:
         write_report(report, results)
 
+    killed = sum(outcome == "killed" for _, outcome, _ in results)
     print(
-        f"\n{len(mutations) - len(problems)} of {len(mutations)} mutations killed; "
+        f"\n{killed} of {len(mutations)} mutations killed; "
+        f"accepted survivors: {len(accepted)}; "
         f"problems: {', '.join(problems) or 'none'}"
     )
     return 1 if problems else 0

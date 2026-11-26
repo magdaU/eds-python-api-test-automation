@@ -20,7 +20,7 @@ and the layers do not leak (tests use API objects, API objects use the client, n
 `EDSApiClient` further (a URL builder, a logger) would add files without removing a real problem, against KISS and YAGNI.
 Reopen this only if a concrete pain shows up, such as a second transport or a third kind of endpoint.
 
-Note (2026-11-10): the live tests, including the nightly data-quality run, were removed; the suite now sends no requests to the API.
+Note: the suite sends no requests to the EDS API. The live tests, including the data-quality checks, are not in the repository. Running them by hand is described in [test strategy, section 8.1](test-strategy.md#81-live-and-nightly-tests-why-they-are-not-scheduled).
 
 The Pydantic models are optional and live behind one method. `DatasetApi.records()` returns model objects when the API
 object was created with a `model` (otherwise it raises `TypeError`), and `get()` still returns the raw response. The `Literal`
@@ -34,8 +34,8 @@ nightly data-quality run that parsed the newest live records was removed on 2026
 | Retry behaviour is tested against a local scripted HTTP server, not `requests-mock` | `requests-mock` replaces the transport, so the retry adapter never runs against a mocked response | `tests/support/scripted_server.py`, `test_retry_behavior.py` |
 | A `Retry-After` above 60 s ends the request at once (`RetryAfterTooLongError`) | The API asked for up to 300 s; waiting it out made a full run last about 5.5 minutes | Test report, defects 11 and 12 |
 | One shared live query to `DayAheadPrices` per run | Removed on 2026-11-10 together with the live tests (the API is not called by the suite any more) | `tests/support/live.py` (still present, no longer used by any test) |
-| Live tests are few, small and rerun only on network errors | Removed on 2026-11-10; no live tests exist. The rerun rule is kept in the history of `test-strategy.md`, section 5 | `test-strategy.md` section 5 |
-| The metadata check (title and update interval, not only `active`) | Removed on 2026-11-10 with the live tests. The reason stays valid: EDS discontinued `Elspotprices` after 2025-09-30 but its `active` flag stayed true | historical |
+| Live tests, if run by hand, are few, small and rerun only on network errors | No live tests are in the repository now; the rules for them are kept in `test-strategy.md`, section 5 | `test-strategy.md` sections 5 and 8.1 |
+| A metadata check (title and update interval, not only `active`) would catch a discontinued dataset | Such a check was live and is not in the repository now. The reason stays valid: EDS discontinued `Elspotprices` after 2025-09-30 but its `active` flag stayed true | historical |
 | Test names are `given/when/then`, bodies have `# arrange`, `# act`, `# assert` | A name reads as a test case, so `test-cases.md` can be generated | `scripts/generate_test_cases.py` |
 | BDD only for a small set of behaviours | They read well as a specification; a scenario layer everywhere adds indirection | `test-strategy.md` section 4 |
 | Mutation checks are a curated catalogue run weekly, not a generated mutation tool | A generating tool would run for hours on the retry tests and needs Linux; 62 chosen changes take several minutes; the duration on the current list is not measured | `scripts/mutation_check.py`, `mutation.yml` |
@@ -53,14 +53,14 @@ nightly data-quality run that parsed the newest live records was removed on 2026
 | The API throttles (429) or fails (5xx) and the client hangs or hammers it | `test_retry_behavior`, `test_retry_after_cap`, `test_logging`, BDD `resilience` | Integration |
 | A request parameter is dropped or changed before it reaches the API | `test_boundary_values`, `test_parameter_combinations`, `test_filter_encoding`, `test_properties`, BDD `dataset_queries` | Component |
 | A dangerous input leaves the client (negative `limit`, a dataset name that changes the path) | `test_boundary_values`, `test_url_building`, `test_properties` | Component |
-| Data stops arriving, has holes, is out of range or mislabels time | None since 2026-11-10 (the live data-quality checks were removed) | - |
-| The API changes its response (fields, statuses, messages) | None against the live API since 2026-11-10; schemas are checked against recorded samples (`test_schema_validation`, `test_dataset_contract`) | Component |
+| Data stops arriving, has holes, is out of range or mislabels time | None in the offline suite; the live data-quality checks are not in the repository (`test-strategy.md`, section 8.1) | - |
+| The API changes its response (fields, statuses, messages) | No live check in the repository; schemas are checked against recorded samples (`test_schema_validation`, `test_dataset_contract`) | Component |
 | EDS stops documenting an operation or parameter the client uses | `test_openapi_drift` (offline, inline specification) | Component |
 | An answer is not the JSON the client expects (HTML error page, wrong shape) | `test_models`, `test_typed_records` | Component |
 | A pinned dependency has a known vulnerability, or a secret is committed | `Security` workflow | Static |
-| A dataset is discontinued while its tests keep passing | None since 2026-11-10 (the metadata check was live and was removed) | - |
+| A dataset is discontinued while its tests keep passing | None in the offline suite (the metadata check was a live test and is not in the repository) | - |
 | The client waits forever on a silent server | `test_eds_client` (timeout), `test_retry_behavior` (refused connection) | Component |
-| The report lies or its history is lost | CI guard only (no unit tests since 2026-11-10) | Component |
+| The report lies or its history is lost | CI guard only; the Allure helpers have no unit tests | Component |
 | Latency or error rate degrades under light concurrency | JMeter plan in `performance/` | Non-functional |
 | Not covered on purpose | `start`, `end`, `columns`, `timezone`, other datasets, operations the client does not call, data values, TLS | See [test coverage](test-coverage.md#6-known-gaps) |
 
