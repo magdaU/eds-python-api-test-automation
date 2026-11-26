@@ -1,7 +1,7 @@
 # Test report
 
-Summary of the current state of the test framework on `main`. Figures were measured on 2026-11-26 on commit `78f710f`
-(merge of PR #147), unless a line says otherwise. Related: [test strategy](test-strategy.md) · [test plan](test-plan.md) ·
+Summary of the current state of the test framework on `main`. Figures were measured on 2026-11-26. The test and client code on `main` at `c8d144a4` is the same as at `78f710f`
+(the last change to tests or client code was PR #147); unless a line says otherwise, the figures apply to both. Related: [test strategy](test-strategy.md) · [test plan](test-plan.md) ·
 [test cases](test-cases.md) · [test coverage](test-coverage.md) · [test results](test-results.md) ·
 [test architecture](test-architecture.md).
 
@@ -20,7 +20,7 @@ suite runs offline on every pull request and push to `main`. It sends no request
 | Mutation checks | See section 4 | `scripts/mutation_check.py` |
 | Static analysis | `ruff`, `ruff format --check`, `mypy --strict`: no findings | `Quality` workflow |
 | Known vulnerabilities and committed secrets | None found | `Security` workflow (`pip-audit`, `detect-secrets`) |
-| Latest CI run of `Tests` on `main` | 95 passed, 0 failed, 0 broken, 2 skipped (the expected failures, as Allure reports them) | [test results](test-results.md), build #296 |
+| Latest CI run of `Tests` on `main` | 95 passed, 0 failed, 0 broken, 2 skipped (the expected failures, as Allure reports them) | [test results](test-results.md), build #302 |
 
 **Conclusion.** The offline suite gates changes to the client, the models and the schemas. Coverage and CI are green. The
 live API is not checked automatically (section 5).
@@ -43,7 +43,7 @@ No case runs against the live API.
 `scripts/mutation_check.py` applies one deliberate change at a time to the client, the models or a schema and checks that the
 offline suite fails. The catalogue has 62 mutants.
 
-Full run on 2026-11-26 (commit `78f710f`): **58 of 62 killed, 4 survived**. The 4 survivors are all in the Pydantic models and
+Full run on 2026-11-26 (commit `78f710f`, no test or client code changed since): **58 of 62 killed, 4 survived**. The 4 survivors are all in the Pydantic models and
 JSON Schemas and are a recorded decision, not an open defect:
 
 | Mutant | What it changes | Why it survives |
